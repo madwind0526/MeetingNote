@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "strict": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "outDir": "dist-electron",
+    "types": ["node"]
+  },
+  "include": ["electron/**/*.ts", "vite.config.mts", "server/**/*.mjs"]
+}

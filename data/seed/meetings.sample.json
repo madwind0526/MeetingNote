@@ -1,0 +1,380 @@
+[
+  {
+    "id": "m-2026-0710-roadmap",
+    "title": "2026년 3분기 제품 로드맵 리뷰",
+    "date": "2026-07-10",
+    "startTime": "10:00",
+    "endTime": "11:30",
+    "organizer": "김도현 (PM)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "이서연",
+        "role": "디자인 리드",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a3",
+        "name": "박준혁",
+        "role": "백엔드 엔지니어",
+        "isKeyAttendee": false,
+        "isPresenter": false
+      },
+      {
+        "id": "a4",
+        "name": "최유나",
+        "role": "프론트엔드 엔지니어",
+        "isKeyAttendee": false,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [
+      {
+        "no": 1,
+        "title": "결제 모듈 API 명세 초안 작성",
+        "material": "api-spec-draft.docx",
+        "presenter": "박준혁",
+        "materialPath": "2026-07-10-2026년 3분기 제품 로드맵 리뷰/materials/api-spec-draft.docx"
+      },
+      {
+        "no": 2,
+        "title": "3분기 디자인 가이드 업데이트",
+        "material": "design-guide-v3.pptx",
+        "presenter": "이서연",
+        "materialPath": "2026-07-10-2026년 3분기 제품 로드맵 리뷰/materials/design-guide-v3.pptx"
+      }
+    ],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "2분기 회고 및 지표 공유",
+        "durationMinutes": 20,
+        "material": "q2-retro.pptx",
+        "presenter": "김도현",
+        "materialPath": "2026-07-10-2026년 3분기 제품 로드맵 리뷰/materials/q2-retro.pptx"
+      },
+      {
+        "no": 2,
+        "title": "3분기 로드맵 제안",
+        "durationMinutes": 40,
+        "material": "roadmap-q3.pptx",
+        "presenter": "김도현",
+        "materialPath": "2026-07-10-2026년 3분기 제품 로드맵 리뷰/materials/roadmap-q3.pptx"
+      },
+      {
+        "no": 3,
+        "title": "디자인 시스템 반영 범위 논의",
+        "durationMinutes": 30,
+        "material": "design-guide-v3.pptx",
+        "presenter": "이서연",
+        "materialPath": "2026-07-10-2026년 3분기 제품 로드맵 리뷰/materials/design-guide-v3.pptx"
+      }
+    ],
+    "audio": null,
+    "minutes": "## 회의 개요\n2026-07-10 10:00~11:30, 3분기 제품 로드맵 리뷰.\n\n## 논의 내용\n- 2분기 회고: 온보딩 전환율 12%p 개선, 결제 실패율 여전히 목표치 미달.\n- 3분기 로드맵: 결제 리뉴얼과 디자인 시스템 개편을 최우선 순위로 확정.\n- 디자인 가이드는 8월 중 1차 배포 후 프론트엔드팀과 순차 적용.\n\n## 결정 사항\n- 결제 모듈 API 명세는 7/24 회의 전까지 초안 공유.\n- 디자인 가이드 v3는 8/5 킥오프에서 상세 리뷰.\n\n## Action Item\n1. 박준혁 - 결제 모듈 API 명세 초안 작성\n2. 이서연 - 3분기 디자인 가이드 업데이트",
+    "createdAt": "2026-07-08T02:00:00.000Z",
+    "updatedAt": "2026-08-15T16:29:22.103Z"
+  },
+  {
+    "id": "m-2026-0724-payments",
+    "title": "신규 결제 시스템 아키텍처 회의",
+    "date": "2026-07-24",
+    "startTime": "14:00",
+    "endTime": "15:00",
+    "organizer": "박준혁 (백엔드 리드)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "박준혁",
+        "role": "백엔드 리드",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      },
+      {
+        "id": "a3",
+        "name": "정민석",
+        "role": "인프라 엔지니어",
+        "isKeyAttendee": false,
+        "isPresenter": true
+      }
+    ],
+    "actionItems": [
+      {
+        "no": 1,
+        "title": "PG사 3곳 견적 비교표 작성",
+        "material": "",
+        "presenter": "박준혁"
+      }
+    ],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "결제 모듈 API 명세 리뷰",
+        "durationMinutes": 25,
+        "material": "api-spec-draft.docx",
+        "presenter": "박준혁",
+        "materialPath": "2026-07-24-신규 결제 시스템 아키텍처 회의/materials/api-spec-draft.docx"
+      },
+      {
+        "no": 2,
+        "title": "인프라 확장 계획",
+        "durationMinutes": 25,
+        "material": "",
+        "presenter": "정민석"
+      }
+    ],
+    "audio": null,
+    "minutes": "",
+    "createdAt": "2026-07-20T01:00:00.000Z",
+    "updatedAt": "2026-08-15T16:29:22.103Z"
+  },
+  {
+    "id": "m-2026-0805-design-system",
+    "title": "디자인 시스템 개편 킥오프",
+    "date": "2026-08-05",
+    "startTime": "09:30",
+    "endTime": "10:30",
+    "organizer": "이서연 (디자인 리드)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "이서연",
+        "role": "디자인 리드",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "최유나",
+        "role": "프론트엔드 엔지니어",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a3",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": false,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [
+      {
+        "no": 1,
+        "title": "컴포넌트 토큰 목록 정리",
+        "material": "tokens-list.json",
+        "presenter": "최유나",
+        "materialPath": "2026-08-05-디자인 시스템 개편 킥오프/materials/tokens-list.json"
+      }
+    ],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "디자인 가이드 v3 상세 리뷰",
+        "durationMinutes": 30,
+        "material": "design-guide-v3.pptx",
+        "presenter": "이서연",
+        "materialPath": "2026-08-05-디자인 시스템 개편 킥오프/materials/design-guide-v3.pptx"
+      },
+      {
+        "no": 2,
+        "title": "프론트엔드 적용 일정 협의",
+        "durationMinutes": 30,
+        "material": "",
+        "presenter": "최유나"
+      }
+    ],
+    "audio": null,
+    "minutes": "## 회의 개요\n2026-08-05 09:30~10:30, 디자인 시스템 개편 킥오프.\n\n## 논의 내용\n- 디자인 가이드 v3의 색상/타이포 토큰을 8월 3주차부터 순차 적용하기로 함.\n- 컴포넌트 우선순위: 버튼/입력폼/모달 순으로 우선 교체.\n\n## 결정 사항\n- 최유나가 토큰 목록을 정리해 프론트엔드팀에 공유.\n- 9월 첫 주 중간 점검 회의 예정.\n\n## Action Item\n1. 최유나 - 컴포넌트 토큰 목록 정리",
+    "createdAt": "2026-08-01T00:30:00.000Z",
+    "updatedAt": "2026-08-15T16:29:22.103Z"
+  },
+  {
+    "id": "m-2026-0813-hiring",
+    "title": "채용 프로세스 개선 회의",
+    "date": "2026-08-13",
+    "startTime": "16:00",
+    "endTime": "17:00",
+    "organizer": "정민석 (People팀)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "정민석",
+        "role": "People팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      },
+      {
+        "id": "a3",
+        "name": "박준혁",
+        "role": "백엔드 리드",
+        "isKeyAttendee": false,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "현재 채용 파이프라인 현황",
+        "durationMinutes": 20,
+        "material": "hiring-status.xlsx",
+        "presenter": "정민석",
+        "materialPath": "2026-08-13-채용 프로세스 개선 회의/materials/hiring-status.xlsx"
+      },
+      {
+        "no": 2,
+        "title": "기술 면접 프로세스 개선안",
+        "durationMinutes": 40,
+        "material": "",
+        "presenter": "박준혁"
+      }
+    ],
+    "audio": null,
+    "minutes": "",
+    "createdAt": "2026-08-10T05:00:00.000Z",
+    "updatedAt": "2026-08-15T16:29:22.103Z"
+  },
+  {
+    "id": "m-2026-0822-marketing",
+    "title": "9월 마케팅 캠페인 기획 회의",
+    "date": "2026-08-22",
+    "startTime": "13:00",
+    "endTime": "14:30",
+    "organizer": "최유나 (마케팅 협업)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "최유나",
+        "role": "프론트엔드/마케팅 협업",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a3",
+        "name": "이서연",
+        "role": "디자인 리드",
+        "isKeyAttendee": false,
+        "isPresenter": true
+      }
+    ],
+    "actionItems": [
+      {
+        "no": 1,
+        "title": "캠페인 랜딩 페이지 와이어프레임",
+        "material": "",
+        "presenter": "이서연"
+      }
+    ],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "9월 캠페인 컨셉 제안",
+        "durationMinutes": 30,
+        "material": "campaign-concept.pptx",
+        "presenter": "최유나",
+        "materialPath": "2026-08-22-9월 마케팅 캠페인 기획 회의/materials/campaign-concept.pptx"
+      },
+      {
+        "no": 2,
+        "title": "제품 하이라이트 선정",
+        "durationMinutes": 30,
+        "material": "",
+        "presenter": "김도현"
+      },
+      {
+        "no": 3,
+        "title": "랜딩 페이지 디자인 방향",
+        "durationMinutes": 30,
+        "material": "",
+        "presenter": "이서연"
+      }
+    ],
+    "audio": null,
+    "minutes": "",
+    "createdAt": "2026-08-14T06:00:00.000Z",
+    "updatedAt": "2026-08-15T16:29:22.103Z"
+  },
+  {
+    "id": "m-2026-0902-feedback",
+    "title": "고객 피드백 분석 및 대응 방안",
+    "date": "2026-09-02",
+    "startTime": "11:00",
+    "endTime": "12:00",
+    "organizer": "김도현 (PM)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "박준혁",
+        "role": "백엔드 리드",
+        "isKeyAttendee": false,
+        "isPresenter": false
+      },
+      {
+        "id": "a3",
+        "name": "최유나",
+        "role": "프론트엔드 엔지니어",
+        "isKeyAttendee": false,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "8월 고객 피드백 요약",
+        "durationMinutes": 25,
+        "material": "feedback-summary.xlsx",
+        "presenter": "김도현",
+        "materialPath": "2026-09-02-고객 피드백 분석 및 대응 방안/materials/feedback-summary.xlsx"
+      },
+      {
+        "no": 2,
+        "title": "우선순위 버그 트리아지",
+        "durationMinutes": 35,
+        "material": "",
+        "presenter": "박준혁"
+      }
+    ],
+    "audio": null,
+    "minutes": "",
+    "createdAt": "2026-08-14T07:00:00.000Z",
+    "updatedAt": "2026-08-15T16:29:22.103Z"
+  }
+]

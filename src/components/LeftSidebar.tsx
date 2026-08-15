@@ -1,0 +1,67 @@
+import { Bot, Download, FilePlus2, List, Search, SlidersHorizontal, Upload } from "lucide-react";
+
+interface LeftSidebarProps {
+  filterActive: boolean;
+  queryActive: boolean;
+  searchActive: boolean;
+  onExport: () => void;
+  onFilter: () => void;
+  onImport: () => void;
+  onList: () => void;
+  onNewMeeting: () => void;
+  onQuery: () => void;
+  onSearch: () => void;
+}
+
+export function LeftSidebar({
+  filterActive,
+  queryActive,
+  searchActive,
+  onExport,
+  onFilter,
+  onImport,
+  onList,
+  onNewMeeting,
+  onQuery,
+  onSearch
+}: LeftSidebarProps) {
+  return (
+    <aside className="left-sidebar" aria-label="사이드바">
+      <nav className="sidebar-group" aria-label="목록 관리">
+        <button className="icon-nav-button" onClick={onList} title="목록" type="button">
+          <List size={20} />
+          <span>목록</span>
+        </button>
+        <button className="icon-nav-button" onClick={onNewMeeting} title="새 회의록" type="button">
+          <FilePlus2 size={20} />
+          <span>새 회의록</span>
+        </button>
+        <button className="icon-nav-button" onClick={onImport} title="가져오기" type="button">
+          <Upload size={20} />
+          <span>가져오기</span>
+        </button>
+        <button className="icon-nav-button" onClick={onExport} title="내보내기" type="button">
+          <Download size={20} />
+          <span>내보내기</span>
+        </button>
+      </nav>
+
+      <div className="sidebar-spacer" />
+
+      <div className="sidebar-tools">
+        <button className={searchActive ? "icon-button active" : "icon-button"} onClick={onSearch} title="찾기" type="button">
+          <Search size={20} />
+          <span>찾기</span>
+        </button>
+        <button className={filterActive ? "icon-button active" : "icon-button"} onClick={onFilter} title="필터" type="button">
+          <SlidersHorizontal size={20} />
+          <span>필터</span>
+        </button>
+        <button className={queryActive ? "icon-button active" : "icon-button"} onClick={onQuery} title="질문" type="button">
+          <Bot size={20} />
+          <span>질문</span>
+        </button>
+      </div>
+    </aside>
+  );
+}

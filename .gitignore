@@ -1,0 +1,15 @@
+node_modules/
+.venv-whisperx/
+.env
+dist/
+dist-electron/
+data/db/
+data/runtime/
+data/audio/*
+!data/audio/.gitkeep
+data/attachments/
+exports/
+imports/
+*.tsbuildinfo
+*.log
+tmp_*

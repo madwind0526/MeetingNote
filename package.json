@@ -1,0 +1,38 @@
+{
+  "name": "meetingnote",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PC app for turning meeting agendas and recordings into structured meeting minutes.",
+  "main": "dist-electron/electron/main.js",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "start": "node tools/start-app.mjs",
+    "build": "tsc -b && vite build && tsc -p tsconfig.node.json",
+    "preview": "vite preview --host 127.0.0.1",
+    "electron:build": "tsc -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "cross-spawn": "^7.0.6",
+    "docx": "^9.1.1",
+    "fontkit": "^2.0.4",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.468.0",
+    "mammoth": "^1.8.0",
+    "pdf-parse": "^1.1.1",
+    "pdfkit": "^0.19.1",
+    "pptxgenjs": "^3.12.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.6",
+    "@types/node": "^22.10.2",
+    "@types/pdfkit": "^0.13.4",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "electron": "^43.2.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3"
+  }
+}
