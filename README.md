@@ -1,33 +1,334 @@
 # MeetingNote
 
-회의록 작성 데스크톱 앱. 회의 기본정보, 참석자, A/I List, Agenda를 등록하고, 회의 음성 파일을 분석해 화자별
-대본을 만든 뒤 LLM으로 회의록을 자동 생성합니다. Card/List 보기, 검색·필터, PDF/Word/PowerPoint/JSON
-가져오기·내보내기를 지원합니다.
+회의 기본 정보, 참석자, A/I List, Agenda를 관리하고 회의 오디오 파일을 STT로 분석해 회의록 초안을 만드는 PC 앱입니다. React/Vite 기반 화면과 Electron 실행을 지원하며, 로컬 Whisper CLI, WhisperX GPU, OpenAI Whisper API, Mock STT를 선택할 수 있습니다.
 
-## 시작하기
+## 빠른 시작
 
-```bash
+```powershell
 npm install
 npm run dev
 ```
 
-`http://127.0.0.1:5185`에서 브라우저로 바로 확인하거나, `npm start`로 Electron 앱을 실행합니다.
+브라우저에서 `http://127.0.0.1:5185`로 접속하거나, 데스크톱 앱처럼 실행하려면 다음을 사용합니다.
+
+```powershell
+npm start
+```
 
 ## 주요 기능
 
-- **List / Card 보기** — 등록된 회의록을 요약 카드 또는 표로 확인 (제목, 일시, 회의록 요약, 예정/회의록 작성
-  필요/완료 상태)
-- **새 회의록 등록** — 기본정보 + 참석자(주요 참석자/발표자) + A/I List 표 + Agenda 표 입력
-- **회의 음성 분석** — 전체/화자별 waveform, 시간·텍스트 대본, 노이즈 제거·정규화 전처리 옵션
-- **회의록 자동 작성** — Agenda·참석자·음성 대본을 근거로 LLM이 구조화된 회의록 생성
-- **가져오기/내보내기** — PDF/Word/PowerPoint/JSON
-- **검색 / 필터 / 질문(LLM)** — 저장된 회의록에 대해 자연어로 질문 가능
+- 회의록 List/Card 보기
+- 회의 기본 정보, 참석자, A/I List, Agenda 편집
+- PDF, Word, PowerPoint, JSON 가져오기/내보내기
+- 오디오 전체/화자별 파형 확인
+- 원본 파형과 전처리 파형 비교 재생
+- Demucs 음성 분리, DeNoise, 정규화 전처리
+- Mock, WhisperX, Whisper CLI, Whisper API STT 엔진 선택
+- LLM 기반 회의록 자동 작성 및 회의록 질의
 
-## 설정
+## 로컬 STT 구성 개요
 
-- **AI 질문 및 회의록 작성 (LLM)**: 로컬 검색(무료) / Ollama(무료, 로컬 서버) / Claude CLI(무료, 로컬 설치) /
-  Anthropic API(유료, API 키 필요) 중 선택
-- **음성 인식 (STT)**: Mock(무료, 기본값) / 로컬 Whisper CLI(무료, 사전 설치 필요) / OpenAI Whisper API(유료,
-  API 키 필요) 중 선택
+권장 구성은 다음과 같습니다.
 
-자세한 아키텍처는 `CLAUDE.md`를 참고하세요.
+- Python: `3.10` - `3.12` 권장, 현재 검증 환경은 `3.12.10`
+- 가상환경: `.venv-whisperx`
+- PyTorch GPU: CUDA 12.8 wheel, 현재 검증 버전 `torch 2.8.0+cu128`
+- Whisper CLI: `openai-whisper`
+- WhisperX: `whisperx`
+- 음성 분리: `demucs`
+- FFmpeg: Windows shared build 필요, 현재 검증 경로 `D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin`
+
+Python 3.14는 일부 오디오/ML 패키지 호환성 문제가 생길 수 있으므로 이 프로젝트에서는 3.10-3.12 venv를 따로 만드는 편이 안전합니다.
+
+## 1. Python 버전 확인
+
+PowerShell에서 설치된 Python 런처 목록을 확인합니다.
+
+```powershell
+py -0p
+```
+
+예상 예:
+
+```text
+ -V:3.12 * C:\Users\...\Python312\python.exe
+ -V:3.14   C:\Users\...\Python314\python.exe
+```
+
+3.12가 없다면 python.org에서 Windows installer로 Python 3.12.x를 설치합니다. 설치할 때 `Add python.exe to PATH`는 선택 사항이지만, `py -0p`에서 보여야 합니다.
+
+## 2. WhisperX 전용 venv 생성
+
+프로젝트 루트(`C:\Claude\MeetingNote`)에서 실행합니다.
+
+```powershell
+py -3.12 -m venv .venv-whisperx
+.\.venv-whisperx\Scripts\python.exe -m pip install --upgrade pip setuptools wheel
+```
+
+venv를 활성화해서 써도 되고, 아래처럼 항상 venv 안의 실행 파일을 직접 호출해도 됩니다.
+
+```powershell
+.\.venv-whisperx\Scripts\python.exe --version
+.\.venv-whisperx\Scripts\pip.exe --version
+```
+
+## 3. CUDA/GPU PyTorch 설치
+
+NVIDIA GPU를 사용할 경우 먼저 드라이버와 CUDA 런타임이 정상인지 확인합니다.
+
+```powershell
+nvidia-smi
+```
+
+이 프로젝트에서 검증한 RTX 5070 환경은 CUDA 12.8 wheel을 사용했습니다.
+
+```powershell
+.\.venv-whisperx\Scripts\pip.exe install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128
+```
+
+설치 후 CUDA 인식 여부를 확인합니다.
+
+```powershell
+.\.venv-whisperx\Scripts\python.exe -c "import torch; print(torch.__version__); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU')"
+```
+
+정상 예:
+
+```text
+2.8.0+cu128
+True
+NVIDIA GeForce RTX 5070
+```
+
+CPU 전용으로만 사용할 경우에는 아래처럼 설치할 수 있습니다.
+
+```powershell
+.\.venv-whisperx\Scripts\pip.exe install torch torchvision torchaudio
+```
+
+단, WhisperX와 Demucs는 CPU에서 많이 느릴 수 있습니다.
+
+## 4. FFmpeg shared build 설치
+
+Whisper CLI는 `ffmpeg.exe`가 필요하고, WhisperX/pyannote/torchcodec은 Windows에서 FFmpeg DLL을 찾을 수 있어야 합니다. 일반 static build보다 shared build를 권장합니다.
+
+1. <https://www.gyan.dev/ffmpeg/builds/> 접속
+2. `release builds`에서 `ffmpeg-release-full-shared.7z` 다운로드
+3. 예를 들어 아래 경로로 압축 해제
+
+```text
+D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\
+```
+
+4. 현재 PowerShell 세션에 PATH 추가
+
+```powershell
+$env:PATH = "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin;$env:PATH"
+$env:MEETINGNOTE_FFMPEG_BIN = "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin"
+```
+
+5. 앱에서 계속 사용할 영구 환경 변수로 저장하려면:
+
+```powershell
+setx MEETINGNOTE_FFMPEG_BIN "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin"
+```
+
+확인:
+
+```powershell
+ffmpeg -version
+```
+
+## 5. Whisper CLI 설치
+
+OpenAI Whisper CLI는 로컬 Whisper 엔진입니다. 앱의 `Whisper CLI` 선택지에서 사용합니다.
+
+```powershell
+.\.venv-whisperx\Scripts\pip.exe install -U openai-whisper
+```
+
+설치 확인:
+
+```powershell
+.\.venv-whisperx\Scripts\whisper.exe --help
+```
+
+PATH 경고가 나와도 venv 안의 `.\.venv-whisperx\Scripts\whisper.exe`를 직접 호출하면 문제 없습니다.
+
+샘플 실행:
+
+```powershell
+.\.venv-whisperx\Scripts\whisper.exe imports\sample.wav --model turbo --language ko --device cuda --output_format json --output_dir imports\whisper-cli-test
+```
+
+CPU로 실행하려면:
+
+```powershell
+.\.venv-whisperx\Scripts\whisper.exe imports\sample.wav --model base --language ko --device cpu --output_format json --output_dir imports\whisper-cli-cpu-test
+```
+
+## 6. WhisperX 설치
+
+WhisperX는 Whisper 기반 STT에 정렬/alignment와 VAD를 더한 로컬 엔진입니다. 앱의 `WhisperX` 선택지에서 사용합니다.
+
+```powershell
+.\.venv-whisperx\Scripts\pip.exe install whisperx
+```
+
+설치 확인:
+
+```powershell
+$env:PATH = "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin;$env:PATH"
+$env:MEETINGNOTE_FFMPEG_BIN = "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin"
+
+.\.venv-whisperx\Scripts\python.exe -c "import torch, torchcodec, whisperx; print('cuda', torch.cuda.is_available()); print('whisperx ok')"
+```
+
+샘플 실행:
+
+```powershell
+$env:PATH = "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin;$env:PATH"
+$env:MEETINGNOTE_FFMPEG_BIN = "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin"
+
+.\.venv-whisperx\Scripts\whisperx.exe imports\sample.wav --model base --language ko --device cuda --compute_type float16 --output_format json --output_dir imports\whisperx-gpu-test
+```
+
+CPU로 실행하려면:
+
+```powershell
+.\.venv-whisperx\Scripts\whisperx.exe imports\sample.wav --model base --language ko --device cpu --compute_type int8 --output_format json --output_dir imports\whisperx-cpu-test
+```
+
+## 7. Demucs 설치
+
+Demucs는 음악/배경음이 섞인 파일에서 `vocals.wav`를 분리하기 위해 사용합니다. 앱의 전처리 옵션 `Demucs`를 체크하면 STT 전에 음성 분리를 수행하고, 화면에서 원본 파형과 전처리 파형을 비교 재생할 수 있습니다.
+
+```powershell
+.\.venv-whisperx\Scripts\pip.exe install demucs
+```
+
+샘플 실행:
+
+```powershell
+.\.venv-whisperx\Scripts\python.exe -m demucs.separate --two-stems vocals -n htdemucs --device cuda -o imports\demucs-test imports\sample.wav
+```
+
+결과 파일:
+
+```text
+imports\demucs-test\htdemucs\sample\vocals.wav
+imports\demucs-test\htdemucs\sample\no_vocals.wav
+```
+
+첫 실행 때는 Demucs 모델을 다운로드하므로 시간이 더 걸릴 수 있습니다.
+
+## 8. 앱에서 사용하는 환경 변수
+
+필수는 아니지만, 기본 경로와 다르게 설치했다면 아래 값을 설정합니다.
+
+```powershell
+setx MEETINGNOTE_WHISPERX_PYTHON "C:\Claude\MeetingNote\.venv-whisperx\Scripts\python.exe"
+setx MEETINGNOTE_FFMPEG_BIN "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin"
+setx MEETINGNOTE_WHISPERX_DEVICE "cuda"
+setx MEETINGNOTE_WHISPERX_COMPUTE_TYPE "float16"
+setx MEETINGNOTE_DEMUCS_DEVICE "cuda"
+setx MEETINGNOTE_DEMUCS_MODEL "htdemucs"
+```
+
+CPU 전용으로 쓰려면:
+
+```powershell
+setx MEETINGNOTE_WHISPERX_DEVICE "cpu"
+setx MEETINGNOTE_WHISPERX_COMPUTE_TYPE "int8"
+setx MEETINGNOTE_DEMUCS_DEVICE "cpu"
+```
+
+OpenAI Whisper API를 사용할 경우:
+
+```powershell
+setx OPENAI_API_KEY "sk-..."
+```
+
+## 9. 앱에서 STT 테스트하는 방법
+
+1. `npm start` 또는 `npm run dev`로 앱 실행
+2. 회의 편집 화면에서 오디오 파일 선택
+3. `회의 음성 분석` 모달에서 전처리 옵션 선택
+   - `Demucs`: 음악/반주에서 vocals만 분리
+   - `DeNoise`: 간단한 noise gate
+   - `정규화`: 음량 peak 기준 정규화
+4. 엔진 선택
+   - `Mock`: 실제 STT 없이 화면 테스트
+   - `WhisperX`: 로컬 WhisperX GPU/CPU
+   - `Whisper CLI`: 로컬 openai-whisper CLI
+   - `Whisper API`: OpenAI Whisper API
+5. 모델 선택 후 `분석 시작`
+6. 분석 후 `전체 파형`에서 `원본`과 `전처리`를 체크해 비교 재생
+7. `화자별 파형`은 전처리된 오디오 기준으로 표시
+
+## 10. 트러블슈팅
+
+### torch.cuda.is_available()가 False
+
+- `nvidia-smi`가 정상인지 확인
+- venv에 CPU용 PyTorch가 설치된 경우 GPU wheel로 다시 설치
+
+```powershell
+.\.venv-whisperx\Scripts\pip.exe uninstall -y torch torchaudio torchvision
+.\.venv-whisperx\Scripts\pip.exe install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128
+```
+
+### torchcodec import 에러
+
+대부분 FFmpeg shared DLL을 못 찾는 문제입니다.
+
+```powershell
+$env:PATH = "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin;$env:PATH"
+$env:MEETINGNOTE_FFMPEG_BIN = "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin"
+.\.venv-whisperx\Scripts\python.exe -c "import torchcodec; print('torchcodec ok')"
+```
+
+static build가 아니라 `full_build-shared` 계열을 사용해야 합니다.
+
+### pip 설치 중 PATH warning
+
+예:
+
+```text
+The script whisper.exe is installed in ...\Scripts which is not on PATH.
+```
+
+venv 안의 실행 파일을 직접 쓰면 됩니다.
+
+```powershell
+.\.venv-whisperx\Scripts\whisper.exe --help
+```
+
+### Demucs를 켰는데도 음악이 조금 들림
+
+Demucs는 source separation 모델이라 완벽한 무음 제거기는 아닙니다. 보컬과 악기가 강하게 겹친 음원, 리버브가 많은 음원, 라이브 녹음에서는 반주 잔향이 남을 수 있습니다. 그래도 STT 입력은 `vocals.wav`를 사용하며, 앱에서는 분석 후 `원본`과 `전처리` 파형을 비교 재생할 수 있습니다.
+
+### WhisperX가 너무 느림
+
+- GPU 사용: `MEETINGNOTE_WHISPERX_DEVICE=cuda`
+- GPU compute type: `MEETINGNOTE_WHISPERX_COMPUTE_TYPE=float16`
+- 작은 모델부터 테스트: `tiny`, `base`, `small`
+- CPU에서는 `compute_type=int8` 권장
+
+## 빌드
+
+```powershell
+npm run build
+```
+
+## 저장소에 포함하지 않는 항목
+
+아래 항목은 `.gitignore`로 제외합니다.
+
+- `.venv-whisperx/`
+- `node_modules/`
+- `dist/`, `dist-electron/`
+- `data/db/`, `data/runtime/`, `data/attachments/`
+- `imports/`, `exports/`
+- `*.tsbuildinfo`, `*.log`, `tmp_*`
