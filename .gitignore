@@ -7,6 +7,8 @@ data/db/
 data/runtime/
 data/audio/*
 !data/audio/.gitkeep
+data/test-audio/*.wav
+data/test-audio/*.json
 data/attachments/
 exports/
 imports/

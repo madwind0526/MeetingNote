@@ -185,6 +185,20 @@ export async function pickAttachmentsFolder(): Promise<string | null> {
   return result.path;
 }
 
+const IMPORT_EXTENSION_FORMATS: Record<string, ImportFormat> = {
+  pdf: "pdf",
+  docx: "docx",
+  pptx: "pptx",
+  md: "md",
+  markdown: "md",
+  json: "json"
+};
+
+export function inferImportFormat(fileName: string): ImportFormat | null {
+  const extension = fileName.split(".").pop()?.toLowerCase() ?? "";
+  return IMPORT_EXTENSION_FORMATS[extension] ?? null;
+}
+
 export async function importMeetingsRequest(format: ImportFormat, file: File): Promise<MeetingDraft[]> {
   const contentBase64 = await readFileAsBase64(file, MAX_IMPORT_FILE_BYTES, "가져오기");
   const response = await fetch("/api/import", {
@@ -249,14 +263,21 @@ export async function saveExportedFile(result: ExportResult): Promise<string> {
 }
 
 export interface TranscribeRequest {
-  provider: "mock" | "local-whisper-cli" | "local-whisperx" | "openai-whisper";
+  provider: "mock" | "local-whisper-cli" | "local-whisperx" | "openai-whisper" | "naver-clova";
   model?: string;
   audioBlob: Blob;
   fileName: string;
+  durationSec: number;
   preprocessing: AudioPreprocessing;
-  // Attendee names (presenters/key attendees first) used by the server-side pause-based
-  // diarization heuristic to assign speaker turns - see server/audio/diarize.mjs.
+  // Attendee names (presenters/key attendees first). Only used when the STT provider itself
+  // returns real per-segment speaker labels (currently none do by default) - see
+  // server/audio/diarize.mjs; otherwise every segment is treated as a single speaker.
   attendeeNames: string[];
+  // Polled roughly every 700ms with a 0-100 percentage while the job is running - see
+  // /api/stt/transcribe/status. Local providers report real progress parsed from their own
+  // process output; cloud/mock providers get a smooth time-based estimate instead, since a single
+  // blocking API call has no real sub-progress to report.
+  onProgress?: (percent: number) => void;
 }
 
 export type TranscribeResult = AudioAnalysis & {
@@ -265,9 +286,20 @@ export type TranscribeResult = AudioAnalysis & {
   processedFileName?: string;
 };
 
+interface SttJobStatus {
+  status: "running" | "done" | "error";
+  progress: number;
+  result?: TranscribeResult;
+  error?: string;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function transcribeAudioRequest(request: TranscribeRequest): Promise<TranscribeResult> {
   const audioBase64 = await readFileAsBase64(request.audioBlob, MAX_AUDIO_FILE_BYTES, "오디오");
-  const response = await fetch("/api/stt/transcribe", {
+  const startResponse = await fetch("/api/stt/transcribe/start", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -275,10 +307,25 @@ export async function transcribeAudioRequest(request: TranscribeRequest): Promis
       model: request.model,
       audioBase64,
       fileName: request.fileName,
+      durationSec: request.durationSec,
       preprocessing: request.preprocessing,
       attendeeNames: request.attendeeNames
     })
   });
+  const { jobId } = await parseJsonResponse<{ jobId: string }>(startResponse);
 
-  return parseJsonResponse<TranscribeResult>(response);
+  for (;;) {
+    await sleep(700);
+    const statusResponse = await fetch(`/api/stt/transcribe/status?jobId=${encodeURIComponent(jobId)}`);
+    const job = await parseJsonResponse<SttJobStatus>(statusResponse);
+
+    request.onProgress?.(Math.round(job.progress * 100));
+
+    if (job.status === "done" && job.result) {
+      return job.result;
+    }
+    if (job.status === "error") {
+      throw new Error(job.error || "음성 분석에 실패했습니다.");
+    }
+  }
 }

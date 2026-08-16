@@ -10,11 +10,11 @@ function normalizeSettings(parsed: Partial<AppSettings> | null): AppSettings {
     settings.importDuplicateMode = defaultSettings.importDuplicateMode;
   }
 
-  if (!["pdf", "docx", "pptx", "json"].includes(settings.exportDefaultFormat)) {
+  if (!["pdf", "docx", "pptx", "md", "json"].includes(settings.exportDefaultFormat)) {
     settings.exportDefaultFormat = defaultSettings.exportDefaultFormat;
   }
 
-  if (!["mock", "local-whisper-cli", "local-whisperx", "openai-whisper"].includes(settings.sttProvider)) {
+  if (!["mock", "local-whisper-cli", "local-whisperx", "openai-whisper", "naver-clova"].includes(settings.sttProvider)) {
     settings.sttProvider = defaultSettings.sttProvider;
   }
 

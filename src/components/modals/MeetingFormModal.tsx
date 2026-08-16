@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { FolderOpen, Paperclip, Plus, Trash2, Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { FileInput, FolderOpen, Paperclip, Plus, Trash2, Upload } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import { AudioAnalysisModal } from "./AudioAnalysisModal";
 import type {
@@ -15,13 +15,16 @@ import type {
 import { computeMeetingStatus, emptyActionItem, emptyAgendaItem, emptyAttendee, emptyMeetingDraft, meetingStatusLabels } from "../../types/domain";
 import { generateMinutes } from "../../lib/llm";
 import type { OllamaConfig } from "../../lib/llm";
-import { openAttachment, uploadAttachment } from "../../lib/api";
+import { importMeetingsRequest, inferImportFormat, openAttachment, uploadAttachment } from "../../lib/api";
 
 type MaterialTarget = { kind: "actionItem" | "agenda"; index: number };
 
 interface MeetingFormModalProps {
   mode: "create" | "edit";
   initial?: Meeting;
+  // Create mode only: immediately opens the file picker for "파일에서 가져오기" once the modal
+  // mounts, so the sidebar's single-node 가져오기 button can jump straight to file selection.
+  autoImport?: boolean;
   llmProvider: LlmProviderId;
   ollamaConfig: OllamaConfig;
   sttProvider: SttProviderId;
@@ -77,7 +80,7 @@ function attachmentFolderLabel(draft: MeetingDraft) {
   return `${date}-${title}`;
 }
 
-export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, sttProvider, onClose, onSubmit }: MeetingFormModalProps) {
+export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollamaConfig, sttProvider, onClose, onSubmit }: MeetingFormModalProps) {
   const [draft, setDraft] = useState<MeetingDraft>(() => cloneDraft(initial));
   const [pendingAudioFile, setPendingAudioFile] = useState<File | null>(null);
   const [showAudioAnalysis, setShowAudioAnalysis] = useState(false);
@@ -85,8 +88,12 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
   const [minutesError, setMinutesError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [isImportingFile, setIsImportingFile] = useState(false);
+  const [importFileError, setImportFileError] = useState("");
   const audioFileInputRef = useRef<HTMLInputElement | null>(null);
   const materialFileInputRef = useRef<HTMLInputElement | null>(null);
+  const importFileInputRef = useRef<HTMLInputElement | null>(null);
+  const autoImportTriggeredRef = useRef(false);
   const [materialAttachTarget, setMaterialAttachTarget] = useState<MaterialTarget | null>(null);
   const [isUploadingMaterial, setIsUploadingMaterial] = useState(false);
   const [materialError, setMaterialError] = useState("");
@@ -100,6 +107,64 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
 
   const updateField = <Key extends keyof MeetingDraft>(key: Key, value: MeetingDraft[Key]) => {
     setDraft((current) => ({ ...current, [key]: value }));
+  };
+
+  // ---------- Import from file (create mode only) ----------
+
+  useEffect(() => {
+    if (mode === "create" && autoImport && !autoImportTriggeredRef.current) {
+      autoImportTriggeredRef.current = true;
+      importFileInputRef.current?.click();
+    }
+  }, [mode, autoImport]);
+
+  const handleImportFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    const format = inferImportFormat(file.name);
+    if (!format) {
+      setImportFileError("지원하지 않는 파일 형식입니다. (PDF, Word, PowerPoint, Markdown, JSON)");
+      return;
+    }
+
+    setIsImportingFile(true);
+    setImportFileError("");
+
+    try {
+      const parsed = await importMeetingsRequest(format, file);
+      const [parsedDraft] = parsed;
+
+      if (!parsedDraft) {
+        setImportFileError("파일에서 회의록 내용을 찾지 못했습니다.");
+        return;
+      }
+
+      setDraft((current) => ({
+        ...current,
+        title: parsedDraft.title,
+        date: parsedDraft.date,
+        startTime: parsedDraft.startTime,
+        endTime: parsedDraft.endTime,
+        organizer: parsedDraft.organizer,
+        attendees: parsedDraft.attendees,
+        actionItems: parsedDraft.actionItems,
+        agenda: parsedDraft.agenda,
+        minutes: parsedDraft.minutes
+      }));
+
+      if (parsed.length > 1) {
+        setImportFileError("여러 회의록이 발견되어 첫 번째 항목만 불러왔습니다.");
+      }
+    } catch (error) {
+      setImportFileError(error instanceof Error ? error.message : "가져오기에 실패했습니다.");
+    } finally {
+      setIsImportingFile(false);
+    }
   };
 
   // ---------- Attendees ----------
@@ -295,6 +360,32 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
           </>
         }
       >
+        {/* ---------- Import from file ---------- */}
+        {mode === "create" && (
+          <div className="field full">
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <button
+                className="ghost-action"
+                disabled={isImportingFile}
+                onClick={() => importFileInputRef.current?.click()}
+                type="button"
+              >
+                <FileInput size={15} />
+                {isImportingFile ? "가져오는 중..." : "파일에서 가져오기"}
+              </button>
+              <span className="field-hint">PDF, Word, PowerPoint, Markdown, JSON 회의록 파일을 선택하면 아래 항목이 자동으로 채워집니다.</span>
+            </div>
+            <input
+              accept=".pdf,.docx,.pptx,.md,.markdown,.json"
+              hidden
+              onChange={handleImportFileChange}
+              ref={importFileInputRef}
+              type="file"
+            />
+            {importFileError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{importFileError}</span>}
+          </div>
+        )}
+
         {/* ---------- Basic info ---------- */}
         <div className="form-grid">
           <div className="field full">

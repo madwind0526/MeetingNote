@@ -1414,6 +1414,26 @@ p {
   cursor: not-allowed;
 }
 
+.primary-action.analyze-progress-button,
+.primary-action.analyze-progress-button:disabled {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: rgba(154, 161, 157, 0.55);
+  color: #ffffff;
+  cursor: progress;
+}
+
+.analyze-progress-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: var(--analyze-progress, 0%);
+  background: #1f6f68;
+  transition: width 0.3s ease;
+}
+
 .ghost-action {
   border: 1px solid rgba(31, 111, 104, 0.28);
   background: transparent;

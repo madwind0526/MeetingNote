@@ -32,14 +32,16 @@ const STT_PROVIDER_OPTIONS: { id: SttProviderId; label: string }[] = [
   { id: "mock", label: "Mock" },
   { id: "local-whisperx", label: "WhisperX" },
   { id: "local-whisper-cli", label: "Whisper CLI" },
-  { id: "openai-whisper", label: "Whisper API" }
+  { id: "openai-whisper", label: "Whisper API" },
+  { id: "naver-clova", label: "Naver Clova" }
 ];
 
 const STT_MODEL_OPTIONS_BY_PROVIDER: Record<SttProviderId, string[]> = {
   mock: ["mock"],
   "local-whisper-cli": ["turbo", "tiny", "base", "small", "medium", "large-v3", "large-v3-turbo"],
   "local-whisperx": ["tiny", "base", "small", "medium", "large-v3"],
-  "openai-whisper": ["whisper-1"]
+  "openai-whisper": ["whisper-1"],
+  "naver-clova": ["default"]
 };
 
 function defaultSttModel(provider: SttProviderId): string {
@@ -162,6 +164,7 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
   const [sttModel, setSttModel] = useState(defaultSttModel(sttProvider));
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzeProgress, setAnalyzeProgress] = useState(0);
   const [analyzeError, setAnalyzeError] = useState("");
   const [result, setResult] = useState<AudioAnalysis | null>(null);
   const [editedSpeakerMap, setEditedSpeakerMap] = useState<Record<string, string>>({});
@@ -504,6 +507,7 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
     }
 
     setIsAnalyzing(true);
+    setAnalyzeProgress(0);
     setAnalyzeError("");
 
     try {
@@ -517,8 +521,10 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
         model: sttModel,
         audioBlob: wavBlob,
         fileName: file.name,
+        durationSec: sourceAudioBuffer.duration,
         preprocessing: { vocalIsolation, noiseRemoval, normalize },
-        attendeeNames
+        attendeeNames,
+        onProgress: setAnalyzeProgress
       });
 
       const processedAudioBlob = analysis.processedAudioBase64
@@ -749,8 +755,14 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                         {formatMmSs(currentTime)} / {formatMmSs(playbackDurationSec)}
                       </span>
                     </div>
-                    <button className="primary-action" disabled={!audioBuffer || isAnalyzing} onClick={handleAnalyze} type="button">
-                      {isAnalyzing ? "분석 중..." : "분석 시작"}
+                    <button
+                      className={isAnalyzing ? "primary-action analyze-progress-button" : "primary-action"}
+                      disabled={!audioBuffer || isAnalyzing}
+                      onClick={handleAnalyze}
+                      style={isAnalyzing ? { ["--analyze-progress" as string]: `${analyzeProgress}%` } : undefined}
+                      type="button"
+                    >
+                      {isAnalyzing ? `분석 중... ${analyzeProgress}%` : "분석 시작"}
                     </button>
                   </div>
                   {analyzeError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{analyzeError}</span>}

@@ -30,7 +30,7 @@ function errorMessage(error: unknown, fallback: string): string {
 }
 
 export function ImportModal({ duplicateMode, onClose, onImported }: ImportModalProps) {
-  const [format, setFormat] = useState<ImportFormat>("pdf");
+  const [format, setFormat] = useState<ImportFormat>("json");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<MeetingDraft[] | null>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -54,7 +54,7 @@ export function ImportModal({ duplicateMode, onClose, onImported }: ImportModalP
         setError("회의록을 찾지 못했습니다.");
       }
     } catch (parseError) {
-      setError(errorMessage(parseError, "가져오기에 실패했습니다."));
+      setError(errorMessage(parseError, "DB복원에 실패했습니다."));
     } finally {
       setIsBusy(false);
     }
@@ -72,7 +72,7 @@ export function ImportModal({ duplicateMode, onClose, onImported }: ImportModalP
       const summary = await bulkUpsertMeetingsRequest(preview, duplicateMode);
       onImported(summary);
     } catch (commitError) {
-      setError(errorMessage(commitError, "저장에 실패했습니다."));
+      setError(errorMessage(commitError, "DB복원에 실패했습니다."));
     } finally {
       setIsBusy(false);
     }
@@ -80,7 +80,7 @@ export function ImportModal({ duplicateMode, onClose, onImported }: ImportModalP
 
   return (
     <ModalShell
-      title="가져오기"
+      title="DB복원"
       onClose={onClose}
       width="wide"
       footer={
@@ -90,7 +90,7 @@ export function ImportModal({ duplicateMode, onClose, onImported }: ImportModalP
           </button>
           {preview ? (
             <button className="primary-action" disabled={isBusy || preview.length === 0} onClick={handleCommit} type="button">
-              {isBusy ? "저장 중..." : `${preview.length}건 가져오기 적용`}
+              {isBusy ? "복원 중..." : `${preview.length}건 복원 적용`}
             </button>
           ) : (
             <button className="primary-action" disabled={isBusy || !file} onClick={handleParse} type="button">

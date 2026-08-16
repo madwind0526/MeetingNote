@@ -33,9 +33,9 @@ export function ExportModal({ allMeetings, visibleMeetings, defaultFormat, onClo
     try {
       const result = await exportMeetingsRequest(format, scopeMeetings);
       const savedPath = await saveExportedFile(result);
-      onExported(savedPath ? `${result.fileName} 내보내기를 완료했습니다.` : "내보내기가 취소되었습니다.");
+      onExported(savedPath ? `${result.fileName} DB저장을 완료했습니다.` : "DB저장이 취소되었습니다.");
     } catch (exportError) {
-      setError(exportError instanceof Error ? exportError.message : "내보내기에 실패했습니다.");
+      setError(exportError instanceof Error ? exportError.message : "DB저장에 실패했습니다.");
     } finally {
       setIsBusy(false);
     }
@@ -43,7 +43,7 @@ export function ExportModal({ allMeetings, visibleMeetings, defaultFormat, onClo
 
   return (
     <ModalShell
-      title="내보내기"
+      title="DB저장"
       onClose={onClose}
       footer={
         <div className="modal-footer-actions" style={{ marginLeft: "auto" }}>
@@ -51,7 +51,7 @@ export function ExportModal({ allMeetings, visibleMeetings, defaultFormat, onClo
             취소
           </button>
           <button className="primary-action" disabled={isBusy || scopeMeetings.length === 0} onClick={handleExport} type="button">
-            {isBusy ? "내보내는 중..." : "내보내기"}
+            {isBusy ? "저장 중..." : "DB저장"}
           </button>
         </div>
       }

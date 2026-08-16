@@ -124,8 +124,8 @@ export function computeMeetingStatus(meeting: Pick<Meeting, "date" | "startTime"
   return meeting.minutes.trim() ? "completed" : "needs_minutes";
 }
 
-export type ExportFormat = "pdf" | "docx" | "pptx" | "json";
-export type ImportFormat = "pdf" | "docx" | "pptx" | "json";
+export type ExportFormat = "pdf" | "docx" | "pptx" | "md" | "json";
+export type ImportFormat = "pdf" | "docx" | "pptx" | "md" | "json";
 export type ImportDuplicateMode = "replace" | "add" | "skip";
 
 export interface MeetingFilters {
@@ -187,7 +187,7 @@ export const llmProviders: LlmProviderOption[] = [
 
 export const defaultOllamaBaseUrl = "http://127.0.0.1:11434";
 
-export type SttProviderId = "mock" | "local-whisper-cli" | "local-whisperx" | "openai-whisper";
+export type SttProviderId = "mock" | "local-whisper-cli" | "local-whisperx" | "openai-whisper" | "naver-clova";
 
 export interface SttProviderOption {
   id: SttProviderId;
@@ -196,6 +196,8 @@ export interface SttProviderOption {
   isFree: boolean;
   requiresApiKey: boolean;
   requiresLocalInstall?: boolean;
+  requiresNaverClovaConfig?: boolean;
+  requiresHuggingFaceToken?: boolean;
 }
 
 // Mirrors llmProviders below - free/local options first, paid API last, so Settings can render
@@ -219,10 +221,12 @@ export const sttProviders: SttProviderOption[] = [
   {
     id: "local-whisperx",
     label: "로컬 WhisperX GPU (무료)",
-    description: "이 PC의 .venv-whisperx 환경과 CUDA GPU를 사용해 실제 회의 음성을 인식합니다. API 키는 필요 없지만 WhisperX와 FFmpeg shared build가 필요합니다.",
+    description:
+      "이 PC의 .venv-whisperx 환경과 CUDA GPU를 사용해 실제 회의 음성을 인식합니다. WhisperX와 FFmpeg shared build가 필요합니다. Hugging Face 토큰을 등록하면 화자 분리(누가 말했는지 구분)까지 자동으로 적용됩니다.",
     isFree: true,
     requiresApiKey: false,
-    requiresLocalInstall: true
+    requiresLocalInstall: true,
+    requiresHuggingFaceToken: true
   },
   {
     id: "openai-whisper",
@@ -230,6 +234,15 @@ export const sttProviders: SttProviderOption[] = [
     description: "업로드한 음성 파일을 OpenAI 서버에서 인식합니다. 설치 없이 정확도가 높지만 OPENAI_API_KEY와 사용 요금이 필요합니다.",
     isFree: false,
     requiresApiKey: true
+  },
+  {
+    id: "naver-clova",
+    label: "Naver Clova Speech (유료)",
+    description:
+      "업로드한 음성 파일을 NAVER Cloud CLOVA Speech Recognition(CSR)에서 인식합니다. 화자 분리가 자동으로 포함됩니다. 한국어 인식 정확도가 Whisper보다 높지만 NCP Invoke URL/Secret Key와 사용 요금이 필요합니다.",
+    isFree: false,
+    requiresApiKey: false,
+    requiresNaverClovaConfig: true
   }
 ];
 
@@ -257,7 +270,7 @@ export const defaultSettings: AppSettings = {
   ollamaModel: "",
   sttProvider: "local-whisperx",
   importDuplicateMode: "replace",
-  exportDefaultFormat: "pdf",
+  exportDefaultFormat: "json",
   attachmentsFolder: ""
 };
 

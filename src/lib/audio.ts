@@ -2,9 +2,17 @@
 // envelope data for canvas rendering, apply simple client-side preprocessing, and re-encode as
 // a WAV Blob for upload to the server STT endpoint. No Node APIs are used here.
 
+// 16000 Hz because that's the rate every local STT/diarization model here actually runs at
+// internally (Whisper, WhisperX, pyannote all resample to 16kHz regardless of input). Decoding at
+// the OS's default output rate (typically 48kHz) instead - the default when no rate is requested -
+// forces a lossy 16k->48k->16k round trip once this audio reaches the server, which measurably
+// degrades pyannote's speaker embeddings enough to merge distinct speakers into one cluster (the
+// transcribed text stays readable either way; diarization's finer acoustic detail does not).
+const TARGET_SAMPLE_RATE = 16000;
+
 export async function decodeAudioFile(file: Blob): Promise<AudioBuffer> {
   const arrayBuffer = await file.arrayBuffer();
-  const audioContext = new AudioContext();
+  const audioContext = new AudioContext({ sampleRate: TARGET_SAMPLE_RATE });
 
   try {
     return await audioContext.decodeAudioData(arrayBuffer);
@@ -137,7 +145,10 @@ export function encodeWav(mono: Float32Array, sampleRate: number): Blob {
 
   let offset = 44;
   for (let index = 0; index < mono.length; index += 1) {
-    const intSample = Math.max(-1, Math.min(1, mono[index])) * 32767;
+    // setInt16 truncates toward zero on a non-integer input (ECMAScript ToIntegerOrInfinity), not
+    // round-to-nearest - without Math.round this quantizes every sample with a consistent ~0.5 LSB
+    // bias instead of proper rounding.
+    const intSample = Math.round(Math.max(-1, Math.min(1, mono[index])) * 32767);
     view.setInt16(offset, intSample, true);
     offset += 2;
   }

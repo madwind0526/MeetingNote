@@ -34,6 +34,11 @@ npm run build           # tsc -b && vite build && electron 빌드
 npm start                # Electron 앱 실행 (dist 빌드 필요)
 ```
 
+```bat
+start.bat   REM 포트 5185에 남아있는 이전 서버를 먼저 정리한 뒤 npm start 실행
+stop.bat    REM 포트 5185 프로세스 + "MeetingNote" 창 제목의 electron.exe만 종료 (다른 Electron 앱은 건드리지 않음)
+```
+
 ## Architecture
 
 - `electron/` — Electron main/preload (창 생성, 설정 저장 IPC, 파일 저장/열기 다이얼로그)

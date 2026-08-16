@@ -1,12 +1,14 @@
-import { Bot, Download, FilePlus2, List, Search, SlidersHorizontal, Upload } from "lucide-react";
+import { Bot, Database, DatabaseBackup, Download, FilePlus2, List, Search, SlidersHorizontal, Upload } from "lucide-react";
 
 interface LeftSidebarProps {
   filterActive: boolean;
   queryActive: boolean;
   searchActive: boolean;
-  onExport: () => void;
+  onDbRestore: () => void;
+  onDbSave: () => void;
   onFilter: () => void;
-  onImport: () => void;
+  onImportMeeting: () => void;
+  onExportMeeting: () => void;
   onList: () => void;
   onNewMeeting: () => void;
   onQuery: () => void;
@@ -17,9 +19,11 @@ export function LeftSidebar({
   filterActive,
   queryActive,
   searchActive,
-  onExport,
+  onDbRestore,
+  onDbSave,
   onFilter,
-  onImport,
+  onImportMeeting,
+  onExportMeeting,
   onList,
   onNewMeeting,
   onQuery,
@@ -36,11 +40,11 @@ export function LeftSidebar({
           <FilePlus2 size={20} />
           <span>새 회의록</span>
         </button>
-        <button className="icon-nav-button" onClick={onImport} title="가져오기" type="button">
+        <button className="icon-nav-button" onClick={onImportMeeting} title="가져오기" type="button">
           <Upload size={20} />
           <span>가져오기</span>
         </button>
-        <button className="icon-nav-button" onClick={onExport} title="내보내기" type="button">
+        <button className="icon-nav-button" onClick={onExportMeeting} title="내보내기" type="button">
           <Download size={20} />
           <span>내보내기</span>
         </button>
@@ -60,6 +64,14 @@ export function LeftSidebar({
         <button className={queryActive ? "icon-button active" : "icon-button"} onClick={onQuery} title="질문" type="button">
           <Bot size={20} />
           <span>질문</span>
+        </button>
+        <button className="icon-button" onClick={onDbSave} title="DB저장" type="button">
+          <Database size={20} />
+          <span>DB저장</span>
+        </button>
+        <button className="icon-button" onClick={onDbRestore} title="DB복원" type="button">
+          <DatabaseBackup size={20} />
+          <span>DB복원</span>
         </button>
       </div>
     </aside>

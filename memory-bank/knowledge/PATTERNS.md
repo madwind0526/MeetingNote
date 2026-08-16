@@ -44,21 +44,77 @@ B의 `interface BProps { ... }`를 정확히 고정해서 A와 B 양쪽 프롬�
 코드를 작성할 수 있다. (예: `MeetingFormModal.tsx` ↔ `AudioAnalysisModal.tsx` - `attendeeNames`,
 `sttProvider`, `onComplete(analysis)` 등 5개 필드를 프롬프트에 고정.)
 
-## 오디오 STT + 화자 분리 파이프라인 (Web Audio API + pause 기반 휴리스틱)
+## 오디오 STT + 화자 분리 파이프라인 (실제 음향 기반 diarization, 2026-08-17 갱신)
 
-**사용 시점:** 실제 화자 분리(diarization) 모델 없이 "그럴듯한" 화자별 대본이 필요할 때.
+**⚠️ 이 항목은 예전에 "pause 기반 휴리스틱"으로 적혀 있었는데 그 코드는 이미 삭제되어 있었다 (stale
+문서가 실제 조사를 오도한 사례 - CACHE 플러시 없이 오래 방치하면 이렇게 된다). 2026-08-17 기준 실제
+구조로 다시 씀.**
 
-- 클라이언트(`src/lib/audio.ts`): `AudioContext.decodeAudioData` → 모노 믹스다운 → (옵션) RMS 기반 노이즈
-  게이트 + peak 정규화 → 16-bit PCM WAV 핸드롤 인코더(44바이트 헤더) → 서버로 업로드. Node 쪽 오디오 디코더
-  의존성이 전혀 필요 없다(브라우저가 mp3/wav/m4a 등을 알아서 디코드).
-- 서버(`server/audio/diarize.mjs`): STT가 반환한 `{startSec,endSec,text}[]` 세그먼트를 시간순으로 순회하며,
-  연속 세그먼트 사이 gap이 `PAUSE_THRESHOLD_SEC`(1.2초)보다 크면 다음 화자 라벨(A→B→C→D, 최대 4명 라운드로빈)
-  로 넘어간다. `speakerMap`은 라벨→참석자 실명(발표자/주요참석자 우선순으로 전달된 `attendeeNames` 배열
-  인덱스 매칭, 부족하면 `화자 ${label}` 폴백). 참석자가 0명이어도 `Math.max(names.length, 1)`로 최소 1라벨
-  동작 보장.
-- UI(`AudioAnalysisModal.tsx`): 화자별 waveform 레인은 실제 음원 분리가 아니라, 전체 mix envelope을 그
-  화자의 시간 구간에서만 하이라이트(나머지는 dim)하는 방식으로 근사 표현. 사용자가 라벨→실명 매핑을 select로
-  수동 정정 가능(휴리스틱의 한계를 UX로 보완).
+`server/audio/diarize.mjs`의 `diarizeSegments`는 더 이상 pause 휴리스틱을 쓰지 않는다. STT가 반환한
+세그먼트 중 `.speaker` 필드가 하나라도 있으면 그대로 통과시키고, 하나도 없으면 전부 단일 화자
+`DEFAULT_SPEAKER_LABEL="A"`로 처리한다(라벨→실명 매핑은 그대로: `attendeeNames` 배열 인덱스 매칭, 부족하면
+`화자 ${label}` 폴백). 즉 **실제 화자 분리 여부는 각 STT 프로바이더가 `.speaker`를 채워주느냐에 달려있다**.
+
+**사용 시점:** 진짜(음향 기반) 화자 분리가 필요할 때. 세 가지 경로가 있다:
+
+1. **WhisperX 자체 `--diarize`** (`sttLocalWhisperX.mjs`) — `HUGGINGFACE_TOKEN`이 `.env`에 설정돼 있으면
+   자동으로 `--diarize --hf_token <token>` (+ 참석자 수가 있으면 `--min_speakers 1 --max_speakers N`)을
+   추가한다. pyannote 게이트 모델(`pyannote/speaker-diarization-community-1`)을 쓰므로 hf.co에서 이용
+   약관 동의 + 토큰 발급이 최초 1회 필요(사용자 몫, 자동화 불가). 출력 JSON의 `segments[].speaker`가
+   `"SPEAKER_00"` 같은 flat string으로 그대로 들어온다(`whisperx/utils.py`의 `WriteJSON`이 가공 없이
+   `json.dump` 함).
+2. **Naver Clova 자체 diarization** (`sttNaverClova.mjs`) — `diarization: {enable: true, speakerCountMin,
+   speakerCountMax}`를 요청 params에 넣으면 응답 세그먼트에 `diarization.label`(화자 번호 문자열)이 온다.
+   API 자체 기능이라 별도 모델/토큰 불필요, Invoke URL/Secret Key만 있으면 자동 적용.
+3. **로컬 Whisper CLI(품질이 WhisperX의 faster-whisper 백엔드보다 낫다는 사용자 피드백) + pyannote 수동
+   병합** (`sttLocalWhisperCli.mjs`) — WhisperX 패키지가 이미 `.venv-whisperx`에 설치돼 있으므로, WhisperX의
+   자체 ASR은 쓰지 않고 `whisperx.diarize.DiarizationPipeline`/`assign_word_speakers`만 직접 import해서
+   Whisper CLI의 전사 결과(JSON)에 화자를 병합한다. **주의**: pyannote/whisperx는 로딩 중 INFO 로그를
+   stdout에 쓰므로, 병합 결과를 stdout으로 `print`하면 JSON 파싱이 깨진다 — 반드시 별도 파일에 써서
+   Node가 그 파일을 다시 읽어야 한다.
+
+**공통 안전장치**: 세 경로 모두 "best-effort, 실패해도 기존 대본은 그대로 반환"(하드 실패 없음) — HF
+토큰이 없거나 pyannote 로딩이 실패해도 화자 분리만 빠지고 텍스트 인식 자체는 항상 성공한다.
+
+클라이언트(`src/lib/audio.ts`)와 UI(`AudioAnalysisModal.tsx`)의 오디오 처리/화자별 waveform 렌더링 방식은
+기존과 동일 - `AudioContext.decodeAudioData` → 모노 믹스다운 → WAV 핸드롤 인코딩, 화자별 레인은 실제 음원
+분리가 아니라 전체 mix envelope을 그 화자의 시간 구간에서만 하이라이트하는 근사 표현.
+
+**검증 시 주의(재발 방지)**: Playwright로 다화자 재현 테스트할 때 `getByPlaceholder('이름')`은 기본
+부분일치라 "주관자 이름" 필드까지 같이 잡혀서 참석자 데이터가 엉뚱한 칸에 들어간다(`{ exact: true }` 필수).
+또한 pyannote 클러스터링은 `min_speakers`/`max_speakers` 힌트 없이는 대화 길이가 짧을 때 실제 화자 수보다
+적게 감지하는 경향이 있었다 - 참석자 목록(발표자/주요참석자로 체크된 것만 `attendeeNames`에 들어감,
+`MeetingFormModal.tsx`의 `audioAttendeeNames()`)을 반드시 채운 상태로 테스트할 것.
+
+**해결된 실제 버그(2026-08-17): `encodeWav`가 float→int16 변환 시 반올림 대신 버림을 했다.** 브라우저로
+업로드한 오디오만 화자 분리가 1명으로 뭉개지는 문제가 있었다 - 처음엔 "pyannote가 이 합성 음성 쌍을
+판정 경계선에서 헷갈려 한다"고 잘못 결론 내렸는데(모델 탓으로 돌리기 전에 더 팠어야 했음), 사용자가
+"같은 성공 경로를 다시 재현해보라"고 지적한 덕분에 계속 팠다. `src/lib/audio.ts`의 `encodeWav()`에서
+```js
+const intSample = Math.max(-1, Math.min(1, mono[index])) * 32767;
+view.setInt16(offset, intSample, true);
+```
+`DataView.setInt16`은 정수가 아닌 값을 받으면 **반올림이 아니라 0쪽으로 버림**한다(ECMAScript
+ToIntegerOrInfinity). 매 샘플마다 일정한 방향으로 치우친 양자화 오차(~0.5 LSB)가 생기는데, ffmpeg 등
+정상적인 인코더는 반올림을 한다. 원본 파일과 브라우저가 재인코딩한 파일을 PCM 샘플 단위로 diff하면
+전체 샘플의 ~60%가 딱 ±1 차이였고, 이 정도로 작은 차이가 pyannote 클러스터링 결과를 1명→2명으로
+뒤집기에 충분했다(왜 이렇게 작은 차이에 민감한지는 pyannote 내부 구현의 문제이고, 우리 쪽에서 통제
+가능한 부분은 "정확한 인코딩"뿐이다).
+
+**해결**: `Math.round()` 추가.
+```js
+const intSample = Math.round(Math.max(-1, Math.min(1, mono[index])) * 32767);
+```
+수정 후 브라우저 경로로도 원본 파일과 동일하게 2화자로 정확히 분리되는 것을 반복 확인(2회 연속 동일
+결과).
+
+**교훈**: "모델/데이터가 원래 이렇다"는 결론은 반증하기 쉬운 값싼 결론이다 - 같은 성공 경로를 다시
+재현해서 진짜 재현 가능한 차이인지부터 확인하고, PCM 샘플처럼 겉보기엔 무해해 보이는 수치라도 실제
+바이트를 까서 어디서 갈라지는지 끝까지 추적해야 한다. (중간에 "48kHz→16kHz 이중 리샘플 때문"이라는
+다른 가설도 세웠다가 기각했었다 - `decodeAudioFile`을 `new AudioContext({sampleRate: 16000})`로 고쳐
+이중 리샘플 자체는 없앴는데, 그것만으로는 안 고쳐져서 진짜 원인이 아니었음이 드러났다. 이 변경 자체는
+불필요한 리샘플을 없애는 정당한 개선이라 그대로 유지. 진짜 원인은 그 다음에 찾은 `encodeWav`의 반올림
+누락이었다.)
 
 ## LLM/STT 프로바이더 선택 설정 패턴 확장 (무료 기본값 + 여러 옵션)
 

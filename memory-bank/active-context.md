@@ -2,9 +2,11 @@
 
 ## Current Focus
 
-- MeetingNote v0.1.0 기본 구현 완료 및 빌드/런타임 검증 통과 (Wave 1~6 전부 Done)
-- 남은 작업: 실사용 브라우저 검증(로그인 로고 화면부터 New 회의록 등록/오디오 분석/회의록 작성/Export까지
-  전체 플로우), 로컬 Whisper CLI·OpenAI Whisper API 실제 키/설치 환경 검증, Electron 패키징 검증
+- Wave 11 완료: DB저장/DB복원 분리+MD 포맷, Naver Clova STT, 분석 진행률(%), 3-way 화자 분리 전부
+  구현·연결·버그 수정 완료 (자세한 내용 `STATE.md`, `knowledge/trouble-shooting.md`)
+- **다음 세션은 `memory-bank/roadmap.md`부터 읽을 것** - 사용자가 구술한 향후 기능 7개 목록(약어
+  사전, 발표자료+STT 결합 정리, 전체 회의록 합성, 회의 중 A/I 추출, 미등록 발언자 처리 방안, 화자
+  음성 프로필 영속화, STT 수정 이력 재적용). 아직 설계 전 - 바로 구현 시작하지 말고 방향부터 논의.
 
 <!-- 
 규칙:

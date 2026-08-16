@@ -53,6 +53,205 @@ llm/status, stt/status)를 스모크테스트한다. 이 프로젝트에서는 �
 전체 Wave가 끝난 직후 오케스트레이터가 실제 설치+빌드+런타임 스모크테스트를 수행하는 별도 검증 단계를
 넣어야 한다. 그렇지 않으면 여러 "가정"이 쌓인 채로 방치될 위험이 크다.
 
+## Windows 한글 로케일에서 Python 자식 프로세스가 UnicodeEncodeError로 죽는다 (cp949)
+
+### 증상
+
+`server/audio/sttLocalWhisperCli.mjs`가 `cross-spawn`으로 실행하는 로컬 Whisper CLI가 실제 존재하는
+음성 파일에서도 종종 "로컬 Whisper 결과 파일을 읽지 못했습니다"만 던지며 실패했다. 원인 로그를 직접
+받아보니(`node:child_process`의 stderr) 실제로는:
+```
+UnicodeEncodeError: 'cp949' codec can't encode character '跑' in position 81: illegal multibyte sequence
+Skipping <file> due to UnicodeEncodeError
+```
+가 찍히고 있었다. Whisper CLI는 이 예외를 자기 내부에서 catch해서 "Skipping..."만 stdout에 찍고
+**종료 코드 0으로 정상 종료**해버리므로, Node 쪽 `if (result.code !== 0)` 체크로는 절대 못 잡는다.
+
+### 원인
+
+openai-whisper는 verbose 모드에서 디코딩한 세그먼트 텍스트를 `print()`로 stdout에 찍는데, Python은
+Windows에서 콘솔 코드페이지(한글 로케일이면 cp949)를 stdout 인코딩 기본값으로 쓴다. cp949로 표현 안
+되는 문자(중국어 한자, 일부 특수기호, tqdm 진행바의 유니코드 블록 문자 등)가 출력에 섞이면 그 순간
+`print()`가 죽는다. `child_process.spawn`으로 실행하면 콘솔이 아예 없는데도 Python은 여전히 OS
+코드페이지를 기본값으로 잡는다.
+
+### 해결
+
+자식 프로세스 `env`에 `PYTHONIOENCODING=utf-8`, `PYTHONUTF8=1`을 추가하면 Python이 stdout/stderr를
+항상 UTF-8로 쓴다.
+```js
+const child = spawn(command, args, {
+  env: { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUTF8: "1" }
+});
+```
+`sttLocalWhisperCli.mjs`, `sttLocalWhisperX.mjs`(whisperx도 같은 위험이 있어 방어적으로 동일 적용) 둘 다
+이렇게 고쳤다.
+
+### 재사용 가능한 교훈
+
+**한글 Windows에서 Node가 Python(또는 다른 비-UTF8-기본 런타임) 자식 프로세스를 spawn하는 프로젝트라면
+전부 재현될 수 있다.** 증상이 "종료 코드는 0인데 결과 파일이 없다"처럼 애매하게 나타나는 게 특징이라
+디버깅이 오래 걸린다 - 자식 프로세스의 stderr을 직접 캡처해서 진짜 예외 메시지를 보기 전까지는 원인을
+알기 어렵다. 새 프로젝트에서 Python 자식 프로세스를 spawn한다면 처음부터 `PYTHONIOENCODING=utf-8`을
+기본으로 넣어두는 게 안전하다.
+
+## 순수 .mjs(타입체크 없음)에서 함수 파라미터명이 나중 `const` 선언과 겹치면 TDZ 크래시
+
+### 증상
+
+`transcribeLocalWhisperCli(audioBuffer, fileName, model, durationSec, onProgress)`처럼 파라미터를
+추가했는데 실행하면 `Cannot access 'durationSec' before initialization`(TDZ 에러)이 났다. `tsc`는 이
+파일들(`server/*.mjs`)을 검사하지 않으므로 컴파일 시점에 전혀 안 잡혔다.
+
+### 원인
+
+같은 함수 스코프 안에 `const durationSec = lastSegment ? lastSegment.endSec : 0;`가 나중에 이미
+있었다(진짜 오디오 길이를 계산하는 기존 코드). JS는 `const`/파라미터가 이름이 겹치면 함수 전체
+스코프에서 해당 식별자가 TDZ(temporal dead zone)에 들어가므로, 그 `const` 선언보다 앞쪽 코드에서
+파라미터를 참조해도 "초기화 전 접근" 에러가 난다 - 파라미터가 단순히 가려지는(shadowing) 게 아니라
+아예 접근 자체가 깨진다.
+
+### 해결
+
+파라미터 이름을 `expectedDurationSec`처럼 겹치지 않게 바꿨다. `sttLocalWhisperCli.mjs`,
+`sttLocalWhisperX.mjs` 둘 다 같은 실수를 했다(같은 패턴을 복사해서 만들었기 때문).
+
+### 재사용 가능한 교훈
+
+TypeScript 파일에서는 이런 재선언을 컴파일러가 바로 잡아주지만, **이 프로젝트처럼 서버 쪽을 의도적으로
+plain `.mjs`로 유지하는 코드베이스에서는 안 잡힌다.** 함수에 새 파라미터를 추가할 때, 특히 기존 함수
+본문에 이미 있는 지역 변수명(`durationSec`, `result`, `error` 같은 흔한 이름)과 겹치지 않는지 직접
+확인해야 한다. `node --check file.mjs`로 문법 오류는 잡히지만 이런 런타임 TDZ 오류는 실제로 그 코드
+경로를 실행해봐야만 드러난다.
+
+## Playwright `getByPlaceholder()`는 기본이 부분일치라 비슷한 placeholder를 가진 다른 필드까지 잡는다
+
+### 증상
+
+폼에 참석자 2명을 추가하고 `getByPlaceholder('이름').nth(0)`/`.nth(1)`로 이름을 채웠는데, 실제
+전송된 데이터를 까보면 이름 하나가 엉뚱하게 "주관자" 필드에 들어가 있었다. 참석자 테이블 자체를
+스크린샷/스냅샷으로 확인해도 겉보기엔 멀쩡해 보여서 한참 헤맸다.
+
+### 원인
+
+Playwright의 `getByPlaceholder(text)`는 기본적으로 **부분 문자열 일치**다. 참석자 이름 입력의
+placeholder는 `"이름"`이고 주관자 입력의 placeholder는 `"주관자 이름"`인데, 후자가 `"이름"`을
+포함하므로 `getByPlaceholder('이름')`이 둘 다 매칭시켜 같은 컬렉션에 섞여 들어간다. `nth(0)`이
+실제로는 주관자 필드를 가리키고, 의도한 참석자 행들은 인덱스가 하나씩 밀린다.
+
+### 해결
+
+```js
+page.getByPlaceholder('이름', { exact: true })
+```
+정확히 일치하는 것만 잡도록 `exact: true`를 명시한다.
+
+### 재사용 가능한 교훈
+
+한 폼 안에 "X"와 "OO X" 같은 접두사/접미사 관계의 placeholder가 여러 개 있으면 항상 이 함정에 걸릴 수
+있다. Playwright로 폼을 채우는 자동화/테스트 스크립트를 짤 때는 `getByPlaceholder`보다 더 좁은 범위
+(예: 특정 `<tr>`/`<table>` 안으로 `.locator()`를 먼저 좁힌 뒤 그 안에서 `input[placeholder="이름"]`
+CSS 셀렉터로 정확히 매칭)를 쓰는 게 안전하다. 값을 채운 뒤 반드시 `.inputValue()`로 실제 들어간 값을
+재확인하는 습관도 이런 off-by-one을 조기에 잡아준다.
+
+## Whisper/WhisperX는 파일당 언어를 한 번만 정하므로 문단 단위 언어 전환(코드스위칭)에 취약하다
+
+### 증상
+
+한국어+영어가 섞인 회의 음성(발화자별로 완전히 다른 언어로 말하는 극단적 케이스)을
+`--language ko`로 강제 인식시키면, 영어로 말한 구간이 인식 결과에서 통째로 빠지거나 심하게 깨졌다.
+`--language`를 아예 빼서 자동 감지로 돌려도 마찬가지였다 - 로그를 보면
+`Detected language: ko (0.62) in first 30s of audio`처럼 **파일 처음 30초의 우세 언어로 한 번만
+정하고 그걸로 파일 전체를 밀어붙인다.**
+
+### 원인
+
+Whisper 계열 모델은 언어 감지를 파일 단위(보통 첫 30초 청크)로 한 번만 수행하고 그 언어로 디코딩
+경로를 고정한다. 문장 안에 섞인 외국어 단어 정도(코드스위칭 경미한 경우)는 다국어 모델이 어느 정도
+버티지만, **화자가 통째로 다른 언어로 전환하는 문단 단위 전환**은 이 구조로는 근본적으로 대응이
+안 된다.
+
+### 해결(회피책)
+
+- **Naver Clova Speech**에는 정확히 이 상황을 위한 `language: "enko"`(한국어+영어 혼용 전용) 모드가
+  공식으로 있다. `ko-KR`/`en-US`/`enko`/`ja`/`zh-cn`/`zh-tw` 중 선택 가능(`sttNaverClova.mjs`는 현재
+  `ko-KR` 고정 - 혼용 회의가 잦다면 `enko`로 바꾸는 게 가장 간단한 해결책).
+- Whisper 계열로 로컬/무료를 고집한다면, 오디오를 구간(VAD 또는 화자 전환 지점)별로 쪼갠 뒤 구간마다
+  언어를 다시 감지/지정해서 따로 디코딩해야 한다 - CLI 플래그로는 안 되고 직접 파이프라인을 짜야 하는
+  큰 작업이다.
+
+### 재사용 가능한 교훈
+
+"다국어 지원"을 Whisper 계열 STT로 구현할 때, **문장 내 외국어 단어 섞임**과 **화자/문단 단위 언어
+전환**을 같은 문제로 취급하면 안 된다. 전자는 다국어 모델이 웬만하면 처리하지만, 후자는 파일당 1회
+언어 감지라는 구조적 한계에 바로 부딪힌다. 이 구분을 미리 하지 않으면 "언어를 자동 감지로 바꾸면
+되겠지"라고 오판하기 쉽다(실제로 해봤지만 안 됐다).
+
+## 브라우저에서 Float32 PCM을 16-bit WAV로 손수 인코딩할 때 `Math.round` 빠뜨리면 화자 분리가 깨진다
+
+### 증상
+
+로컬 Whisper CLI/WhisperX로 화자 분리(diarization)를 테스트했는데, 서버에 curl로 원본 오디오 파일을
+직접 보내면 항상 정확히 2명으로 분리되는데, **똑같은 파일을 앱 화면에서 업로드**하면 항상 1명으로만
+나왔다. 처음엔 "브라우저가 48kHz로 리샘플했다가 서버가 다시 16kHz로 낮추는 이중 리샘플 때문에 음질이
+깨진다"고 의심하고 `AudioContext`에 `sampleRate: 16000`을 명시해 이중 리샘플을 없앴는데도 여전히
+1명으로만 나왔다. 원본 파일과 브라우저가 재인코딩한 파일의 PCM 샘플을 직접 diff해보니 전체 샘플의
+~60%가 **±1**(16비트 정수 기준 최소 단위, 사람 귀로는 절대 구별 안 되는 크기) 차이밖에 없었는데도
+diarization 클러스터링 결과가 뒤집혔다. "그 정도로 작은 차이면 모델이 예민한 거지 우리 잘못이 아니다"로
+결론 내리려던 걸, 사용자가 "같은 성공 경로를 다시 mimic하도록 만들라"고 되돌려보낸 덕분에 계속 팠다.
+
+### 원인
+
+`src/lib/audio.ts`의 `encodeWav()`가 Float32 샘플을 16-bit PCM으로 변환할 때:
+```js
+const intSample = Math.max(-1, Math.min(1, mono[index])) * 32767;
+view.setInt16(offset, intSample, true);
+```
+`intSample`을 반올림하지 않고 그대로 `DataView.setInt16`에 넘긴다. ECMAScript의 `ToIntegerOrInfinity`는
+정수가 아닌 값을 **0쪽으로 버림**하지 반올림하지 않는다. 매 샘플마다 일정한 방향으로 치우친 양자화
+오차(~0.5 LSB)가 생기는데, ffmpeg 등 정상적인 인코더는 반올림(또는 디더링)을 하므로 원본 파일과 미세하게
+달라진다. 그 미세한 차이가 (원인은 알 수 없지만) 이 프로젝트에서 쓰는 pyannote 화자 분리 클러스터링
+결과를 뒤집기에 충분했다.
+
+### 해결
+
+```js
+const intSample = Math.round(Math.max(-1, Math.min(1, mono[index])) * 32767);
+```
+`Math.round()` 한 줄 추가로 해결됨. 수정 후 브라우저 업로드 경로로도 원본 파일과 동일하게 2명으로 정확히
+분리되는 것을 반복 확인(연속 2회 동일 결과).
+
+### 재사용 가능한 교훈
+
+- 브라우저에서 `Float32Array` PCM 샘플을 손수 16-bit WAV로 인코딩하는 코드를 짤 때는 항상 `Math.round`를
+  거쳐야 한다 - `DataView.setInt16`/`setInt8`/`setInt32` 등은 절대 알아서 반올림해주지 않는다.
+- "차이가 이렇게 작은데 결과가 이렇게 크게 갈릴 리 없다"는 직관은 ML 모델의 클러스터링/분류 경계에서는
+  틀릴 수 있다. 겉보기에 무해해 보이는 수치 차이라도, 같은 입력을 재현 가능하게 반복 실행해서 "정말
+  재현되는 차이인지" 먼저 확인하고, 안 되면 "모델이 원래 그렇다"로 결론 내리기 전에 실제 바이트 레벨까지
+  파고들어야 한다.
+
+## Vite dev 서버는 `vite.config.mts`가 import하는 모든 파일 변경에도 전체 재시작한다
+
+### 증상
+
+`server/audio/*.mjs`처럼 `vite.config.mts`가 최상단에서 `import`하는 서버 모듈 파일을 수정했더니,
+`.env`를 고쳤을 때와 똑같이 `[vite] .env changed, restarting server...`류의 전체 서버 재시작이
+일어나고 브라우저가 잠깐 "회의록 0/0, 표시할 회의록이 없습니다"를 보여줬다가 정상으로 돌아왔다.
+
+### 원인
+
+Vite의 config 파일 watcher는 `vite.config.mts` 자체뿐 아니라 그 파일이 정적으로 import하는 의존성
+그래프 전체를 감시한다. 이 프로젝트는 `vite.config.mts`에서 `server/**/*.mjs`를 대량으로 import해서
+API 라우트 핸들러 안에서 쓰므로, 그 중 아무 파일이나 고쳐도 "config가 바뀌었다"고 판단해 서버 전체를
+재시작한다.
+
+### 재사용 가능한 교훈
+
+이건 버그가 아니라 예상된 동작이다. 서버 쪽 `.mjs` 파일을 고친 직후 페이지가 잠깐 빈 목록을 보여주거나
+API 요청이 한 번 실패해도 당황할 필요 없다 - 몇 초 뒤 재시작이 끝나면 정상화된다. 다만 재시작 타이밍과
+겹쳐서 그 순간에 날아간 API 요청/브라우저 자동화 스크립트는 실패할 수 있으니, 파일을 수정한 직후에는
+`netstat`으로 포트가 다시 LISTENING 상태가 됐는지 확인한 뒤에 다음 요청을 보내는 게 안전하다.
+
 <!-- 예시 형식:
 
 ## [문제 제목]

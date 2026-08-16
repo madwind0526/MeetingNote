@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ModalShell } from "./ModalShell";
 
-type ApiKeyKind = "anthropic" | "openai";
+type ApiKeyKind = "anthropic" | "openai" | "huggingface";
 
 interface ApiKeyModalProps {
   kind: ApiKeyKind;
@@ -30,6 +30,13 @@ const KIND_CONTENT: Record<ApiKeyKind, KindContent> = {
     description: "음성 파일을 인식하는 \"OpenAI Whisper API\" 방식에서 사용됩니다.",
     label: "OpenAI API 키",
     placeholder: "sk-..."
+  },
+  huggingface: {
+    title: "Hugging Face 토큰 설정",
+    description:
+      "\"로컬 WhisperX GPU\"에서 화자 분리(누가 말했는지 구분)를 사용하려면 필요합니다. hf.co/pyannote/speaker-diarization-community-1에서 이용 약관에 동의한 뒤, hf.co/settings/tokens에서 토큰을 발급받아 입력하세요. 비워두면 화자 분리 없이 대본만 인식됩니다.",
+    label: "Hugging Face Access Token",
+    placeholder: "hf_..."
   }
 };
 

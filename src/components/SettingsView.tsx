@@ -26,6 +26,8 @@ interface SettingsViewProps {
   logoVersion: number;
   onConfigureApiKey: () => void;
   onConfigureSttApiKey: () => void;
+  onConfigureNaverClova: () => void;
+  onConfigureHuggingFace: () => void;
   onConfigureOllama: () => void;
   onResetToSample: () => void;
   onSelectLlmProvider: (provider: LlmProviderId) => void;
@@ -94,6 +96,15 @@ function sttAvailability(provider: SttProviderId, sttStatus: SttStatus | null): 
       : { ready: false, note: "WhisperX 환경을 찾을 수 없습니다" };
   }
 
+  if (provider === "naver-clova") {
+    if (!sttStatus) {
+      return { ready: false, note: "확인 중..." };
+    }
+    return sttStatus.naverClovaConfigured
+      ? { ready: true, note: "Invoke URL/Secret Key 등록됨" }
+      : { ready: false, note: "Invoke URL/Secret Key 필요" };
+  }
+
   if (!sttStatus) {
     return { ready: false, note: "확인 중..." };
   }
@@ -109,6 +120,8 @@ export function SettingsView({
   logoVersion,
   onConfigureApiKey,
   onConfigureSttApiKey,
+  onConfigureNaverClova,
+  onConfigureHuggingFace,
   onConfigureOllama,
   onResetToSample,
   onSelectLlmProvider,
@@ -306,6 +319,36 @@ export function SettingsView({
                   >
                     <KeyRound size={14} />
                     API 키 설정
+                  </span>
+                )}
+                {provider.requiresNaverClovaConfig && (
+                  <span
+                    className="ghost-action"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onConfigureNaverClova();
+                    }}
+                    role="button"
+                    style={{ width: "fit-content", cursor: "pointer" }}
+                    tabIndex={0}
+                  >
+                    <Settings2 size={14} />
+                    Invoke URL/Secret Key 설정
+                  </span>
+                )}
+                {provider.requiresHuggingFaceToken && (
+                  <span
+                    className="ghost-action"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onConfigureHuggingFace();
+                    }}
+                    role="button"
+                    style={{ width: "fit-content", cursor: "pointer" }}
+                    tabIndex={0}
+                  >
+                    <KeyRound size={14} />
+                    {sttStatus?.huggingFaceTokenSet ? "Hugging Face 토큰 등록됨 (화자 분리 켜짐)" : "화자 분리용 Hugging Face 토큰 설정"}
                   </span>
                 )}
               </button>

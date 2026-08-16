@@ -12,9 +12,11 @@ import { FilterModal } from "./components/modals/FilterModal";
 import { QueryModal } from "./components/modals/QueryModal";
 import { ImportModal } from "./components/modals/ImportModal";
 import { ExportModal } from "./components/modals/ExportModal";
+import { SingleExportModal } from "./components/modals/SingleExportModal";
 import { ConfirmModal } from "./components/modals/ConfirmModal";
 import { ApiKeyModal } from "./components/modals/ApiKeyModal";
 import { OllamaConfigModal } from "./components/modals/OllamaConfigModal";
+import { NaverClovaConfigModal } from "./components/modals/NaverClovaConfigModal";
 import { IntroScreen } from "./components/IntroScreen";
 import type { AppSettings, LlmProviderId, Meeting, MeetingDraft, MeetingFilters, SttProviderId, ViewMode } from "./types/domain";
 import { attendeeSummary, computeMeetingStatus, emptyFilters } from "./types/domain";
@@ -29,12 +31,12 @@ import {
 import type { ImportSummary } from "./lib/api";
 import { loadSettings, loadSettingsFile, saveSettings } from "./lib/settings";
 import type { LlmStatus, SttStatus } from "./lib/llm";
-import { clearApiKey, fetchLlmStatus, fetchSttStatus, saveApiKey } from "./lib/llm";
+import { clearApiKey, clearNaverClovaConfig, fetchLlmStatus, fetchSttStatus, saveApiKey, saveNaverClovaConfig } from "./lib/llm";
 import { FALLBACK_BUILD_INFO, loadRuntimeBuildInfo } from "./lib/buildInfo";
 import type { BuildInfo } from "./lib/buildInfo";
 
-type SidebarModalMode = "search" | "filter" | "query" | "import" | "export" | null;
-type FormModalState = { mode: "create" } | { mode: "edit"; meeting: Meeting } | null;
+type SidebarModalMode = "search" | "filter" | "query" | "dbRestore" | "dbSave" | "singleExport" | null;
+type FormModalState = { mode: "create"; autoImport?: boolean } | { mode: "edit"; meeting: Meeting } | null;
 
 function meetingSearchText(meeting: Meeting) {
   return [
@@ -61,7 +63,7 @@ export function App() {
   const [formModal, setFormModal] = useState<FormModalState>(null);
   const [detailMeeting, setDetailMeeting] = useState<Meeting | null>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<Meeting | null>(null);
-  const [exportOverrideMeetings, setExportOverrideMeetings] = useState<Meeting[] | null>(null);
+  const [singleExportMeetingId, setSingleExportMeetingId] = useState<string | undefined>(undefined);
   const [showIntro, setShowIntro] = useState(true);
   const [logoVersion, setLogoVersion] = useState(0);
   const [listSortKey, setListSortKey] = useState<ListSortKey>("date");
@@ -70,6 +72,8 @@ export function App() {
   const [sttStatus, setSttStatus] = useState<SttStatus | null>(null);
   const [showLlmApiKeyModal, setShowLlmApiKeyModal] = useState(false);
   const [showSttApiKeyModal, setShowSttApiKeyModal] = useState(false);
+  const [showNaverClovaConfig, setShowNaverClovaConfig] = useState(false);
+  const [showHfTokenModal, setShowHfTokenModal] = useState(false);
   const [showOllamaConfig, setShowOllamaConfig] = useState(false);
   const [systemMessage, setSystemMessage] = useState("준비되었습니다.");
   const [buildInfo, setBuildInfo] = useState<BuildInfo>(FALLBACK_BUILD_INFO);
@@ -290,8 +294,8 @@ export function App() {
 
   const openExportFromDetail = (meeting: Meeting) => {
     setDetailMeeting(null);
-    setExportOverrideMeetings([meeting]);
-    setSidebarModalMode("export");
+    setSingleExportMeetingId(meeting.id);
+    setSidebarModalMode("singleExport");
   };
 
   const handleSaveAnthropicApiKey = async (apiKey: string) => {
@@ -320,6 +324,34 @@ export function App() {
     await refreshSttStatus();
     setShowSttApiKeyModal(false);
     setSystemMessage("OpenAI API 키를 삭제했습니다.");
+  };
+
+  const handleSaveNaverClovaConfig = async (invokeUrl: string, secretKey: string) => {
+    await saveNaverClovaConfig(invokeUrl, secretKey);
+    await refreshSttStatus();
+    setShowNaverClovaConfig(false);
+    setSystemMessage("Naver Clova 설정을 저장했습니다.");
+  };
+
+  const handleClearNaverClovaConfig = async () => {
+    await clearNaverClovaConfig();
+    await refreshSttStatus();
+    setShowNaverClovaConfig(false);
+    setSystemMessage("Naver Clova 설정을 삭제했습니다.");
+  };
+
+  const handleSaveHfToken = async (token: string) => {
+    await saveApiKey("huggingface", token);
+    await refreshSttStatus();
+    setShowHfTokenModal(false);
+    setSystemMessage("Hugging Face 토큰을 저장했습니다.");
+  };
+
+  const handleClearHfToken = async () => {
+    await clearApiKey("huggingface");
+    await refreshSttStatus();
+    setShowHfTokenModal(false);
+    setSystemMessage("Hugging Face 토큰을 삭제했습니다.");
   };
 
   const handleSaveOllamaConfig = async (baseUrl: string, model: string) => {
@@ -381,12 +413,14 @@ export function App() {
         filterActive={hasActiveFilters}
         queryActive={false}
         searchActive={Boolean(query.trim())}
-        onExport={() => {
-          setExportOverrideMeetings(null);
-          setSidebarModalMode("export");
-        }}
+        onDbRestore={() => setSidebarModalMode("dbRestore")}
+        onDbSave={() => setSidebarModalMode("dbSave")}
         onFilter={() => setSidebarModalMode("filter")}
-        onImport={() => setSidebarModalMode("import")}
+        onImportMeeting={() => setFormModal({ mode: "create", autoImport: true })}
+        onExportMeeting={() => {
+          setSingleExportMeetingId(undefined);
+          setSidebarModalMode("singleExport");
+        }}
         onList={() => {
           setSettingsDraft(null);
           setShowSettings(false);
@@ -417,6 +451,8 @@ export function App() {
                 logoVersion={logoVersion}
                 onConfigureApiKey={() => setShowLlmApiKeyModal(true)}
                 onConfigureSttApiKey={() => setShowSttApiKeyModal(true)}
+                onConfigureNaverClova={() => setShowNaverClovaConfig(true)}
+                onConfigureHuggingFace={() => setShowHfTokenModal(true)}
                 onConfigureOllama={() => setShowOllamaConfig(true)}
                 onResetToSample={handleResetToSample}
                 onSelectLlmProvider={(provider) => updateSettingsDraft("llmProvider", provider)}
@@ -480,6 +516,7 @@ export function App() {
 
       {formModal?.mode === "create" && (
         <MeetingFormModal
+          autoImport={formModal.autoImport}
           llmProvider={activeLlmProvider}
           mode="create"
           ollamaConfig={ollamaConfig}
@@ -563,7 +600,7 @@ export function App() {
         />
       )}
 
-      {sidebarModalMode === "import" && (
+      {sidebarModalMode === "dbRestore" && (
         <ImportModal
           duplicateMode={settings.importDuplicateMode}
           onClose={() => setSidebarModalMode(null)}
@@ -571,26 +608,39 @@ export function App() {
             void handleRefresh();
             setSidebarModalMode(null);
             setSystemMessage(
-              `가져오기 완료: 신규 ${summary.createdCount}건, 갱신 ${summary.updatedCount}건, 건너뜀 ${summary.skippedCount}건.`
+              `DB복원 완료: 신규 ${summary.createdCount}건, 갱신 ${summary.updatedCount}건, 건너뜀 ${summary.skippedCount}건.`
             );
           }}
         />
       )}
 
-      {sidebarModalMode === "export" && (
+      {sidebarModalMode === "dbSave" && (
         <ExportModal
-          allMeetings={exportOverrideMeetings ?? meetings}
+          allMeetings={meetings}
           defaultFormat={settings.exportDefaultFormat}
+          onClose={() => setSidebarModalMode(null)}
+          onExported={(message) => {
+            setSidebarModalMode(null);
+            setSystemMessage(message);
+          }}
+          visibleMeetings={visibleMeetings}
+        />
+      )}
+
+      {sidebarModalMode === "singleExport" && (
+        <SingleExportModal
+          defaultFormat={settings.exportDefaultFormat}
+          initialMeetingId={singleExportMeetingId}
+          meetings={meetings}
           onClose={() => {
             setSidebarModalMode(null);
-            setExportOverrideMeetings(null);
+            setSingleExportMeetingId(undefined);
           }}
           onExported={(message) => {
             setSidebarModalMode(null);
-            setExportOverrideMeetings(null);
+            setSingleExportMeetingId(undefined);
             setSystemMessage(message);
           }}
-          visibleMeetings={exportOverrideMeetings ?? visibleMeetings}
         />
       )}
 
@@ -611,6 +661,25 @@ export function App() {
           onClear={handleClearOpenaiApiKey}
           onClose={() => setShowSttApiKeyModal(false)}
           onSave={handleSaveOpenaiApiKey}
+        />
+      )}
+
+      {showNaverClovaConfig && (
+        <NaverClovaConfigModal
+          hasExistingConfig={Boolean(sttStatus?.naverClovaConfigured)}
+          onClear={handleClearNaverClovaConfig}
+          onClose={() => setShowNaverClovaConfig(false)}
+          onSave={handleSaveNaverClovaConfig}
+        />
+      )}
+
+      {showHfTokenModal && (
+        <ApiKeyModal
+          hasExistingKey={Boolean(sttStatus?.huggingFaceTokenSet)}
+          kind="huggingface"
+          onClear={handleClearHfToken}
+          onClose={() => setShowHfTokenModal(false)}
+          onSave={handleSaveHfToken}
         />
       )}
 

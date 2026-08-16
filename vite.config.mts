@@ -4,6 +4,7 @@ import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { execSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { readMeetings, createMeeting, updateMeeting, deleteMeeting, bulkUpsertMeetings, resetToSeed } from "./server/db.mjs";
@@ -11,10 +12,12 @@ import { parseJsonMeetings } from "./server/parsers/importJson.mjs";
 import { parsePdfMeeting } from "./server/parsers/importPdf.mjs";
 import { parseDocxMeeting } from "./server/parsers/importDocx.mjs";
 import { parsePptxMeeting } from "./server/parsers/importPptx.mjs";
+import { parseMdMeeting } from "./server/parsers/importMd.mjs";
 import { buildJsonExport } from "./server/exporters/exportJson.mjs";
 import { buildPdfExport } from "./server/exporters/exportPdf.mjs";
 import { buildDocxExport } from "./server/exporters/exportDocx.mjs";
 import { buildPptxExport } from "./server/exporters/exportPptx.mjs";
+import { buildMdExport } from "./server/exporters/exportMd.mjs";
 import { readEnvFile, writeEnvUpdates } from "./server/envFile.mjs";
 import { saveLogoImage } from "./server/logo.mjs";
 import { saveAttachment, resolveAttachmentPath, MAX_ATTACHMENT_BYTES } from "./server/attachments.mjs";
@@ -30,6 +33,7 @@ import {
 } from "./server/llm.mjs";
 import { transcribeMock } from "./server/audio/sttMock.mjs";
 import { transcribeWhisper } from "./server/audio/sttOpenAiWhisper.mjs";
+import { transcribeNaverClova } from "./server/audio/sttNaverClova.mjs";
 import { checkLocalWhisperAvailable, transcribeLocalWhisperCli } from "./server/audio/sttLocalWhisperCli.mjs";
 import { checkLocalWhisperXAvailable, transcribeLocalWhisperX } from "./server/audio/sttLocalWhisperX.mjs";
 import { diarizeSegments } from "./server/audio/diarize.mjs";
@@ -198,20 +202,22 @@ function requireTrusted(request: IncomingMessage, response: ServerResponse) {
   return true;
 }
 
-type ImportFormat = "json" | "pdf" | "docx" | "pptx";
-type ExportFormat = "json" | "pdf" | "docx" | "pptx";
+type ImportFormat = "json" | "pdf" | "docx" | "pptx" | "md";
+type ExportFormat = "json" | "pdf" | "docx" | "pptx" | "md";
 const STT_MODEL_IDS_BY_PROVIDER: Record<string, Set<string>> = {
   mock: new Set(["mock"]),
   "local-whisper-cli": new Set(["tiny", "base", "small", "medium", "large-v3", "large-v3-turbo", "turbo"]),
   "local-whisperx": new Set(["tiny", "base", "small", "medium", "large-v3"]),
-  "openai-whisper": new Set(["whisper-1"])
+  "openai-whisper": new Set(["whisper-1"]),
+  "naver-clova": new Set(["default"])
 };
 
 const DEFAULT_STT_MODEL_BY_PROVIDER: Record<string, string> = {
   mock: "mock",
   "local-whisper-cli": "turbo",
   "local-whisperx": "base",
-  "openai-whisper": "whisper-1"
+  "openai-whisper": "whisper-1",
+  "naver-clova": "default"
 };
 
 function normalizeSttModel(provider: unknown, model: unknown) {
@@ -224,8 +230,44 @@ const IMPORT_PARSERS: Record<ImportFormat, (buffer: Buffer) => Promise<unknown[]
   json: (buffer) => parseJsonMeetings(buffer),
   pdf: (buffer) => parsePdfMeeting(buffer),
   docx: (buffer) => parseDocxMeeting(buffer),
-  pptx: (buffer) => parsePptxMeeting(buffer)
+  pptx: (buffer) => parsePptxMeeting(buffer),
+  md: (buffer) => parseMdMeeting(buffer)
 };
+
+interface SttJob {
+  status: "running" | "done" | "error";
+  progress: number; // 0-1
+  createdAt: number;
+  // Display floor for providers with no real incremental signal (mock/openai-whisper/naver-clova
+  // are single blocking calls) - see estimateProcessingSeconds. Providers with a real signal
+  // (local-whisper-cli/local-whisperx, parsed from their own stdout) report actual progress that
+  // simply overtakes this estimate.
+  estimatedTotalSec: number;
+  result?: Record<string, unknown>;
+  error?: string;
+}
+
+const sttJobs = new Map<string, SttJob>();
+const STT_JOB_TTL_MS = 15 * 60 * 1000;
+
+function pruneSttJobs() {
+  const cutoff = Date.now() - STT_JOB_TTL_MS;
+  for (const [id, job] of sttJobs) {
+    if (job.createdAt < cutoff) {
+      sttJobs.delete(id);
+    }
+  }
+}
+
+function estimateProcessingSeconds(provider: string, durationSec: number): number {
+  if (provider === "mock") {
+    return 1;
+  }
+  if (provider === "openai-whisper" || provider === "naver-clova") {
+    return Math.max(4, durationSec * 0.35);
+  }
+  return Math.max(5, durationSec * 0.6);
+}
 
 const EXPORT_BUILDERS: Record<ExportFormat, { build: (meetings: unknown[]) => Promise<Buffer> | Buffer; fileName: string; mimeType: string }> = {
   json: {
@@ -247,6 +289,11 @@ const EXPORT_BUILDERS: Record<ExportFormat, { build: (meetings: unknown[]) => Pr
     build: (meetings) => buildPptxExport(meetings),
     fileName: "meetingnote-export.pptx",
     mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+  },
+  md: {
+    build: (meetings) => buildMdExport(meetings),
+    fileName: "meetingnote-export.md",
+    mimeType: "text/markdown"
   }
 };
 
@@ -412,7 +459,13 @@ export default defineConfig(() => {
               }
 
               if (request.method === "PUT") {
-                const body = JSON.parse(await readRequestBody(request)) as { anthropicApiKey?: string; openaiApiKey?: string };
+                const body = JSON.parse(await readRequestBody(request)) as {
+                  anthropicApiKey?: string;
+                  openaiApiKey?: string;
+                  naverClovaInvokeUrl?: string;
+                  naverClovaSecretKey?: string;
+                  huggingFaceToken?: string;
+                };
                 const updates: Record<string, string> = {};
 
                 if (typeof body.anthropicApiKey === "string" && body.anthropicApiKey.trim()) {
@@ -421,9 +474,18 @@ export default defineConfig(() => {
                 if (typeof body.openaiApiKey === "string" && body.openaiApiKey.trim()) {
                   updates.OPENAI_API_KEY = body.openaiApiKey.trim();
                 }
+                if (typeof body.naverClovaInvokeUrl === "string" && body.naverClovaInvokeUrl.trim()) {
+                  updates.NAVER_CLOVA_INVOKE_URL = body.naverClovaInvokeUrl.trim();
+                }
+                if (typeof body.naverClovaSecretKey === "string" && body.naverClovaSecretKey.trim()) {
+                  updates.NAVER_CLOVA_SECRET_KEY = body.naverClovaSecretKey.trim();
+                }
+                if (typeof body.huggingFaceToken === "string" && body.huggingFaceToken.trim()) {
+                  updates.HUGGINGFACE_TOKEN = body.huggingFaceToken.trim();
+                }
 
                 if (Object.keys(updates).length === 0) {
-                  sendJson(response, 400, { error: "저장할 API 키를 입력해 주세요." });
+                  sendJson(response, 400, { error: "저장할 값을 입력해 주세요." });
                   return;
                 }
 
@@ -434,9 +496,15 @@ export default defineConfig(() => {
 
               if (request.method === "DELETE") {
                 const body = JSON.parse((await readRequestBody(request)) || "{}") as { provider?: string };
-                const key = body.provider === "openai" ? "OPENAI_API_KEY" : "ANTHROPIC_API_KEY";
+                const keysByProvider: Record<string, string[]> = {
+                  openai: ["OPENAI_API_KEY"],
+                  anthropic: ["ANTHROPIC_API_KEY"],
+                  "naver-clova": ["NAVER_CLOVA_INVOKE_URL", "NAVER_CLOVA_SECRET_KEY"],
+                  huggingface: ["HUGGINGFACE_TOKEN"]
+                };
+                const keys = keysByProvider[body.provider ?? "anthropic"] ?? ["ANTHROPIC_API_KEY"];
 
-                await writeEnvUpdates({ [key]: "" });
+                await writeEnvUpdates(Object.fromEntries(keys.map((key) => [key, ""])));
                 sendJson(response, 200, { ok: true });
                 return;
               }
@@ -555,13 +623,22 @@ export default defineConfig(() => {
                 checkLocalWhisperXAvailable()
               ]);
 
-              sendJson(response, 200, { openaiApiKeySet: Boolean(env.OPENAI_API_KEY), localWhisperCli, localWhisperX });
+              sendJson(response, 200, {
+                openaiApiKeySet: Boolean(env.OPENAI_API_KEY),
+                naverClovaConfigured: Boolean(env.NAVER_CLOVA_INVOKE_URL && env.NAVER_CLOVA_SECRET_KEY),
+                huggingFaceTokenSet: Boolean(env.HUGGINGFACE_TOKEN),
+                localWhisperCli,
+                localWhisperX
+              });
             } catch (error) {
               sendCaughtError(response, error, "Unknown error.");
             }
           });
 
-          server.middlewares.use("/api/stt/transcribe", async (request, response) => {
+          // Transcription can take minutes for large local models, so it runs as a background job
+          // (started here, polled via /api/stt/transcribe/status) instead of one blocking request -
+          // that's what lets the client show live progress instead of a frozen button.
+          server.middlewares.use("/api/stt/transcribe/start", async (request, response) => {
             try {
               if (!requireTrusted(request, response) || request.method !== "POST") {
                 sendJson(response, 405, { error: "Method not allowed." });
@@ -573,65 +650,136 @@ export default defineConfig(() => {
                 model?: string;
                 audioBase64?: string;
                 fileName?: string;
+                durationSec?: number;
                 preprocessing?: { vocalIsolation?: boolean; noiseRemoval?: boolean; normalize?: boolean };
                 attendeeNames?: string[];
               };
 
+              pruneSttJobs();
+
+              const jobId = randomUUID();
               const fileName = body.fileName || "recording.wav";
-              const model = normalizeSttModel(body.provider, body.model);
+              const provider = body.provider ?? "mock";
+              const model = normalizeSttModel(provider, body.model);
               const attendeeNames = Array.isArray(body.attendeeNames) ? body.attendeeNames : [];
+              const durationSec = typeof body.durationSec === "number" && body.durationSec > 0 ? body.durationSec : 0;
               const preprocessing = {
                 vocalIsolation: Boolean(body.preprocessing?.vocalIsolation),
                 noiseRemoval: Boolean(body.preprocessing?.noiseRemoval),
                 normalize: Boolean(body.preprocessing?.normalize)
               };
 
-              let processedAudioBuffer: Buffer | null = null;
-              let raw: { durationSec: number; segments: { startSec: number; endSec: number; text: string }[] };
-              if (body.provider === "openai-whisper") {
-                let audioBuffer = Buffer.from(body.audioBase64 ?? "", "base64");
-                if (preprocessing.vocalIsolation) {
-                  audioBuffer = await isolateVocalsWithDemucs(audioBuffer, fileName);
-                  processedAudioBuffer = audioBuffer;
+              const job: SttJob = {
+                status: "running",
+                progress: 0,
+                createdAt: Date.now(),
+                estimatedTotalSec: estimateProcessingSeconds(provider, durationSec)
+              };
+              sttJobs.set(jobId, job);
+
+              sendJson(response, 200, { jobId });
+
+              void (async () => {
+                try {
+                  const onProgress = (fraction: number) => {
+                    job.progress = Math.max(job.progress, Math.min(0.99, fraction));
+                  };
+
+                  let processedAudioBuffer: Buffer | null = null;
+                  let raw: { durationSec: number; segments: { startSec: number; endSec: number; text: string }[] };
+
+                  if (provider === "openai-whisper") {
+                    let audioBuffer = Buffer.from(body.audioBase64 ?? "", "base64");
+                    if (preprocessing.vocalIsolation) {
+                      audioBuffer = await isolateVocalsWithDemucs(audioBuffer, fileName);
+                      processedAudioBuffer = audioBuffer;
+                    }
+                    raw = await transcribeWhisper(audioBuffer, fileName, model);
+                  } else if (provider === "local-whisper-cli") {
+                    let audioBuffer = Buffer.from(body.audioBase64 ?? "", "base64");
+                    if (preprocessing.vocalIsolation) {
+                      audioBuffer = await isolateVocalsWithDemucs(audioBuffer, fileName);
+                      processedAudioBuffer = audioBuffer;
+                    }
+                    raw = await transcribeLocalWhisperCli(audioBuffer, fileName, model, durationSec, onProgress, attendeeNames);
+                  } else if (provider === "local-whisperx") {
+                    let audioBuffer = Buffer.from(body.audioBase64 ?? "", "base64");
+                    if (preprocessing.vocalIsolation) {
+                      audioBuffer = await isolateVocalsWithDemucs(audioBuffer, fileName);
+                      processedAudioBuffer = audioBuffer;
+                    }
+                    raw = await transcribeLocalWhisperX(audioBuffer, fileName, model, durationSec, onProgress, attendeeNames);
+                  } else if (provider === "naver-clova") {
+                    let audioBuffer = Buffer.from(body.audioBase64 ?? "", "base64");
+                    if (preprocessing.vocalIsolation) {
+                      audioBuffer = await isolateVocalsWithDemucs(audioBuffer, fileName);
+                      processedAudioBuffer = audioBuffer;
+                    }
+                    raw = await transcribeNaverClova(audioBuffer, fileName, attendeeNames);
+                  } else {
+                    raw = await transcribeMock(fileName);
+                  }
+
+                  const { transcriptSegments, speakerMap } = diarizeSegments(raw.segments, attendeeNames);
+
+                  job.status = "done";
+                  job.progress = 1;
+                  job.result = {
+                    fileName,
+                    durationSec: raw.durationSec,
+                    preprocessing,
+                    transcriptSegments,
+                    speakerMap,
+                    analyzedAt: new Date().toISOString(),
+                    ...(processedAudioBuffer
+                      ? {
+                          processedAudioBase64: processedAudioBuffer.toString("base64"),
+                          processedAudioMimeType: "audio/wav",
+                          processedFileName: `${path.basename(fileName, path.extname(fileName)) || "recording"}-vocals.wav`
+                        }
+                      : {})
+                  };
+                } catch (error) {
+                  job.status = "error";
+                  job.error = error instanceof Error ? error.message : "음성 분석에 실패했습니다.";
                 }
-                raw = await transcribeWhisper(audioBuffer, fileName, model);
-              } else if (body.provider === "local-whisper-cli") {
-                let audioBuffer = Buffer.from(body.audioBase64 ?? "", "base64");
-                if (preprocessing.vocalIsolation) {
-                  audioBuffer = await isolateVocalsWithDemucs(audioBuffer, fileName);
-                  processedAudioBuffer = audioBuffer;
-                }
-                raw = await transcribeLocalWhisperCli(audioBuffer, fileName, model);
-              } else if (body.provider === "local-whisperx") {
-                let audioBuffer = Buffer.from(body.audioBase64 ?? "", "base64");
-                if (preprocessing.vocalIsolation) {
-                  audioBuffer = await isolateVocalsWithDemucs(audioBuffer, fileName);
-                  processedAudioBuffer = audioBuffer;
-                }
-                raw = await transcribeLocalWhisperX(audioBuffer, fileName, model);
-              } else {
-                raw = await transcribeMock(fileName);
+              })();
+            } catch (error) {
+              sendCaughtError(response, error, "음성 분석 시작에 실패했습니다.");
+            }
+          });
+
+          server.middlewares.use("/api/stt/transcribe/status", async (request, response) => {
+            try {
+              if (!requireTrusted(request, response)) {
+                return;
               }
 
-              const { transcriptSegments, speakerMap } = diarizeSegments(raw.segments, attendeeNames);
+              const url = new URL(request.url ?? "/", "http://127.0.0.1");
+              const jobId = url.searchParams.get("jobId") ?? "";
+              const job = sttJobs.get(jobId);
+
+              if (!job) {
+                sendJson(response, 404, { error: "작업을 찾을 수 없습니다." });
+                return;
+              }
+
+              const elapsedSec = (Date.now() - job.createdAt) / 1000;
+              const estimatedProgress = job.estimatedTotalSec > 0 ? Math.min(0.92, elapsedSec / job.estimatedTotalSec) : 0;
+              const displayProgress = job.status === "running" ? Math.max(job.progress, estimatedProgress) : job.progress;
 
               sendJson(response, 200, {
-                fileName,
-                durationSec: raw.durationSec,
-                preprocessing,
-                transcriptSegments,
-                speakerMap,
-                analyzedAt: new Date().toISOString(),
-                ...(processedAudioBuffer
-                  ? {
-                      processedAudioBase64: processedAudioBuffer.toString("base64"),
-                      processedAudioMimeType: "audio/wav",
-                      processedFileName: `${path.basename(fileName, path.extname(fileName)) || "recording"}-vocals.wav`
-                    }
-                  : {})
+                status: job.status,
+                progress: displayProgress,
+                result: job.status === "done" ? job.result : undefined,
+                error: job.status === "error" ? job.error : undefined
               });
+
+              if (job.status !== "running") {
+                sttJobs.delete(jobId);
+              }
             } catch (error) {
-              sendCaughtError(response, error, "음성 분석에 실패했습니다.");
+              sendCaughtError(response, error, "Unknown error.");
             }
           });
 

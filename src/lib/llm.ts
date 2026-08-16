@@ -50,8 +50,9 @@ export async function generateMinutes(provider: LlmProviderId, meeting: Meeting,
   return payload.minutes;
 }
 
-export async function saveApiKey(kind: "anthropic" | "openai", apiKey: string): Promise<void> {
-  const body = kind === "openai" ? { openaiApiKey: apiKey } : { anthropicApiKey: apiKey };
+export async function saveApiKey(kind: "anthropic" | "openai" | "huggingface", apiKey: string): Promise<void> {
+  const body =
+    kind === "openai" ? { openaiApiKey: apiKey } : kind === "huggingface" ? { huggingFaceToken: apiKey } : { anthropicApiKey: apiKey };
   const response = await fetch("/api/env", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -61,7 +62,7 @@ export async function saveApiKey(kind: "anthropic" | "openai", apiKey: string): 
   await parseJsonResponse<{ ok: boolean }>(response);
 }
 
-export async function clearApiKey(kind: "anthropic" | "openai"): Promise<void> {
+export async function clearApiKey(kind: "anthropic" | "openai" | "huggingface"): Promise<void> {
   const response = await fetch("/api/env", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
@@ -71,8 +72,30 @@ export async function clearApiKey(kind: "anthropic" | "openai"): Promise<void> {
   await parseJsonResponse<{ ok: boolean }>(response);
 }
 
+export async function saveNaverClovaConfig(invokeUrl: string, secretKey: string): Promise<void> {
+  const response = await fetch("/api/env", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ naverClovaInvokeUrl: invokeUrl, naverClovaSecretKey: secretKey })
+  });
+
+  await parseJsonResponse<{ ok: boolean }>(response);
+}
+
+export async function clearNaverClovaConfig(): Promise<void> {
+  const response = await fetch("/api/env", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ provider: "naver-clova" })
+  });
+
+  await parseJsonResponse<{ ok: boolean }>(response);
+}
+
 export interface SttStatus {
   openaiApiKeySet: boolean;
+  naverClovaConfigured: boolean;
+  huggingFaceTokenSet: boolean;
   localWhisperCli: { available: boolean; version: string | null };
   localWhisperX: { available: boolean; version: string | null };
 }
