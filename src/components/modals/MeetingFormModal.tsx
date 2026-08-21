@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { FileInput, FolderOpen, Paperclip, Plus, Trash2, Upload } from "lucide-react";
+import { Bot, FileInput, FileText, FolderOpen, Mic, Paperclip, Plus, Square, Trash2, Upload } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import { AudioAnalysisModal } from "./AudioAnalysisModal";
+import { PresentationSummaryModal } from "./PresentationSummaryModal";
+import { LiveWaveform } from "../LiveWaveform";
 import type {
   ActionItem,
   AgendaItem,
@@ -12,19 +14,28 @@ import type {
   MeetingDraft,
   SttProviderId
 } from "../../types/domain";
-import { computeMeetingStatus, emptyActionItem, emptyAgendaItem, emptyAttendee, emptyMeetingDraft, meetingStatusLabels } from "../../types/domain";
+import {
+  computeAttendeeBadges,
+  computeMeetingStatus,
+  emptyActionItem,
+  emptyAgendaItem,
+  emptyAttendee,
+  emptyMeetingDraft,
+  meetingStatusLabels
+} from "../../types/domain";
 import { generateMinutes } from "../../lib/llm";
 import type { OllamaConfig } from "../../lib/llm";
-import { importMeetingsRequest, inferImportFormat, openAttachment, uploadAttachment } from "../../lib/api";
+import { importMeetingsRequest, inferImportFormat, openAttachment, transcribeAudioRequest, uploadAttachment } from "../../lib/api";
+import { pickFileWithNavigator, shouldUseBuiltinFilePicker } from "../../lib/filePicker";
+import { decodeAudioFile, encodeWav, mixDownToMono } from "../../lib/audio";
+import { isSystemAudioCaptureSupported, startSystemAudioRecording } from "../../lib/systemAudioCapture";
+import type { SystemAudioRecording } from "../../lib/systemAudioCapture";
 
 type MaterialTarget = { kind: "actionItem" | "agenda"; index: number };
 
 interface MeetingFormModalProps {
   mode: "create" | "edit";
   initial?: Meeting;
-  // Create mode only: immediately opens the file picker for "파일에서 가져오기" once the modal
-  // mounts, so the sidebar's single-node 가져오기 button can jump straight to file selection.
-  autoImport?: boolean;
   llmProvider: LlmProviderId;
   ollamaConfig: OllamaConfig;
   sttProvider: SttProviderId;
@@ -50,6 +61,7 @@ function cloneDraft(initial?: Meeting): MeetingDraft {
     startTime: initial.startTime,
     endTime: initial.endTime,
     organizer: initial.organizer,
+    secretary: initial.secretary,
     attendees: initial.attendees.map((attendee) => ({ ...attendee })),
     actionItems: initial.actionItems.map((item) => ({ ...item })),
     agenda: initial.agenda.map((item) => ({ ...item })),
@@ -80,7 +92,7 @@ function attachmentFolderLabel(draft: MeetingDraft) {
   return `${date}-${title}`;
 }
 
-export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollamaConfig, sttProvider, onClose, onSubmit }: MeetingFormModalProps) {
+export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, sttProvider, onClose, onSubmit }: MeetingFormModalProps) {
   const [draft, setDraft] = useState<MeetingDraft>(() => cloneDraft(initial));
   const [pendingAudioFile, setPendingAudioFile] = useState<File | null>(null);
   const [showAudioAnalysis, setShowAudioAnalysis] = useState(false);
@@ -90,13 +102,24 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
   const [saveError, setSaveError] = useState("");
   const [isImportingFile, setIsImportingFile] = useState(false);
   const [importFileError, setImportFileError] = useState("");
+  // ---------- PC 소리 녹음 (system audio) ----------
+  const [isSystemRecording, setIsSystemRecording] = useState(false);
+  const [recordingElapsedSec, setRecordingElapsedSec] = useState(0);
+  const [liveCaptionLines, setLiveCaptionLines] = useState<string[]>([]);
+  const [systemRecordingError, setSystemRecordingError] = useState("");
+  const systemRecordingRef = useRef<SystemAudioRecording | null>(null);
+  const elapsedTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const liveCaptionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const liveCaptionChunksRef = useRef<Blob[]>([]);
+  const liveCaptionBusyRef = useRef(false);
   const audioFileInputRef = useRef<HTMLInputElement | null>(null);
   const materialFileInputRef = useRef<HTMLInputElement | null>(null);
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
-  const autoImportTriggeredRef = useRef(false);
   const [materialAttachTarget, setMaterialAttachTarget] = useState<MaterialTarget | null>(null);
   const [isUploadingMaterial, setIsUploadingMaterial] = useState(false);
   const [materialError, setMaterialError] = useState("");
+  // B5 - holds the Agenda item's `no` while its PresentationSummaryModal is open.
+  const [summaryTargetNo, setSummaryTargetNo] = useState<number | null>(null);
   // Generated up front for create mode (once, via lazy useState init) so a brand-new meeting
   // already has an id to submit as `presetId` on first save - keeps this meeting's id consistent
   // with whatever App.tsx/db.mjs end up persisting, in case something elsewhere ever needs to
@@ -111,21 +134,7 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
 
   // ---------- Import from file (create mode only) ----------
 
-  useEffect(() => {
-    if (mode === "create" && autoImport && !autoImportTriggeredRef.current) {
-      autoImportTriggeredRef.current = true;
-      importFileInputRef.current?.click();
-    }
-  }, [mode, autoImport]);
-
-  const handleImportFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    event.target.value = "";
-
-    if (!file) {
-      return;
-    }
-
+  const processImportFile = async (file: File) => {
     const format = inferImportFormat(file.name);
     if (!format) {
       setImportFileError("지원하지 않는 파일 형식입니다. (PDF, Word, PowerPoint, Markdown, JSON)");
@@ -165,6 +174,27 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
     } finally {
       setIsImportingFile(false);
     }
+  };
+
+  const handleImportFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = "";
+
+    if (file) {
+      await processImportFile(file);
+    }
+  };
+
+  const triggerImportFilePick = async () => {
+    if (shouldUseBuiltinFilePicker()) {
+      const file = await pickFileWithNavigator([".pdf", ".docx", ".pptx", ".md", ".markdown", ".json"], "회의록 파일 선택");
+      if (file) {
+        await processImportFile(file);
+      }
+      return;
+    }
+
+    importFileInputRef.current?.click();
   };
 
   // ---------- Attendees ----------
@@ -232,7 +262,34 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
 
   // ---------- A/I List & Agenda material attachments ----------
 
-  const handleAttachMaterialClick = (target: MaterialTarget) => {
+  const processMaterialFile = async (file: File, target: MaterialTarget) => {
+    setIsUploadingMaterial(true);
+    setMaterialError("");
+
+    try {
+      const uploaded = await uploadAttachment(attachmentFolderLabel(draft), "materials", file);
+
+      if (target.kind === "actionItem") {
+        updateActionItem(target.index, { material: uploaded.fileName, materialPath: uploaded.path, materialMdPath: uploaded.mdPath });
+      } else {
+        updateAgendaItem(target.index, { material: uploaded.fileName, materialPath: uploaded.path, materialMdPath: uploaded.mdPath });
+      }
+    } catch (error) {
+      setMaterialError(error instanceof Error ? error.message : "첨부파일 업로드에 실패했습니다.");
+    } finally {
+      setIsUploadingMaterial(false);
+    }
+  };
+
+  const handleAttachMaterialClick = async (target: MaterialTarget) => {
+    if (shouldUseBuiltinFilePicker()) {
+      const file = await pickFileWithNavigator(undefined, "첨부할 자료 파일 선택");
+      if (file) {
+        await processMaterialFile(file, target);
+      }
+      return;
+    }
+
     setMaterialAttachTarget(target);
     materialFileInputRef.current?.click();
   };
@@ -243,25 +300,8 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
     event.target.value = "";
     setMaterialAttachTarget(null);
 
-    if (!file || !target) {
-      return;
-    }
-
-    setIsUploadingMaterial(true);
-    setMaterialError("");
-
-    try {
-      const uploaded = await uploadAttachment(attachmentFolderLabel(draft), "materials", file);
-
-      if (target.kind === "actionItem") {
-        updateActionItem(target.index, { material: uploaded.fileName, materialPath: uploaded.path });
-      } else {
-        updateAgendaItem(target.index, { material: uploaded.fileName, materialPath: uploaded.path });
-      }
-    } catch (error) {
-      setMaterialError(error instanceof Error ? error.message : "첨부파일 업로드에 실패했습니다.");
-    } finally {
-      setIsUploadingMaterial(false);
+    if (file && target) {
+      await processMaterialFile(file, target);
     }
   };
 
@@ -282,9 +322,152 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
     setPendingAudioFile(file);
   };
 
-  const handleAudioComplete = (analysis: AudioAnalysis) => {
+  const triggerAudioFilePick = async () => {
+    if (shouldUseBuiltinFilePicker()) {
+      const file = await pickFileWithNavigator(undefined, "회의 음성 파일 선택");
+      if (file) {
+        setPendingAudioFile(file);
+      }
+      return;
+    }
+
+    audioFileInputRef.current?.click();
+  };
+
+  // 스피커로 나오는 소리(PC 시스템 오디오)를 실시간으로 녹음하는 것과, 지금까지의 파일 업로드는 서로
+  // 다른 입력 경로일 뿐 - 녹음이 끝나면 setPendingAudioFile로 합류시켜서, 그 뒤(다시 분석/분석 시작,
+  // 첨부파일 업로드, 회의록 저장)는 파일을 직접 선택했을 때와 완전히 동일한 경로를 그대로 탄다.
+  const LIVE_CAPTION_WINDOW_MS = 12000;
+
+  const runLiveCaptionWindow = async () => {
+    if (liveCaptionBusyRef.current || liveCaptionChunksRef.current.length === 0) {
+      return;
+    }
+
+    const chunks = liveCaptionChunksRef.current;
+    liveCaptionChunksRef.current = [];
+    liveCaptionBusyRef.current = true;
+
+    try {
+      const windowBlob = new Blob(chunks, { type: "audio/webm" });
+      const decoded = await decodeAudioFile(windowBlob);
+      const mono = mixDownToMono(decoded);
+      const wavBlob = encodeWav(mono, decoded.sampleRate);
+      const result = await transcribeAudioRequest({
+        provider: sttProvider,
+        audioBlob: wavBlob,
+        fileName: "live-caption-window.wav",
+        durationSec: decoded.duration,
+        preprocessing: { vocalIsolation: false, normalize: false, noiseRemoval: false },
+        attendeeNames: audioAttendeeNames()
+      });
+
+      const text = result.transcriptSegments
+        .map((segment) => segment.text)
+        .join(" ")
+        .trim();
+
+      if (text) {
+        setLiveCaptionLines((current) => [...current, text]);
+      }
+    } catch {
+      // Live captions are a best-effort preview, not the authoritative transcript (that comes from
+      // "분석 시작" after recording stops) - a failed window is silently skipped rather than
+      // surfaced as an error, so one slow/failed chunk doesn't interrupt the recording itself.
+    } finally {
+      liveCaptionBusyRef.current = false;
+    }
+  };
+
+  const clearSystemRecordingTimers = () => {
+    if (elapsedTimerRef.current) {
+      clearInterval(elapsedTimerRef.current);
+      elapsedTimerRef.current = null;
+    }
+    if (liveCaptionTimerRef.current) {
+      clearInterval(liveCaptionTimerRef.current);
+      liveCaptionTimerRef.current = null;
+    }
+  };
+
+  const handleStartSystemRecording = async () => {
+    if (isSystemRecording) {
+      return;
+    }
+
+    setSystemRecordingError("");
+
+    if (!isSystemAudioCaptureSupported()) {
+      setSystemRecordingError("이 환경에서는 PC 소리 녹음을 지원하지 않습니다.");
+      return;
+    }
+
+    try {
+      const recording = await startSystemAudioRecording((chunk) => {
+        liveCaptionChunksRef.current.push(chunk);
+      });
+
+      systemRecordingRef.current = recording;
+      liveCaptionChunksRef.current = [];
+      setLiveCaptionLines([]);
+      setRecordingElapsedSec(0);
+      setIsSystemRecording(true);
+
+      elapsedTimerRef.current = setInterval(() => {
+        setRecordingElapsedSec((current) => current + 1);
+      }, 1000);
+      liveCaptionTimerRef.current = setInterval(() => {
+        void runLiveCaptionWindow();
+      }, LIVE_CAPTION_WINDOW_MS);
+    } catch (error) {
+      setSystemRecordingError(error instanceof Error ? error.message : "PC 소리 녹음을 시작하지 못했습니다.");
+    }
+  };
+
+  const handleStopSystemRecording = async () => {
+    const recording = systemRecordingRef.current;
+    if (!recording) {
+      return;
+    }
+
+    clearSystemRecordingTimers();
+    systemRecordingRef.current = null;
+    setIsSystemRecording(false);
+
+    const blob = await recording.stop();
+    // Any audio captured after the last live-caption window still gets folded into the final,
+    // authoritative "분석 시작" pass below - only the rolling preview text skips it.
+    liveCaptionChunksRef.current = [];
+
+    const file = new File([blob], `pc-audio-${Date.now()}.webm`, { type: blob.type });
+    setPendingAudioFile(file);
+  };
+
+  useEffect(() => {
+    return () => {
+      clearSystemRecordingTimers();
+      void systemRecordingRef.current?.stop();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleAudioComplete = async (analysis: AudioAnalysis) => {
     setDraft((current) => ({ ...current, audio: analysis }));
     setShowAudioAnalysis(false);
+
+    // B7 audio retention policy: keep the original recording alongside the meeting's materials
+    // (this app never creates per-speaker sliced audio files, so there's nothing else to retain
+    // or delete - see AudioAnalysis.audioPath's comment in domain.ts). Best-effort: a failed
+    // upload just means the recording isn't retained this time, never blocks the analysis result
+    // the user is already looking at.
+    if (pendingAudioFile) {
+      try {
+        const uploaded = await uploadAttachment(attachmentFolderLabel(draft), "audio", pendingAudioFile);
+        setDraft((current) => (current.audio ? { ...current, audio: { ...current.audio, audioPath: uploaded.path } } : current));
+      } catch {
+        // ignore - retention is best-effort
+      }
+    }
   };
 
   // Presenters first, then other key attendees, matching the diarization heuristic's
@@ -305,12 +488,6 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
     setMinutesError("");
 
     try {
-      const meetingForGeneration: Meeting = {
-        ...draft,
-        id: initial?.id ?? "draft",
-        createdAt: initial?.createdAt ?? new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
       const minutes = await generateMinutes(llmProvider, meetingForGeneration, ollamaConfig);
       setDraft((current) => ({ ...current, minutes }));
     } catch (error) {
@@ -340,6 +517,19 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
     }
   };
 
+  const attendeeBadges = computeAttendeeBadges(draft.attendees);
+
+  // Also used by PresentationSummaryModal (B5) - same synthetic Meeting shape as
+  // handleGenerateMinutes builds, computed once here so both share it instead of duplicating.
+  const meetingForGeneration: Meeting = {
+    ...draft,
+    id: initial?.id ?? "draft",
+    authorId: initial?.authorId ?? "",
+    comments: initial?.comments ?? [],
+    createdAt: initial?.createdAt ?? new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
   return (
     <>
       <ModalShell
@@ -367,7 +557,7 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
               <button
                 className="ghost-action"
                 disabled={isImportingFile}
-                onClick={() => importFileInputRef.current?.click()}
+                onClick={() => void triggerImportFilePick()}
                 type="button"
               >
                 <FileInput size={15} />
@@ -432,6 +622,15 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
               value={draft.organizer}
             />
           </div>
+          <div className="field">
+            <label htmlFor="meeting-secretary">간사</label>
+            <input
+              id="meeting-secretary"
+              onChange={(event) => updateField("secretary", event.target.value)}
+              placeholder="간사 이름"
+              value={draft.secretary}
+            />
+          </div>
         </div>
 
         {/* ---------- Attendees ---------- */}
@@ -452,11 +651,16 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
                 {draft.attendees.map((attendee, index) => (
                   <tr key={attendee.id}>
                     <td>
-                      <input
-                        onChange={(event) => updateAttendee(index, { name: event.target.value })}
-                        placeholder="이름"
-                        value={attendee.name}
-                      />
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span className={`attendee-badge ${attendee.isPresenter ? "presenter" : "attendee"}`}>
+                          {attendeeBadges[attendee.id]}
+                        </span>
+                        <input
+                          onChange={(event) => updateAttendee(index, { name: event.target.value })}
+                          placeholder="이름"
+                          value={attendee.name}
+                        />
+                      </div>
                     </td>
                     <td>
                       <input
@@ -557,6 +761,16 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
                             <FolderOpen size={14} />
                           </button>
                         )}
+                        {item.materialMdPath && (
+                          <button
+                            className="row-icon-button"
+                            onClick={() => handleOpenMaterial(item.materialMdPath!)}
+                            title="Markdown 변환본 열기"
+                            type="button"
+                          >
+                            <FileText size={14} />
+                          </button>
+                        )}
                       </div>
                     </td>
                     <td>
@@ -648,6 +862,16 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
                             <FolderOpen size={14} />
                           </button>
                         )}
+                        {item.materialMdPath && (
+                          <button
+                            className="row-icon-button"
+                            onClick={() => handleOpenMaterial(item.materialMdPath!)}
+                            title="Markdown 변환본 열기"
+                            type="button"
+                          >
+                            <FileText size={14} />
+                          </button>
+                        )}
                       </div>
                     </td>
                     <td>
@@ -658,9 +882,19 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
                       />
                     </td>
                     <td>
-                      <button className="row-icon-button" onClick={() => removeAgendaItem(index)} title="삭제" type="button">
-                        <Trash2 size={15} />
-                      </button>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <button
+                          className="row-icon-button"
+                          onClick={() => setSummaryTargetNo(item.no)}
+                          title={item.presentationSummary ? "발표 내용 정리 보기/수정" : "발표 내용 자동 정리"}
+                          type="button"
+                        >
+                          <Bot size={15} color={item.presentationSummary ? "#1f6f68" : undefined} />
+                        </button>
+                        <button className="row-icon-button" onClick={() => removeAgendaItem(index)} title="삭제" type="button">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -684,35 +918,79 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
               <span className="field-hint">
                 {draft.audio.fileName} · {Math.round(draft.audio.durationSec)}초 · 화자 {Object.keys(draft.audio.speakerMap).length}명
               </span>
-              <button className="ghost-action" onClick={() => audioFileInputRef.current?.click()} type="button">
+              {draft.audio.audioPath && (
+                <button className="ghost-action" onClick={() => handleOpenMaterial(draft.audio!.audioPath!)} type="button">
+                  <FolderOpen size={14} />
+                  원본 오디오 열기
+                </button>
+              )}
+              <button className="ghost-action" onClick={() => void triggerAudioFilePick()} type="button">
                 다시 분석
               </button>
             </div>
           )}
 
-          <div className="import-drop-zone" onClick={() => audioFileInputRef.current?.click()} role="button" tabIndex={0}>
+          <div className="import-drop-zone" onClick={() => void triggerAudioFilePick()} role="button" tabIndex={0}>
             <Upload size={22} />
             <strong>{pendingAudioFile ? pendingAudioFile.name : "회의 음성 파일을 선택하세요"}</strong>
-            <input accept="audio/*" hidden onChange={handleAudioFileChange} ref={audioFileInputRef} type="file" />
+            <input
+              accept="audio/*"
+              hidden
+              onChange={handleAudioFileChange}
+              onClick={(event) => event.stopPropagation()}
+              ref={audioFileInputRef}
+              type="file"
+            />
           </div>
 
-          <button
-            className="primary-action"
-            disabled={!pendingAudioFile}
-            onClick={() => setShowAudioAnalysis(true)}
-            style={{ justifySelf: "start" }}
-            type="button"
-          >
-            분석 시작
-          </button>
-        </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {isSystemRecording ? (
+              <button className="danger-action" onClick={() => void handleStopSystemRecording()} type="button">
+                <Square size={15} />
+                녹음 중지 (
+                {`${Math.floor(recordingElapsedSec / 60)
+                  .toString()
+                  .padStart(2, "0")}:${(recordingElapsedSec % 60).toString().padStart(2, "0")}`}
+                )
+              </button>
+            ) : (
+              <button className="ghost-action" onClick={() => void handleStartSystemRecording()} type="button">
+                <Mic size={15} />
+                PC 소리 녹음
+              </button>
+            )}
+            <span className="field-hint">스피커로 나오는 소리(상대방 목소리 등 PC가 재생하는 모든 소리)를 실시간으로 녹음합니다.</span>
+          </div>
+          {systemRecordingError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{systemRecordingError}</span>}
 
-        {/* ---------- Minutes generation ---------- */}
-        <div className="field full">
-          <button className="primary-action" disabled={isGeneratingMinutes} onClick={handleGenerateMinutes} style={{ justifySelf: "start" }} type="button">
-            {isGeneratingMinutes ? "작성 중..." : "회의록 작성"}
-          </button>
-          {minutesError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{minutesError}</span>}
+          {(isSystemRecording || liveCaptionLines.length > 0) && (
+            <div className="live-caption-panel">
+              {isSystemRecording && (
+                <LiveWaveform analyser={systemRecordingRef.current?.analyser ?? null} height={56} />
+              )}
+              <div className="live-caption-panel-header">
+                <span>실시간 자막 (미리보기 - 녹음 종료 후 "분석 시작"으로 정확한 대본을 생성합니다)</span>
+                {isSystemRecording && <span className="live-caption-recording-dot" />}
+              </div>
+              <div className="live-caption-panel-body">
+                {liveCaptionLines.length === 0 ? (
+                  <span className="field-hint">{isSystemRecording ? "자막을 준비하는 중..." : ""}</span>
+                ) : (
+                  liveCaptionLines.map((line, index) => <p key={index}>{line}</p>)
+                )}
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <button className="primary-action" disabled={!pendingAudioFile} onClick={() => setShowAudioAnalysis(true)} type="button">
+              분석 시작
+            </button>
+            <button className="primary-action" disabled={isGeneratingMinutes} onClick={handleGenerateMinutes} type="button">
+              {isGeneratingMinutes ? "작성 중..." : "회의록 작성"}
+            </button>
+            {minutesError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{minutesError}</span>}
+          </div>
         </div>
 
         <div className="field full">
@@ -736,6 +1014,27 @@ export function MeetingFormModal({ mode, initial, autoImport, llmProvider, ollam
           sttProvider={sttProvider}
         />
       )}
+
+      {summaryTargetNo !== null &&
+        (() => {
+          const targetIndex = draft.agenda.findIndex((item) => item.no === summaryTargetNo);
+          const targetItem = targetIndex === -1 ? null : draft.agenda[targetIndex];
+
+          if (!targetItem) {
+            return null;
+          }
+
+          return (
+            <PresentationSummaryModal
+              agendaItem={targetItem}
+              llmProvider={llmProvider}
+              meeting={meetingForGeneration}
+              ollamaConfig={ollamaConfig}
+              onClose={() => setSummaryTargetNo(null)}
+              onSave={(summary) => updateAgendaItem(targetIndex, { presentationSummary: summary })}
+            />
+          );
+        })()}
     </>
   );
 }

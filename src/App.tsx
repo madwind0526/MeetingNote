@@ -4,6 +4,7 @@ import { LeftSidebar } from "./components/LeftSidebar";
 import { SettingsView } from "./components/SettingsView";
 import { CardView } from "./components/views/CardView";
 import { ListView } from "./components/views/ListView";
+import { MeshView } from "./components/views/MeshView";
 import type { ListSortKey } from "./components/views/ListView";
 import { MeetingFormModal } from "./components/modals/MeetingFormModal";
 import { MeetingDetailModal } from "./components/modals/MeetingDetailModal";
@@ -17,11 +18,41 @@ import { ConfirmModal } from "./components/modals/ConfirmModal";
 import { ApiKeyModal } from "./components/modals/ApiKeyModal";
 import { OllamaConfigModal } from "./components/modals/OllamaConfigModal";
 import { NaverClovaConfigModal } from "./components/modals/NaverClovaConfigModal";
+import { MemberManagementModal } from "./components/modals/MemberManagementModal";
 import { IntroScreen } from "./components/IntroScreen";
-import type { AppSettings, LlmProviderId, Meeting, MeetingDraft, MeetingFilters, SttProviderId, ViewMode } from "./types/domain";
-import { attendeeSummary, computeMeetingStatus, emptyFilters } from "./types/domain";
+import { LoginView } from "./components/LoginView";
+import { BoardView } from "./components/views/BoardView";
+import { DictionaryModal } from "./components/modals/DictionaryModal";
+import { FileNavigatorHost } from "./components/modals/FileNavigatorHost";
+import type {
+  AppSettings,
+  BoardPost,
+  DictionaryEntry,
+  LlmProviderId,
+  Meeting,
+  MeetingDraft,
+  MeetingFilters,
+  PublicMember,
+  SttProviderId,
+  ViewMode
+} from "./types/domain";
 import {
+  attendeeSummary,
+  computeMeetingConnectionCounts,
+  computeMeetingStatus,
+  emptyFilters,
+  extractMeetingTags,
+  matchesFilterTerms,
+  parseFilterTerms
+} from "./types/domain";
+import { clearSession, fetchMembers, loadSession } from "./lib/auth";
+import { listBoardPosts, saveBoardPosts } from "./lib/board";
+import { applyDictionaryToAllMeetings, fetchDictionary, saveDictionary } from "./lib/dictionary";
+import type { DictionaryState } from "./lib/dictionary";
+import {
+  addMeetingCommentRequest,
   createMeetingRequest,
+  deleteMeetingCommentRequest,
   deleteMeetingRequest,
   fetchMeetings,
   resetMeetingsRequest,
@@ -30,20 +61,29 @@ import {
 } from "./lib/api";
 import type { ImportSummary } from "./lib/api";
 import { loadSettings, loadSettingsFile, saveSettings } from "./lib/settings";
+import { setSettingsMirror } from "./lib/settingsMirror";
 import type { LlmStatus, SttStatus } from "./lib/llm";
 import { clearApiKey, clearNaverClovaConfig, fetchLlmStatus, fetchSttStatus, saveApiKey, saveNaverClovaConfig } from "./lib/llm";
 import { FALLBACK_BUILD_INFO, loadRuntimeBuildInfo } from "./lib/buildInfo";
 import type { BuildInfo } from "./lib/buildInfo";
 
 type SidebarModalMode = "search" | "filter" | "query" | "dbRestore" | "dbSave" | "singleExport" | null;
-type FormModalState = { mode: "create"; autoImport?: boolean } | { mode: "edit"; meeting: Meeting } | null;
+type FormModalState = { mode: "create" } | { mode: "edit"; meeting: Meeting } | null;
 
+// Quick search (top toolbar) matches against every meaningful text field on a meeting - title,
+// organizer, secretary, attendees, Agenda/A-I List titles and presenters, B5's per-presentation
+// summaries, and the final minutes.
 function meetingSearchText(meeting: Meeting) {
   return [
     meeting.title,
     meeting.organizer,
+    meeting.secretary,
     attendeeSummary(meeting.attendees),
     meeting.agenda.map((item) => item.title).join(" "),
+    meeting.agenda.map((item) => item.presenter).join(" "),
+    meeting.agenda.map((item) => item.presentationSummary ?? "").join(" "),
+    meeting.actionItems.map((item) => item.title).join(" "),
+    meeting.actionItems.map((item) => item.presenter).join(" "),
     meeting.minutes
   ]
     .join(" ")
@@ -51,11 +91,22 @@ function meetingSearchText(meeting: Meeting) {
 }
 
 export function App() {
+  const [session, setSession] = useState<PublicMember | null>(() => loadSession());
+  const [members, setMembers] = useState<PublicMember[]>([]);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [boardPosts, setBoardPosts] = useState<BoardPost[]>([]);
+  const [dictionary, setDictionary] = useState<DictionaryState>({ abbreviations: [], corrections: [] });
   const [view, setView] = useState<ViewMode>("list");
   const [showSettings, setShowSettings] = useState(false);
+  const [showBoard, setShowBoard] = useState(false);
+  const [showAbbreviationDictionary, setShowAbbreviationDictionary] = useState(false);
+  const [showCorrectionDictionary, setShowCorrectionDictionary] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings());
   const [settingsDraft, setSettingsDraft] = useState<AppSettings | null>(null);
+
+  useEffect(() => {
+    setSettingsMirror(settings);
+  }, [settings]);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [filters, setFilters] = useState<MeetingFilters>(emptyFilters);
@@ -75,6 +126,7 @@ export function App() {
   const [showNaverClovaConfig, setShowNaverClovaConfig] = useState(false);
   const [showHfTokenModal, setShowHfTokenModal] = useState(false);
   const [showOllamaConfig, setShowOllamaConfig] = useState(false);
+  const [showMemberManagement, setShowMemberManagement] = useState(false);
   const [systemMessage, setSystemMessage] = useState("준비되었습니다.");
   const [buildInfo, setBuildInfo] = useState<BuildInfo>(FALLBACK_BUILD_INFO);
 
@@ -141,38 +193,165 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    if (!session) {
+      return;
+    }
+
+    let mounted = true;
+
+    (async () => {
+      try {
+        const list = await fetchMembers();
+        if (mounted) {
+          setMembers(list);
+        }
+      } catch {
+        // Comment/author name resolution just falls back to "알 수 없음" if this fails.
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [session]);
+
+  useEffect(() => {
+    if (!session) {
+      return;
+    }
+
+    let mounted = true;
+
+    (async () => {
+      try {
+        const posts = await listBoardPosts();
+        if (mounted) {
+          setBoardPosts(posts);
+        }
+      } catch {
+        // Board just shows an empty list if this fails - not worth surfacing as an error.
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [session]);
+
+  const handleSaveBoardPosts = async (posts: BoardPost[]) => {
+    setBoardPosts(posts);
+    try {
+      await saveBoardPosts(posts);
+    } catch (error) {
+      setSystemMessage(error instanceof Error ? error.message : "게시판 저장에 실패했습니다.");
+    }
+  };
+
+  useEffect(() => {
+    if (!session) {
+      return;
+    }
+
+    let mounted = true;
+
+    (async () => {
+      try {
+        const loaded = await fetchDictionary();
+        if (mounted) {
+          setDictionary(loaded);
+        }
+      } catch {
+        // Dictionary modals just show an empty list if this fails - not worth surfacing as an error.
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [session]);
+
+  const handleSaveAbbreviations = async (entries: DictionaryEntry[]) => {
+    const next = { ...dictionary, abbreviations: entries };
+    setDictionary(next);
+    await saveDictionary(next);
+  };
+
+  const handleSaveCorrections = async (entries: DictionaryEntry[]) => {
+    const next = { ...dictionary, corrections: entries };
+    setDictionary(next);
+    await saveDictionary(next);
+  };
+
+  useEffect(() => {
     const timeoutId = window.setTimeout(() => setDebouncedQuery(query), 220);
     return () => window.clearTimeout(timeoutId);
   }, [query]);
 
+  // Based on the full, unfiltered meeting set (not visibleMeetings) so the Connection range filter
+  // and Mesh view's own node degrees never disagree with each other and so opening/clearing the
+  // filter can never create a feedback loop that shrinks its own upper bound.
+  const connectionCounts = useMemo(() => computeMeetingConnectionCounts(meetings), [meetings]);
+  const maxConnectionCount = useMemo(() => Math.max(0, ...Array.from(connectionCounts.values())), [connectionCounts]);
+
   const visibleMeetings = useMemo(() => {
     const normalizedQuery = debouncedQuery.trim().toLowerCase();
-    const organizerText = filters.organizerText.trim().toLowerCase();
-    const attendeeText = filters.attendeeText.trim().toLowerCase();
-    const keywordText = filters.keywordText.trim().toLowerCase();
+    // Each text field supports the [*]AND / [+]OR / [-]NOT query syntax (comma-separated terms,
+    // unprefixed terms default to AND) - see parseFilterTerms/matchesFilterTerms in types/domain.ts.
+    const titleTerms = parseFilterTerms(filters.titleText);
+    const organizerTerms = parseFilterTerms(filters.organizerText);
+    const presenterTerms = parseFilterTerms(filters.presenterText);
+    const presentationSummaryTerms = parseFilterTerms(filters.presentationSummaryText);
+    const tagTerms = parseFilterTerms(filters.tagText);
+    const connectionMax = filters.connectionMax > 0 ? filters.connectionMax : Number.POSITIVE_INFINITY;
 
     return meetings.filter((meeting) => {
       const queryMatches = !normalizedQuery || meetingSearchText(meeting).includes(normalizedQuery);
       const status = computeMeetingStatus(meeting);
       const statusMatches = filters.statuses.length === 0 || filters.statuses.includes(status);
-      const organizerMatches = !organizerText || meeting.organizer.toLowerCase().includes(organizerText);
-      const attendeeMatches = !attendeeText || attendeeSummary(meeting.attendees).toLowerCase().includes(attendeeText);
-      const keywordMatches =
-        !keywordText ||
-        [meeting.title, ...meeting.agenda.map((item) => item.title), ...meeting.actionItems.map((item) => item.title)]
-          .join(" ")
-          .toLowerCase()
-          .includes(keywordText);
+      const titleMatches = matchesFilterTerms(meeting.title, titleTerms);
+      const organizerMatches = matchesFilterTerms(meeting.organizer, organizerTerms);
+      const presenterMatches = matchesFilterTerms(
+        [...meeting.agenda.map((item) => item.presenter), ...meeting.actionItems.map((item) => item.presenter)].join(" "),
+        presenterTerms
+      );
+      const presentationSummaryMatches = matchesFilterTerms(
+        meeting.agenda.map((item) => item.presentationSummary ?? "").join(" "),
+        presentationSummaryTerms
+      );
+      const tagMatches = matchesFilterTerms(extractMeetingTags(meeting).join(" "), tagTerms);
+      const connectionCount = connectionCounts.get(meeting.id) ?? 0;
+      const connectionMatches = connectionCount >= filters.connectionMin && connectionCount <= connectionMax;
       const dateFromMatches = !filters.dateFrom || meeting.date >= filters.dateFrom;
       const dateToMatches = !filters.dateTo || meeting.date <= filters.dateTo;
 
-      return queryMatches && statusMatches && organizerMatches && attendeeMatches && keywordMatches && dateFromMatches && dateToMatches;
+      return (
+        queryMatches &&
+        statusMatches &&
+        titleMatches &&
+        organizerMatches &&
+        presenterMatches &&
+        presentationSummaryMatches &&
+        tagMatches &&
+        connectionMatches &&
+        dateFromMatches &&
+        dateToMatches
+      );
     });
-  }, [meetings, debouncedQuery, filters]);
+  }, [meetings, debouncedQuery, filters, connectionCounts]);
 
   const hasActiveFilters =
     filters.statuses.length > 0 ||
-    Boolean(filters.organizerText.trim() || filters.attendeeText.trim() || filters.keywordText.trim() || filters.dateFrom || filters.dateTo);
+    Boolean(
+      filters.titleText.trim() ||
+        filters.organizerText.trim() ||
+        filters.presenterText.trim() ||
+        filters.presentationSummaryText.trim() ||
+        filters.tagText.trim() ||
+        filters.connectionMin > 0 ||
+        filters.connectionMax > 0 ||
+        filters.dateFrom ||
+        filters.dateTo
+    );
 
   const updateSettings = useCallback(<Key extends keyof AppSettings>(key: Key, value: AppSettings[Key]) => {
     setSettings((current) => {
@@ -192,6 +371,7 @@ export function App() {
   const handleOpenSettings = useCallback(() => {
     setSettingsDraft((current) => current ?? settings);
     setShowSettings(true);
+    setShowBoard(false);
   }, [settings]);
 
   const handleCancelSettings = useCallback(() => {
@@ -232,21 +412,12 @@ export function App() {
     }
   };
 
-  const handleQuitApp = async () => {
-    try {
-      if (window.meetingNote?.quitApp) {
-        await window.meetingNote.quitApp();
-        return;
-      }
-
-      window.close();
-    } catch {
-      setSystemMessage("앱 종료에 실패했습니다.");
-    }
-  };
-
   const handleCreateSubmit = async (draft: MeetingDraft, presetId?: string) => {
-    const meeting = await createMeetingRequest(draft, presetId);
+    if (!session) {
+      return;
+    }
+
+    const meeting = await createMeetingRequest(draft, session.id, presetId);
     setMeetings((current) => [...current, meeting]);
     setFormModal(null);
     setSystemMessage(`"${meeting.title || "제목 없음"}" 회의록을 등록했습니다.`);
@@ -274,6 +445,30 @@ export function App() {
     } finally {
       setDeleteCandidate(null);
       setDetailMeeting(null);
+    }
+  };
+
+  const handleAddComment = async (meetingId: string, content: string) => {
+    if (!session) {
+      return;
+    }
+
+    try {
+      const updated = await addMeetingCommentRequest(meetingId, session.id, content);
+      setMeetings((current) => current.map((item) => (item.id === meetingId ? updated : item)));
+      setDetailMeeting((current) => (current?.id === meetingId ? updated : current));
+    } catch (error) {
+      setSystemMessage(error instanceof Error ? error.message : "댓글 등록에 실패했습니다.");
+    }
+  };
+
+  const handleDeleteComment = async (meetingId: string, commentId: string) => {
+    try {
+      const updated = await deleteMeetingCommentRequest(meetingId, commentId);
+      setMeetings((current) => current.map((item) => (item.id === meetingId ? updated : item)));
+      setDetailMeeting((current) => (current?.id === meetingId ? updated : current));
+    } catch (error) {
+      setSystemMessage(error instanceof Error ? error.message : "댓글 삭제에 실패했습니다.");
     }
   };
 
@@ -382,21 +577,33 @@ export function App() {
   const activeLlmProvider: LlmProviderId = settings.llmProvider;
   const activeSttProvider: SttProviderId = settings.sttProvider;
 
+  if (!session) {
+    return <LoginView logoVersion={logoVersion} onLoginSuccess={setSession} theme={settings.theme} />;
+  }
+
+  const handleLogout = () => {
+    clearSession();
+    setSession(null);
+  };
+
   return (
     <main className={`app-shell ${appTheme}`}>
+      <FileNavigatorHost />
       {showIntro && <IntroScreen buildLabel={buildInfo.buildLabel} logoVersion={logoVersion} onFinished={() => setShowIntro(false)} />}
 
       <TopToolbar
         buildLabel={buildInfo.buildLabel}
+        currentMemberName={session.name}
         query={query}
         theme={appTheme}
         view={view}
+        onLogout={handleLogout}
         onOpenSettings={handleOpenSettings}
         onQueryChange={setQuery}
-        onPower={handleQuitApp}
         onTitleClick={() => {
           setSettingsDraft(null);
           setShowSettings(false);
+          setShowBoard(false);
           setQuery("");
           setShowIntro(true);
         }}
@@ -404,26 +611,31 @@ export function App() {
         onViewChange={(nextView) => {
           setSettingsDraft(null);
           setShowSettings(false);
+          setShowBoard(false);
           setView(nextView);
         }}
         settingsActive={showSettings}
       />
 
       <LeftSidebar
+        boardActive={showBoard}
         filterActive={hasActiveFilters}
         queryActive={false}
         searchActive={Boolean(query.trim())}
+        onAbbreviationDictionary={() => setShowAbbreviationDictionary(true)}
+        onBoard={() => {
+          setSettingsDraft(null);
+          setShowSettings(false);
+          setShowBoard(true);
+        }}
+        onCorrectionDictionary={() => setShowCorrectionDictionary(true)}
         onDbRestore={() => setSidebarModalMode("dbRestore")}
         onDbSave={() => setSidebarModalMode("dbSave")}
         onFilter={() => setSidebarModalMode("filter")}
-        onImportMeeting={() => setFormModal({ mode: "create", autoImport: true })}
-        onExportMeeting={() => {
-          setSingleExportMeetingId(undefined);
-          setSidebarModalMode("singleExport");
-        }}
         onList={() => {
           setSettingsDraft(null);
           setShowSettings(false);
+          setShowBoard(false);
           setView("list");
         }}
         onNewMeeting={() => setFormModal({ mode: "create" })}
@@ -447,6 +659,7 @@ export function App() {
             </div>
             <div className="settings-content">
               <SettingsView
+                isAdmin={session.role === "admin"}
                 llmStatus={llmStatus}
                 logoVersion={logoVersion}
                 onConfigureApiKey={() => setShowLlmApiKeyModal(true)}
@@ -454,6 +667,7 @@ export function App() {
                 onConfigureNaverClova={() => setShowNaverClovaConfig(true)}
                 onConfigureHuggingFace={() => setShowHfTokenModal(true)}
                 onConfigureOllama={() => setShowOllamaConfig(true)}
+                onOpenMemberManagement={() => setShowMemberManagement(true)}
                 onResetToSample={handleResetToSample}
                 onSelectLlmProvider={(provider) => updateSettingsDraft("llmProvider", provider)}
                 onSelectSttProvider={(provider) => updateSettingsDraft("sttProvider", provider)}
@@ -473,6 +687,16 @@ export function App() {
               </div>
             </div>
           </>
+        ) : showBoard ? (
+          <BoardView
+            currentMember={session}
+            members={members}
+            onSave={handleSaveBoardPosts}
+            onSystemMessage={setSystemMessage}
+            posts={boardPosts}
+          />
+        ) : view === "mesh" ? (
+          <MeshView meetings={visibleMeetings} onOpen={setDetailMeeting} />
         ) : (
           <>
             <div className="view-header">
@@ -490,9 +714,12 @@ export function App() {
               </div>
             </div>
 
-            {view === "card" && <CardView meetings={visibleMeetings} onOpen={setDetailMeeting} />}
+            {view === "card" && (
+              <CardView currentMember={session} meetings={visibleMeetings} onDelete={setDeleteCandidate} onOpen={setDetailMeeting} />
+            )}
             {view === "list" && (
               <ListView
+                currentMember={session}
                 meetings={visibleMeetings}
                 onDelete={setDeleteCandidate}
                 onEdit={(meeting) => setFormModal({ mode: "edit", meeting })}
@@ -516,7 +743,6 @@ export function App() {
 
       {formModal?.mode === "create" && (
         <MeetingFormModal
-          autoImport={formModal.autoImport}
           llmProvider={activeLlmProvider}
           mode="create"
           ollamaConfig={ollamaConfig}
@@ -540,9 +766,13 @@ export function App() {
 
       {detailMeeting && (
         <MeetingDetailModal
+          currentMember={session}
           meeting={detailMeeting}
+          members={members}
+          onAddComment={handleAddComment}
           onClose={() => setDetailMeeting(null)}
           onDelete={setDeleteCandidate}
+          onDeleteComment={handleDeleteComment}
           onEdit={openEditFromDetail}
           onExport={openExportFromDetail}
         />
@@ -574,6 +804,7 @@ export function App() {
 
       {sidebarModalMode === "filter" && (
         <FilterModal
+          connectionMax={maxConnectionCount}
           filters={filters}
           onApply={(nextFilters) => {
             setFilters(nextFilters);
@@ -690,6 +921,28 @@ export function App() {
           initialModel={settingsViewValues.ollamaModel}
           onClose={() => setShowOllamaConfig(false)}
           onSave={handleSaveOllamaConfig}
+        />
+      )}
+
+      {showMemberManagement && <MemberManagementModal onClose={() => setShowMemberManagement(false)} />}
+
+      {showAbbreviationDictionary && (
+        <DictionaryModal
+          entries={dictionary.abbreviations}
+          kind="abbreviation"
+          onApply={applyDictionaryToAllMeetings}
+          onClose={() => setShowAbbreviationDictionary(false)}
+          onSave={handleSaveAbbreviations}
+        />
+      )}
+
+      {showCorrectionDictionary && (
+        <DictionaryModal
+          entries={dictionary.corrections}
+          kind="correction"
+          onApply={applyDictionaryToAllMeetings}
+          onClose={() => setShowCorrectionDictionary(false)}
+          onSave={handleSaveCorrections}
         />
       )}
     </main>

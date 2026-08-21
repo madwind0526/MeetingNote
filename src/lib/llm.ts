@@ -50,6 +50,22 @@ export async function generateMinutes(provider: LlmProviderId, meeting: Meeting,
   return payload.minutes;
 }
 
+export async function generatePresentationSummary(
+  provider: LlmProviderId,
+  meeting: Meeting,
+  agendaNo: number,
+  ollamaConfig?: OllamaConfig
+): Promise<string> {
+  const response = await fetch("/api/llm/presentation-summary", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ provider, meeting, agendaNo, ...ollamaConfig })
+  });
+  const payload = await parseJsonResponse<{ summary: string }>(response);
+
+  return payload.summary;
+}
+
 export async function saveApiKey(kind: "anthropic" | "openai" | "huggingface", apiKey: string): Promise<void> {
   const body =
     kind === "openai" ? { openaiApiKey: apiKey } : kind === "huggingface" ? { huggingFaceToken: apiKey } : { anthropicApiKey: apiKey };

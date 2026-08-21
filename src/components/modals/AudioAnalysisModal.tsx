@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FileText, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Users } from "lucide-react";
+import { FileText, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Users } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import type { AudioAnalysis, SttProviderId } from "../../types/domain";
-import { computeEnvelope, decodeAudioFile, encodeWav, mixDownToMono, processMonoPcm } from "../../lib/audio";
-import { base64ToBlob, transcribeAudioRequest } from "../../lib/api";
+import { computeEnvelope, decodeAudioFile, encodeWav, mixDownToMono } from "../../lib/audio";
+import { base64ToBlob, registerVoiceProfileRequest, transcribeAudioRequest } from "../../lib/api";
+import type { TranscribeResult } from "../../lib/api";
+
+// Must match server/audio/diarize.mjs's UNREGISTERED_SPEAKER_PREFIX exactly - marks a speaker
+// label whose auto-assigned name means "no voice profile matched yet", so renaming it here is
+// what registers a brand-new profile (see handleComplete below).
+const UNREGISTERED_SPEAKER_PREFIX = "미등록 화자 ";
 
 interface AudioAnalysisModalProps {
   file: File;
@@ -22,6 +28,10 @@ const LANE_WAVE_HEIGHT = 34;
 const WAVE_COLOR = "#2f9e8f";
 const TRACK_COLOR = "rgba(150, 150, 150, 0.12)";
 const DIM_COLOR = "rgba(150, 150, 150, 0.15)";
+// Gray for the already-analyzed portion of the waveform during analysis (WAVE_COLOR itself marks
+// what's still ahead), so completed vs. remaining is visible at a glance instead of only via the
+// moving analysis-progress line.
+const PROGRESSED_WAVE_COLOR = "rgba(150, 150, 150, 0.55)";
 const SEEK_STEP_SECONDS = 5;
 const SEGMENT_EDGE_SECONDS = 0.06;
 const SPEAKER_SEGMENT_PADDING_SECONDS = 0.35;
@@ -61,7 +71,14 @@ function formatMmSs(seconds: number): string {
   return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
-function drawEnvelope(canvas: HTMLCanvasElement, envelope: Float32Array, containerWidth: number, height: number, activeMask?: boolean[]) {
+function drawEnvelope(
+  canvas: HTMLCanvasElement,
+  envelope: Float32Array,
+  containerWidth: number,
+  height: number,
+  activeMask?: boolean[],
+  analysisProgressFraction?: number
+) {
   const devicePixelRatio = window.devicePixelRatio || 1;
   const width = Math.max(1, Math.round(containerWidth));
 
@@ -92,9 +109,17 @@ function drawEnvelope(canvas: HTMLCanvasElement, envelope: Float32Array, contain
     const value = envelope[bucketIndex];
     const barHeight = Math.max(1, value * height);
     const x = bucketIndex * barWidth;
-    const isActive = !activeMask || activeMask[bucketIndex];
 
-    context.fillStyle = isActive ? WAVE_COLOR : DIM_COLOR;
+    let fillColor: string;
+    if (typeof analysisProgressFraction === "number") {
+      const bucketFraction = bucketIndex / bucketCount;
+      fillColor = bucketFraction <= analysisProgressFraction ? PROGRESSED_WAVE_COLOR : WAVE_COLOR;
+    } else {
+      const isActive = !activeMask || activeMask[bucketIndex];
+      fillColor = isActive ? WAVE_COLOR : DIM_COLOR;
+    }
+
+    context.fillStyle = fillColor;
     context.fillRect(x, midY - barHeight / 2, Math.max(1, barWidth - 0.5), barHeight);
   }
 }
@@ -105,9 +130,12 @@ interface WaveformCanvasProps {
   activeMask?: boolean[];
   currentTime?: number;
   durationSec?: number;
+  // 0-100 - independent of playback, marks how far the STT job has progressed through the clip
+  // so the user can see roughly where analysis currently is without waiting for it to finish.
+  analysisProgressPercent?: number;
 }
 
-function WaveformCanvas({ envelope, height, activeMask, currentTime = 0, durationSec = 0 }: WaveformCanvasProps) {
+function WaveformCanvas({ envelope, height, activeMask, currentTime = 0, durationSec = 0, analysisProgressPercent }: WaveformCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const playheadPercent = durationSec > 0 ? Math.min(Math.max((currentTime / durationSec) * 100, 0), 100) : 0;
@@ -119,9 +147,11 @@ function WaveformCanvas({ envelope, height, activeMask, currentTime = 0, duratio
       return;
     }
 
+    const analysisProgressFraction = typeof analysisProgressPercent === "number" ? analysisProgressPercent / 100 : undefined;
+
     const redraw = () => {
       if (container.clientWidth > 0) {
-        drawEnvelope(canvas, envelope, container.clientWidth, height, activeMask);
+        drawEnvelope(canvas, envelope, container.clientWidth, height, activeMask, analysisProgressFraction);
       }
     };
 
@@ -130,12 +160,15 @@ function WaveformCanvas({ envelope, height, activeMask, currentTime = 0, duratio
     const observer = new ResizeObserver(redraw);
     observer.observe(container);
     return () => observer.disconnect();
-  }, [envelope, height, activeMask]);
+  }, [envelope, height, activeMask, analysisProgressPercent]);
 
   return (
     <div className="waveform-canvas-wrap" ref={containerRef} style={{ height }}>
       <canvas ref={canvasRef} />
       {durationSec > 0 && <span className="waveform-playhead" style={{ left: `${playheadPercent}%` }} />}
+      {typeof analysisProgressPercent === "number" && (
+        <span className="waveform-analysis-line" style={{ left: `${Math.min(Math.max(analysisProgressPercent, 0), 100)}%` }} />
+      )}
     </div>
   );
 }
@@ -143,6 +176,7 @@ function WaveformCanvas({ envelope, height, activeMask, currentTime = 0, duratio
 export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, onComplete }: AudioAnalysisModalProps) {
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const sourceAudioBufferRef = useRef<AudioBuffer | null>(null);
+  const analyzeAbortControllerRef = useRef<AbortController | null>(null);
   const sourceAudioUrlRef = useRef("");
   const processedAudioUrlRef = useRef("");
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
@@ -152,6 +186,12 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
   const [processedAudioUrl, setProcessedAudioUrl] = useState("");
   const [playbackSource, setPlaybackSource] = useState<PlaybackSource>("original");
   const [currentTime, setCurrentTime] = useState(0);
+  // The <audio> element's own duration - not the Web Audio API-decoded AudioBuffer's duration
+  // (durationSec/sourceDurationSec below). The two aren't guaranteed to agree exactly, and since
+  // currentTime always comes from this same <audio> element, dividing it by a duration decoded
+  // through a different pipeline is what let the playhead drift off the real playback position -
+  // it has to be measured against its own element's duration to stay exactly in sync.
+  const [audioElementDurationSec, setAudioElementDurationSec] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeSpeaker, setActiveSpeaker] = useState<string | null>(null);
   const [isDecoding, setIsDecoding] = useState(true);
@@ -166,7 +206,11 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeProgress, setAnalyzeProgress] = useState(0);
   const [analyzeError, setAnalyzeError] = useState("");
-  const [result, setResult] = useState<AudioAnalysis | null>(null);
+  const [result, setResult] = useState<TranscribeResult | null>(null);
+  // Live segments parsed straight from the local STT process while it's still running - no
+  // speaker label yet (diarization only runs once the whole job finishes), so the transcript
+  // panel shows them plainly until `result` replaces them with the final, speaker-tagged list.
+  const [liveSegments, setLiveSegments] = useState<{ startSec: number; endSec: number; text: string }[]>([]);
   const [editedSpeakerMap, setEditedSpeakerMap] = useState<Record<string, string>>({});
 
   function replaceProcessedAudioUrl(blob: Blob) {
@@ -276,7 +320,10 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
   const sourceDurationSec = sourceAudioBufferRef.current?.duration ?? durationSec;
   const processedAudioAvailable = Boolean(processedAudioUrl);
   const activeAudioUrl = playbackSource === "processed" && processedAudioUrl ? processedAudioUrl : sourceAudioUrl;
-  const playbackDurationSec = playbackSource === "original" ? sourceDurationSec : durationSec;
+  // Prefer the <audio> element's own duration over the Web Audio API-decoded AudioBuffer's
+  // duration - see audioElementDurationSec above for why. Falls back to the buffer-decoded
+  // duration before metadata has loaded (e.g. right after switching source).
+  const playbackDurationSec = audioElementDurationSec || (playbackSource === "original" ? sourceDurationSec : durationSec);
   const sttModelOptions = STT_MODEL_OPTIONS_BY_PROVIDER[selectedProvider];
 
   function segmentsForSpeaker(label: string) {
@@ -337,23 +384,55 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
     };
     const handlePause = () => setIsPlaying(false);
     const handlePlay = () => setIsPlaying(true);
+    const handleDurationChange = () => setAudioElementDurationSec(Number.isFinite(audio.duration) ? audio.duration : 0);
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("pause", handlePause);
     audio.addEventListener("play", handlePlay);
+    audio.addEventListener("durationchange", handleDurationChange);
+    // durationchange may have already fired (metadata loaded) before this listener was attached.
+    handleDurationChange();
 
     return () => {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("pause", handlePause);
+      audio.removeEventListener("durationchange", handleDurationChange);
       audio.removeEventListener("play", handlePlay);
     };
   }, [activeSpeaker, sourceAudioUrl, processedAudioUrl, playbackSource, result]);
 
+  // The waveform playhead and the play/pause button both have to track the <audio> element's real
+  // state as tightly as possible. The 'timeupdate'/'play'/'pause' events above are what the rest of
+  // this component's logic (segment auto-advance, etc.) reacts to, but they're not a reliable
+  // source for driving the UI on their own - browsers only guarantee 'timeupdate' fires "a few
+  // times a second" and can throttle it further, and 'play'/'pause' have been observed not to fire
+  // at all for some programmatic play() calls despite playback genuinely starting. Polling the
+  // element's own `paused`/`currentTime` directly every frame instead sidesteps both problems: the
+  // white bar and the play/pause icon can never end up stuck reflecting a stale event that never
+  // arrived while the element itself is actually playing.
+  useEffect(() => {
+    let frameId: number;
+    const tick = () => {
+      const audio = audioElementRef.current;
+      if (audio) {
+        setIsPlaying(!audio.paused);
+        if (!audio.paused) {
+          setCurrentTime(audio.currentTime);
+        }
+      }
+      frameId = requestAnimationFrame(tick);
+    };
+    frameId = requestAnimationFrame(tick);
+
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
   function clearAnalysisResult() {
     setResult(null);
     setEditedSpeakerMap({});
+    setLiveSegments([]);
   }
 
   function restoreOriginalAudioPreview() {
@@ -509,13 +588,20 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
     setIsAnalyzing(true);
     setAnalyzeProgress(0);
     setAnalyzeError("");
+    setLiveSegments([]);
+
+    const abortController = new AbortController();
+    analyzeAbortControllerRef.current = abortController;
 
     try {
       resetPlaybackPosition();
       const sourceAudioBuffer = sourceAudioBufferRef.current ?? audioBuffer;
+      // 정규화/DeNoise no longer run here - the server applies the full Demucs -> 정규화 -> DeNoise
+      // chain in that fixed order (see server/audio/audioPreprocess.mjs), which requires Demucs to
+      // see this untouched original mixdown for the cleanest vocal separation. What gets uploaded
+      // here is just a format conversion (decoded audio -> WAV), not preprocessing.
       const mono = mixDownToMono(sourceAudioBuffer);
-      const processed = processMonoPcm(mono, { noiseRemoval, normalize });
-      const wavBlob = encodeWav(processed, sourceAudioBuffer.sampleRate);
+      const wavBlob = encodeWav(mono, sourceAudioBuffer.sampleRate);
       const analysis = await transcribeAudioRequest({
         provider: selectedProvider,
         model: sttModel,
@@ -524,7 +610,9 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
         durationSec: sourceAudioBuffer.duration,
         preprocessing: { vocalIsolation, noiseRemoval, normalize },
         attendeeNames,
-        onProgress: setAnalyzeProgress
+        onProgress: setAnalyzeProgress,
+        onPartialSegments: setLiveSegments,
+        signal: abortController.signal
       });
 
       const processedAudioBlob = analysis.processedAudioBase64
@@ -540,10 +628,19 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
       setEditedSpeakerMap({ ...analysis.speakerMap });
       resetPlaybackPosition();
     } catch (error) {
-      setAnalyzeError(error instanceof Error ? error.message : "분석 중 오류가 발생했습니다.");
+      if (error instanceof DOMException && error.name === "AbortError") {
+        setAnalyzeError("사용자가 분석을 중지했습니다.");
+      } else {
+        setAnalyzeError(error instanceof Error ? error.message : "분석 중 오류가 발생했습니다.");
+      }
     } finally {
       setIsAnalyzing(false);
+      analyzeAbortControllerRef.current = null;
     }
+  }
+
+  function handleStopAnalyze() {
+    analyzeAbortControllerRef.current?.abort();
   }
 
   function speakerOptions(label: string): string[] {
@@ -562,19 +659,34 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
     return Array.from(values);
   }
 
-  function handleComplete() {
+  async function handleComplete() {
     if (!result) {
       return;
     }
-    const { processedAudioBase64, processedAudioMimeType, processedFileName, ...persistableResult } = result as AudioAnalysis & {
-      processedAudioBase64?: string;
-      processedAudioMimeType?: string;
-      processedFileName?: string;
-    };
+    const { processedAudioBase64, processedAudioMimeType, processedFileName, speakerEmbeddings, ...persistableResult } = result;
     void processedAudioBase64;
     void processedAudioMimeType;
     void processedFileName;
-    onComplete({ ...persistableResult, speakerMap: editedSpeakerMap });
+
+    // A "미등록" speaker the user just renamed to a real name registers a brand-new voice profile
+    // - a confirmed match during diarization itself already registered automatically server-side
+    // (see assignSpeakersWithProfiles), so this only ever fires for speakers that had no match.
+    if (speakerEmbeddings) {
+      for (const [label, autoName] of Object.entries(result.speakerMap)) {
+        const finalName = editedSpeakerMap[label];
+        const embedding = speakerEmbeddings[label];
+
+        if (autoName.startsWith(UNREGISTERED_SPEAKER_PREFIX) && finalName && finalName !== autoName && embedding) {
+          try {
+            await registerVoiceProfileRequest(finalName, embedding);
+          } catch {
+            // Best-effort - a registration failure shouldn't block saving the meeting itself.
+          }
+        }
+      }
+    }
+
+    onComplete({ ...(persistableResult as AudioAnalysis), speakerMap: editedSpeakerMap });
     onClose();
   }
 
@@ -605,7 +717,9 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
               발언 대본
             </div>
 
-            {!result && <p className="audio-analysis-placeholder">분석 시작 버튼을 누르면 시간과 발언 내용이 여기에 표시됩니다.</p>}
+            {!result && liveSegments.length === 0 && (
+              <p className="audio-analysis-placeholder">분석 시작 버튼을 누르면 시간과 발언 내용이 여기에 표시됩니다.</p>
+            )}
 
             {result && (
               <ul className="audio-analysis-transcript-list">
@@ -622,6 +736,22 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                 ))}
               </ul>
             )}
+
+            {!result && liveSegments.length > 0 && (
+              <ul className="audio-analysis-transcript-list">
+                {liveSegments.map((segment, index) => (
+                  <li className="audio-analysis-transcript-row" key={`live-${index}`}>
+                    <div className="audio-analysis-transcript-meta">
+                      <span className="audio-analysis-transcript-time">
+                        {formatMmSs(segment.startSec)}-{formatMmSs(segment.endSec)}
+                      </span>
+                      <span className="audio-analysis-transcript-speaker">인식 중...</span>
+                    </div>
+                    <p className="audio-analysis-transcript-text">{segment.text}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="audio-analysis-main">
@@ -631,6 +761,7 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                   <SlidersHorizontal size={16} />
                   전처리 옵션
                 </div>
+                <span className="field-hint">선택한 항목은 Demucs → 정규화 → DeNoise 순서로 적용됩니다.</span>
               </div>
 
               <div className="audio-stt-control-row">
@@ -649,18 +780,6 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
 
                   <label className="export-archive-option compact">
                     <input
-                      checked={noiseRemoval}
-                      disabled={preprocessLocked || selectedProvider === "mock"}
-                      onChange={(event) => handleNoiseRemovalChange(event.target.checked)}
-                      type="checkbox"
-                    />
-                    <span>
-                      <strong>DeNoise</strong>
-                    </span>
-                  </label>
-
-                  <label className="export-archive-option compact">
-                    <input
                       checked={normalize}
                       disabled={preprocessLocked || selectedProvider === "mock"}
                       onChange={(event) => handleNormalizeChange(event.target.checked)}
@@ -668,6 +787,18 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                     />
                     <span>
                       <strong>정규화</strong>
+                    </span>
+                  </label>
+
+                  <label className="export-archive-option compact">
+                    <input
+                      checked={noiseRemoval}
+                      disabled={preprocessLocked || selectedProvider === "mock"}
+                      onChange={(event) => handleNoiseRemovalChange(event.target.checked)}
+                      type="checkbox"
+                    />
+                    <span>
+                      <strong>DeNoise</strong>
                     </span>
                   </label>
                 </div>
@@ -710,7 +841,13 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                     type="checkbox"
                   />
                   <span className="audio-waveform-choice-label">원본</span>
-                  <WaveformCanvas currentTime={currentTime} durationSec={sourceDurationSec} envelope={sourceEnvelope} height={FULL_WAVE_HEIGHT} />
+                  <WaveformCanvas
+                    analysisProgressPercent={isAnalyzing ? analyzeProgress : undefined}
+                    currentTime={currentTime}
+                    durationSec={playbackSource === "original" ? playbackDurationSec : sourceDurationSec}
+                    envelope={sourceEnvelope}
+                    height={FULL_WAVE_HEIGHT}
+                  />
                 </label>
 
                 {processedAudioAvailable && (
@@ -721,7 +858,12 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                       type="checkbox"
                     />
                     <span className="audio-waveform-choice-label">전처리</span>
-                    <WaveformCanvas currentTime={currentTime} durationSec={durationSec} envelope={envelope} height={FULL_WAVE_HEIGHT} />
+                    <WaveformCanvas
+                      currentTime={currentTime}
+                      durationSec={playbackSource === "processed" ? playbackDurationSec : durationSec}
+                      envelope={envelope}
+                      height={FULL_WAVE_HEIGHT}
+                    />
                   </label>
                 )}
               </div>
@@ -755,15 +897,23 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                         {formatMmSs(currentTime)} / {formatMmSs(playbackDurationSec)}
                       </span>
                     </div>
-                    <button
-                      className={isAnalyzing ? "primary-action analyze-progress-button" : "primary-action"}
-                      disabled={!audioBuffer || isAnalyzing}
-                      onClick={handleAnalyze}
-                      style={isAnalyzing ? { ["--analyze-progress" as string]: `${analyzeProgress}%` } : undefined}
-                      type="button"
-                    >
-                      {isAnalyzing ? `분석 중... ${analyzeProgress}%` : "분석 시작"}
-                    </button>
+                    <div className="audio-playback-right">
+                      {isAnalyzing && (
+                        <button className="danger-action" onClick={handleStopAnalyze} title="분석 중지" type="button">
+                          <Square size={14} />
+                          중지
+                        </button>
+                      )}
+                      <button
+                        className={isAnalyzing ? "primary-action analyze-progress-button" : "primary-action"}
+                        disabled={!audioBuffer || isAnalyzing}
+                        onClick={handleAnalyze}
+                        style={isAnalyzing ? { ["--analyze-progress" as string]: `${analyzeProgress}%` } : undefined}
+                        type="button"
+                      >
+                        {isAnalyzing ? `분석 중... ${analyzeProgress}%` : "분석 시작"}
+                      </button>
+                    </div>
                   </div>
                   {analyzeError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{analyzeError}</span>}
                 </>
@@ -780,7 +930,7 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                 <div className="speaker-lanes">
                   {speakerLabels.map((label, index) => (
                     <div className="speaker-lane-row" key={label}>
-                      <div className="speaker-lane-chip">{label}</div>
+                      <div className="speaker-lane-chip">{index + 1}</div>
                       <input
                         list={`speaker-options-${index}`}
                         onChange={(event) => setEditedSpeakerMap((prev) => ({ ...prev, [label]: event.target.value }))}
@@ -804,7 +954,7 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                       <WaveformCanvas
                         activeMask={speakerMasks[label]}
                         currentTime={currentTime}
-                        durationSec={durationSec}
+                        durationSec={playbackSource === "processed" ? playbackDurationSec : durationSec}
                         envelope={envelope}
                         height={LANE_WAVE_HEIGHT}
                       />

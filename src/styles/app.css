@@ -194,6 +194,70 @@ p {
   color: #8ed8c8;
 }
 
+/* ---------- Login screen ---------- */
+
+.login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  background: #f6f7f4;
+  color: #202124;
+}
+
+.login-screen.dark {
+  background: #171817;
+  color: #f3f1ea;
+}
+
+.login-card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(360px, 88vw);
+  padding: 32px 28px;
+  border: 1px solid rgba(32, 33, 36, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 24px 60px rgba(18, 19, 18, 0.12);
+}
+
+.login-screen.dark .login-card {
+  border-color: rgba(243, 241, 234, 0.16);
+  background: #1c1d1c;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+}
+
+.login-card .field {
+  width: 100%;
+}
+
+.login-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.login-title {
+  font-size: 1.4rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+
+.login-error {
+  color: #ba3030;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.login-card .primary-action {
+  width: 100%;
+  justify-content: center;
+}
+
 /* ---------- Intro / logo screen ---------- */
 
 .intro-screen {
@@ -302,7 +366,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 2px;
 }
 
 .toolbar-divider {
@@ -416,26 +480,6 @@ p {
 .dark .icon-button:hover,
 .dark .icon-button.active {
   color: #8ed8c8;
-}
-
-.power-button {
-  color: #b42318;
-}
-
-.power-button:hover {
-  background: rgba(180, 35, 24, 0.1);
-  border-color: rgba(180, 35, 24, 0.24);
-  color: #b42318;
-}
-
-.dark .power-button {
-  color: #ff6b5f;
-}
-
-.dark .power-button:hover {
-  background: rgba(255, 107, 95, 0.12);
-  border-color: rgba(255, 107, 95, 0.28);
-  color: #ff6b5f;
 }
 
 .sidebar-tools {
@@ -627,14 +671,14 @@ p {
 }
 
 .status-badge.scheduled {
-  border: 1px solid rgba(31, 111, 104, 0.3);
-  background: rgba(31, 111, 104, 0.1);
-  color: #1f6f68;
+  border: 1px solid rgba(186, 48, 48, 0.3);
+  background: rgba(186, 48, 48, 0.1);
+  color: #ba3030;
 }
 
 .dark .status-badge.scheduled {
-  border-color: rgba(142, 216, 200, 0.32);
-  color: #8ed8c8;
+  border-color: rgba(248, 113, 113, 0.32);
+  color: #f87171;
 }
 
 .status-badge.needs_minutes {
@@ -657,6 +701,86 @@ p {
 .dark .status-badge.completed {
   border-color: rgba(186, 198, 192, 0.24);
   color: #d5dcd8;
+}
+
+/* Board post category badges - one color per category so 공지/일반/요청/QnA read apart at a
+   glance instead of sharing a single badge color. */
+.status-badge.board-notice {
+  border: 1px solid rgba(186, 48, 48, 0.3);
+  background: rgba(186, 48, 48, 0.1);
+  color: #ba3030;
+}
+
+.dark .status-badge.board-notice {
+  border-color: rgba(248, 113, 113, 0.32);
+  color: #f87171;
+}
+
+.status-badge.board-general {
+  border: 1px solid rgba(31, 111, 104, 0.3);
+  background: rgba(31, 111, 104, 0.1);
+  color: #1f6f68;
+}
+
+.dark .status-badge.board-general {
+  border-color: rgba(142, 216, 200, 0.32);
+  color: #8ed8c8;
+}
+
+.status-badge.board-request {
+  border: 1px solid rgba(217, 164, 65, 0.4);
+  background: rgba(217, 164, 65, 0.14);
+  color: #9c6f16;
+}
+
+.dark .status-badge.board-request {
+  border-color: rgba(255, 209, 102, 0.34);
+  color: #ffd166;
+}
+
+.status-badge.board-qna {
+  border: 1px solid rgba(91, 76, 194, 0.32);
+  background: rgba(91, 76, 194, 0.12);
+  color: #5b4cc2;
+}
+
+.dark .status-badge.board-qna {
+  border-color: rgba(179, 166, 255, 0.34);
+  color: #b3a6ff;
+}
+
+.attendee-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.72rem;
+  font-weight: 750;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.attendee-badge.presenter {
+  border: 1px solid rgba(217, 164, 65, 0.4);
+  background: rgba(217, 164, 65, 0.14);
+  color: #9c6f16;
+}
+
+.dark .attendee-badge.presenter {
+  border-color: rgba(255, 209, 102, 0.34);
+  color: #ffd166;
+}
+
+.attendee-badge.attendee {
+  border: 1px solid rgba(31, 111, 104, 0.3);
+  background: rgba(31, 111, 104, 0.1);
+  color: #1f6f68;
+}
+
+.dark .attendee-badge.attendee {
+  border-color: rgba(142, 216, 200, 0.32);
+  color: #8ed8c8;
 }
 
 /* ---------- Card view ---------- */
@@ -702,11 +826,56 @@ p {
   transform: translateY(-1px);
 }
 
+/* Very light status-tinted wash layered over the card's existing translucent background, so 완료
+   (completed) / 예정 (scheduled) / 회의록 작성 필요 (needs minutes) read apart at a glance without
+   losing the card's glassy look. Same hues as .status-badge for consistency. */
+.meeting-card.status-scheduled {
+  background: linear-gradient(rgba(186, 48, 48, 0.07), rgba(186, 48, 48, 0.07)), rgba(255, 255, 255, 0.76);
+}
+
+.dark .meeting-card.status-scheduled {
+  background: linear-gradient(rgba(248, 113, 113, 0.08), rgba(248, 113, 113, 0.08)), rgba(255, 255, 255, 0.04);
+}
+
+.meeting-card.status-needs_minutes {
+  background: linear-gradient(rgba(217, 164, 65, 0.1), rgba(217, 164, 65, 0.1)), rgba(255, 255, 255, 0.76);
+}
+
+.dark .meeting-card.status-needs_minutes {
+  background: linear-gradient(rgba(255, 209, 102, 0.09), rgba(255, 209, 102, 0.09)), rgba(255, 255, 255, 0.04);
+}
+
+.meeting-card.status-completed {
+  background: linear-gradient(rgba(96, 112, 106, 0.08), rgba(96, 112, 106, 0.08)), rgba(255, 255, 255, 0.76);
+}
+
+.dark .meeting-card.status-completed {
+  background: linear-gradient(rgba(186, 198, 192, 0.07), rgba(186, 198, 192, 0.07)), rgba(255, 255, 255, 0.04);
+}
+
 .meeting-card-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.meeting-card-delete {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: -1px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #8b968f;
+}
+
+.meeting-card-delete:hover {
+  background: rgba(248, 113, 113, 0.14);
+  color: #f87171;
 }
 
 .meeting-card-title {
@@ -784,6 +953,319 @@ p {
   justify-content: space-between;
 }
 
+/* ---------- Mesh view ---------- */
+
+.mesh-summary {
+  color: #1f6f68;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.dark .mesh-summary {
+  color: #8ed8c8;
+}
+
+.mesh-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 16px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mesh-canvas-panel,
+.mesh-side-panel {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid rgba(32, 33, 36, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.dark .mesh-canvas-panel,
+.dark .mesh-side-panel {
+  border-color: rgba(243, 241, 234, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mesh-canvas-panel {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.mesh-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.mesh-svg.dragging {
+  cursor: grabbing;
+}
+
+.mesh-edge {
+  stroke: rgba(31, 111, 104, 0.25);
+  stroke-width: calc(0.8px + var(--edge-weight, 1) * 0.45px);
+}
+
+.mesh-edge.muted {
+  stroke: rgba(31, 111, 104, 0.1);
+}
+
+.mesh-edge.highlighted {
+  stroke: rgba(183, 121, 31, 0.82);
+}
+
+.dark .mesh-edge {
+  stroke: rgba(142, 216, 200, 0.25);
+}
+
+.dark .mesh-edge.muted {
+  stroke: rgba(142, 216, 200, 0.1);
+}
+
+.dark .mesh-edge.highlighted {
+  stroke: rgba(242, 201, 76, 0.86);
+}
+
+.mesh-post-node {
+  cursor: pointer;
+}
+
+.mesh-post-node circle {
+  fill: #6f7a74;
+  opacity: 0.82;
+}
+
+.mesh-post-label {
+  font-size: 11px;
+  fill: #4c5750;
+  pointer-events: none;
+  user-select: none;
+}
+
+.dark .mesh-post-label {
+  fill: #d5dcd8;
+}
+
+.mesh-post-node.status-scheduled circle {
+  fill: #ba3030;
+}
+
+.mesh-post-node.status-needs_minutes circle {
+  fill: #d9a441;
+}
+
+.mesh-post-node.status-completed circle {
+  fill: #8b968f;
+}
+
+.dark .mesh-post-node.status-scheduled circle {
+  fill: #f87171;
+}
+
+.dark .mesh-post-node.status-needs_minutes circle {
+  fill: #ffd166;
+}
+
+.dark .mesh-post-node.status-completed circle {
+  fill: #d5dcd8;
+}
+
+/* Card-level preview shown after clicking a node - clicking it again opens the full
+   MeetingDetailModal (same pattern as clicking a Card view card). */
+.mesh-node-preview {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 5;
+  width: 280px;
+}
+
+.mesh-node-preview-close {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(32, 33, 36, 0.16);
+  border-radius: 50%;
+  background: #f3f1ea;
+  color: #4c5750;
+}
+
+.dark .mesh-node-preview-close {
+  border-color: rgba(243, 241, 234, 0.18);
+  background: #202220;
+  color: #d5dcd8;
+}
+
+.mesh-node-preview-card {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  border: 1px solid rgba(32, 33, 36, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 28px rgba(18, 19, 18, 0.18);
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dark .mesh-node-preview-card {
+  border-color: rgba(243, 241, 234, 0.16);
+  background: #1b1d1b;
+}
+
+.mesh-node-preview-card:hover {
+  border-color: rgba(31, 111, 104, 0.4);
+}
+
+.mesh-node-preview-title {
+  display: grid;
+  gap: 2px;
+}
+
+.mesh-node-preview-title strong {
+  font-size: 0.98rem;
+}
+
+.mesh-node-preview-title span {
+  color: #60706a;
+  font-size: 0.78rem;
+}
+
+.dark .mesh-node-preview-title span {
+  color: #bac6c0;
+}
+
+.mesh-node-preview-meta {
+  display: grid;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #4c5750;
+}
+
+.dark .mesh-node-preview-meta {
+  color: #d5dcd8;
+}
+
+.mesh-node-preview-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mesh-node-preview-summary {
+  margin: 0;
+  color: #4c5750;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dark .mesh-node-preview-summary {
+  color: #d5dcd8;
+}
+
+.mesh-node-preview-hint {
+  color: #8b968f;
+  font-size: 0.72rem;
+}
+
+.mesh-empty-state {
+  height: 100%;
+  min-height: 0;
+}
+
+.mesh-side-panel {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.mesh-side-panel h2 {
+  margin: 0;
+  color: #1f6f68;
+  font-size: 1rem;
+}
+
+.dark .mesh-side-panel h2 {
+  color: #8ed8c8;
+}
+
+.mesh-tag-list {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.mesh-tag-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid rgba(32, 33, 36, 0.08);
+  background: transparent;
+  color: inherit;
+  padding: 7px 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mesh-tag-item:hover,
+.mesh-tag-item.active {
+  background: rgba(31, 111, 104, 0.08);
+  border-radius: 6px;
+}
+
+.dark .mesh-tag-item {
+  border-color: rgba(243, 241, 234, 0.1);
+}
+
+.dark .mesh-tag-item:hover,
+.dark .mesh-tag-item.active {
+  background: rgba(142, 216, 200, 0.1);
+}
+
+.mesh-tag-item span {
+  min-width: 0;
+  overflow: hidden;
+  color: #2d3330;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dark .mesh-tag-item span {
+  color: #f3f1ea;
+}
+
+.mesh-tag-item strong {
+  color: #1f6f68;
+}
+
+.dark .mesh-tag-item strong {
+  color: #8ed8c8;
+}
+
 /* ---------- List / table view ---------- */
 
 .table-wrap {
@@ -841,6 +1323,32 @@ p {
 .meeting-table tbody tr {
   height: 48px;
   cursor: pointer;
+}
+
+/* Same very light status wash as the card view, applied as a flat row background (kept subtler
+   than the hover tint below so hover still reads as "more highlighted"). */
+.meeting-table tbody tr.status-scheduled {
+  background: rgba(186, 48, 48, 0.05);
+}
+
+.dark .meeting-table tbody tr.status-scheduled {
+  background: rgba(248, 113, 113, 0.06);
+}
+
+.meeting-table tbody tr.status-needs_minutes {
+  background: rgba(217, 164, 65, 0.08);
+}
+
+.dark .meeting-table tbody tr.status-needs_minutes {
+  background: rgba(255, 209, 102, 0.07);
+}
+
+.meeting-table tbody tr.status-completed {
+  background: rgba(96, 112, 106, 0.06);
+}
+
+.dark .meeting-table tbody tr.status-completed {
+  background: rgba(186, 198, 192, 0.05);
 }
 
 .meeting-table tbody tr:hover {
@@ -1285,6 +1793,160 @@ p {
   flex: 1;
 }
 
+/* ---------- Dual-range slider (Filter modal's Connection range) ----------
+   Ported from C:\Claude\SNS-Reader's connection-range filter, its post-fix version - see that
+   project's memory-bank/knowledge/trouble-shooting.md for the original bug this avoids: mixing
+   <label>-wrapped and bare controls in one grid row let a global `label` margin vertically offset
+   only the label cells, so the min/max number boxes drifted out of vertical alignment with the
+   slider track. Fixed here the same way: .connection-value-input is a flex box (not a grid with a
+   caption row) with the exact same height as .dual-range and an explicit margin-bottom: 0, and the
+   row uses align-items: center instead of end. The filled segment between the two thumbs is a
+   separate div positioned via --range-lower/--range-upper CSS custom properties computed from the
+   exact same percentages that place the thumbs, so the fill can never visually drift from them. */
+.connection-range-row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 64px;
+  align-items: center;
+  gap: 14px;
+  min-height: 42px;
+}
+
+.connection-value-input {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.connection-value-input input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 42px;
+  padding: 0 8px;
+  color: #1f6f68;
+  font-weight: 750;
+  line-height: 42px;
+  text-align: center;
+}
+
+.dark .connection-value-input input {
+  color: #8ed8c8;
+}
+
+.dual-range {
+  position: relative;
+  box-sizing: border-box;
+  height: 42px;
+  border: 1px solid rgba(32, 33, 36, 0.18);
+  border-radius: 8px;
+  overflow: visible;
+}
+
+.dark .dual-range {
+  border-color: rgba(243, 241, 234, 0.18);
+}
+
+.dual-range-track {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  left: 16px;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    rgba(96, 112, 106, 0.34) 0%,
+    rgba(96, 112, 106, 0.34) var(--range-lower),
+    #1f6f68 var(--range-lower),
+    #1f6f68 var(--range-upper),
+    rgba(96, 112, 106, 0.34) var(--range-upper),
+    rgba(96, 112, 106, 0.34) 100%
+  );
+}
+
+.dark .dual-range-track {
+  background: linear-gradient(
+    to right,
+    rgba(186, 198, 192, 0.28) 0%,
+    rgba(186, 198, 192, 0.28) var(--range-lower),
+    #8ed8c8 var(--range-lower),
+    #8ed8c8 var(--range-upper),
+    rgba(186, 198, 192, 0.28) var(--range-upper),
+    rgba(186, 198, 192, 0.28) 100%
+  );
+}
+
+/* Both range inputs stack exactly on top of each other with pointer-events: none, and only their
+   thumb (::-webkit-slider-thumb / ::-moz-range-thumb) re-enables pointer-events. Without this,
+   whichever input is later in the DOM would swallow clicks across its entire track width, making
+   the other thumb undraggable wherever the two tracks overlap. */
+.dual-range input[type="range"] {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 8px;
+  width: calc(100% - 16px);
+  height: 42px;
+  margin: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  outline: 0;
+  background: transparent;
+  box-shadow: none !important;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.dual-range input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.dual-range input[type="range"]::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #1f6f68;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-appearance: none;
+}
+
+.dual-range input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.dual-range input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #1f6f68;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.dark .dual-range input[type="range"]::-webkit-slider-thumb {
+  background: #8ed8c8;
+  border-color: #19201e;
+}
+
+.dark .dual-range input[type="range"]::-moz-range-thumb {
+  background: #8ed8c8;
+  border-color: #19201e;
+}
+
 /* ---------- Editable row tables (attendees / A-I list / agenda) ---------- */
 
 .editable-table-wrap {
@@ -1618,6 +2280,126 @@ p {
   color: #d5dcd8;
 }
 
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comment-item {
+  border-top: 1px solid rgba(32, 33, 36, 0.1);
+  padding-top: 8px;
+}
+
+.dark .comment-item {
+  border-color: rgba(243, 241, 234, 0.1);
+}
+
+.comment-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: #8b968f;
+}
+
+.comment-content {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  margin-top: 2px;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.comment-item-reply {
+  margin-left: 20px;
+}
+
+.checkbox-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+}
+
+.checkbox-inline input {
+  width: 16px;
+  height: 16px;
+  accent-color: #1f6f68;
+}
+
+/* Board view's own grid row (main-window's second, flexible row) must be shared by the category
+   filter chips and the post list/empty-state below them - without this wrapper, both sat as
+   direct siblings in that single 1fr row and got stretched to fill its full height (most visible
+   when the post list was empty: the .checkbox-grid chips themselves stretched into tall pills). */
+.board-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.board-content > .checkbox-grid {
+  flex: 0 0 auto;
+}
+
+.board-content > .empty-state,
+.board-content > .board-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.board-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.board-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 10px;
+  border: none;
+  border-bottom: 1px solid rgba(32, 33, 36, 0.1);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.dark .board-row {
+  border-color: rgba(243, 241, 234, 0.1);
+}
+
+.board-row:hover {
+  background: rgba(31, 111, 104, 0.06);
+}
+
+.board-row-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.board-row-meta {
+  color: #8b968f;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
@@ -1708,6 +2490,21 @@ p {
   transform: translateX(-1px);
 }
 
+.waveform-analysis-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.28),
+    0 0 10px 2px rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  transform: translateX(-1px);
+  transition: left 0.4s linear;
+}
+
 .audio-waveform-compare {
   display: grid;
   gap: 8px;
@@ -1766,6 +2563,12 @@ p {
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+.audio-playback-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .icon-control-button {
@@ -2100,4 +2903,164 @@ p {
   font-size: 0.84rem;
   text-align: center;
   padding: 24px 8px;
+}
+
+.file-navigator-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.file-navigator-pathbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.file-navigator-pathbar input {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-navigator-list {
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid rgba(32, 33, 36, 0.14);
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.dark .file-navigator-list {
+  border-color: rgba(243, 241, 234, 0.16);
+}
+
+.file-navigator-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 12px;
+  border: none;
+  border-bottom: 1px solid rgba(32, 33, 36, 0.08);
+  background: transparent;
+  color: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dark .file-navigator-row {
+  border-color: rgba(243, 241, 234, 0.1);
+}
+
+.file-navigator-row:last-child {
+  border-bottom: none;
+}
+
+.file-navigator-row:hover:not(.disabled) {
+  background: rgba(31, 111, 104, 0.08);
+}
+
+.file-navigator-row.active {
+  background: rgba(31, 111, 104, 0.16);
+  color: #1f6f68;
+  font-weight: 600;
+}
+
+.dark .file-navigator-row.active {
+  color: #8ed8c8;
+}
+
+.file-navigator-row.disabled {
+  color: #a3aca6;
+  cursor: not-allowed;
+}
+
+.file-navigator-empty {
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  color: #8b968f;
+  font-size: 0.84rem;
+}
+
+.live-caption-panel {
+  border: 1px solid rgba(32, 33, 36, 0.14);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dark .live-caption-panel {
+  border-color: rgba(243, 241, 234, 0.16);
+}
+
+.live-caption-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f0f1ec;
+  font-size: 0.8rem;
+  color: #4c5750;
+}
+
+.dark .live-caption-panel-header {
+  background: #202220;
+  color: #d5dcd8;
+}
+
+.live-caption-recording-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ba3030;
+  animation: live-caption-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes live-caption-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.live-caption-panel-body {
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.live-caption-panel-body p {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.live-waveform {
+  width: 100%;
+  background: rgba(47, 158, 143, 0.06);
+  border-bottom: 1px solid rgba(32, 33, 36, 0.14);
+}
+
+.dark .live-waveform {
+  background: rgba(47, 158, 143, 0.1);
+  border-color: rgba(243, 241, 234, 0.16);
+}
+
+.live-waveform canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }

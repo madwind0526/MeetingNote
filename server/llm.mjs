@@ -212,6 +212,17 @@ export function buildMinutesPrompt(meeting) {
     : ["(Agenda 없음)"];
   sections.push(["[Agenda 목록 - 본 회의에서 다룰 안건]", ...agendaLines].join("\n"));
 
+  // B6: an Agenda item that already went through B5's per-presentation summary
+  // (presentationSummary) has already had its relevant transcript window found and tagged with
+  // (질문)/(답변)/(의견)/(할일) - feed that in as authoritative per-agenda content instead of
+  // making the LLM re-derive it from the full transcript below. Agenda items without a summary
+  // fall back to [발언 대본] as before (unchanged behavior when B5 hasn't been used yet).
+  const summarizedAgendaItems = agenda.filter((item) => typeof item.presentationSummary === "string" && item.presentationSummary.trim());
+  if (summarizedAgendaItems.length) {
+    const summaryLines = summarizedAgendaItems.flatMap((item) => [`[Agenda ${item.no}: ${item.title || "-"}]`, item.presentationSummary.trim(), ""]);
+    sections.push(["[발표별 정리 - B5에서 이미 구조화된 내용, 우선 근거로 사용]", ...summaryLines].join("\n"));
+  }
+
   if (audio && Array.isArray(audio.transcriptSegments) && audio.transcriptSegments.length) {
     const speakerMap = audio.speakerMap && typeof audio.speakerMap === "object" ? audio.speakerMap : {};
     const grouped = new Map();
@@ -235,6 +246,50 @@ export function buildMinutesPrompt(meeting) {
     }
 
     sections.push(["[발언 대본]", ...transcriptLines].join("\n"));
+  }
+
+  return sections.join("\n\n");
+}
+
+// Builds the user-message prompt for /api/llm/presentation-summary (B5). Unlike buildMinutesPrompt
+// above (which groups the transcript by speaker for a whole-meeting summary), this keeps the
+// transcript in chronological order - the LLM has to find which stretch of a single, undivided
+// meeting recording actually discusses this one Agenda item itself (this app has no per-agenda
+// timestamp data - see memory-bank/roadmap.md's confirmed B5 design), and chronological order
+// preserves the question/answer adjacency that signal depends on.
+// `badgeLabels` is a plain {name: label} map (e.g. {"김도현": "주관자", "박준혁": "발표1"}) built by
+// the caller from B1's computeAttendeeBadges (a TS function in src/types/domain.ts that this plain
+// .mjs file can't import directly), so the LLM tags its output with the same labels used elsewhere.
+export function buildPresentationSummaryPrompt(meeting, agendaItem, materialMarkdown, badgeLabels) {
+  const source = meeting && typeof meeting === "object" ? meeting : {};
+  const sections = [];
+
+  sections.push(
+    [
+      "[발표 정보]",
+      `제목: ${agendaItem.title || "-"}`,
+      `발표자: ${agendaItem.presenter || "-"}`,
+      `발표시간: ${Number.isFinite(agendaItem.durationMinutes) ? agendaItem.durationMinutes : 0}분`
+    ].join("\n")
+  );
+
+  const badgeEntries = badgeLabels && typeof badgeLabels === "object" ? Object.entries(badgeLabels) : [];
+  const badgeLines = badgeEntries.length ? badgeEntries.map(([name, label]) => `- ${label}: ${name}`) : ["(참석자 라벨 정보 없음)"];
+  sections.push(["[참석자 라벨]", ...badgeLines].join("\n"));
+
+  if (materialMarkdown && materialMarkdown.trim()) {
+    sections.push(["[발표 자료]", materialMarkdown.trim()].join("\n"));
+  }
+
+  const audio = source.audio && typeof source.audio === "object" ? source.audio : null;
+  if (audio && Array.isArray(audio.transcriptSegments) && audio.transcriptSegments.length) {
+    const speakerMap = audio.speakerMap && typeof audio.speakerMap === "object" ? audio.speakerMap : {};
+    const transcriptLines = audio.transcriptSegments.map((segment) => {
+      const speakerName = resolveSpeakerName(segment.speaker, speakerMap);
+      return `[${formatMmSs(segment.startSec)}-${formatMmSs(segment.endSec)}] ${speakerName}: ${segment.text || ""}`;
+    });
+
+    sections.push(["[회의 전체 발언 대본 - 이 발표와 무관한 구간이 섞여 있을 수 있음]", ...transcriptLines].join("\n"));
   }
 
   return sections.join("\n\n");

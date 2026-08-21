@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 import { ArrowDown, ArrowUp, Pencil, Trash2 } from "lucide-react";
-import type { Meeting } from "../../types/domain";
-import { attendeeSummary, computeMeetingStatus, meetingStatusLabels } from "../../types/domain";
+import type { Meeting, PublicMember } from "../../types/domain";
+import { attendeeSummary, canDeleteMeeting, computeMeetingStatus, meetingStatusLabels } from "../../types/domain";
 
 export type ListSortKey = "title" | "date" | "organizer" | "status";
 
 interface ListViewProps {
   meetings: Meeting[];
+  currentMember: PublicMember;
   onOpen: (meeting: Meeting) => void;
   onEdit: (meeting: Meeting) => void;
   onDelete: (meeting: Meeting) => void;
@@ -28,7 +29,7 @@ function sortValue(meeting: Meeting, key: ListSortKey) {
   return meeting[key];
 }
 
-export function ListView({ meetings, onOpen, onEdit, onDelete, sortKey, sortAsc, onSortChange }: ListViewProps) {
+export function ListView({ meetings, currentMember, onOpen, onEdit, onDelete, sortKey, sortAsc, onSortChange }: ListViewProps) {
   const sorted = useMemo(() => {
     const copy = [...meetings];
     copy.sort((a, b) => {
@@ -89,7 +90,7 @@ export function ListView({ meetings, onOpen, onEdit, onDelete, sortKey, sortAsc,
             const status = computeMeetingStatus(meeting);
 
             return (
-              <tr key={meeting.id} onClick={() => onOpen(meeting)}>
+              <tr className={`status-row status-${status}`} key={meeting.id} onClick={() => onOpen(meeting)}>
                 <td>{meeting.title || "제목 없음"}</td>
                 <td>{meeting.date || "-"}</td>
                 <td>
@@ -107,9 +108,11 @@ export function ListView({ meetings, onOpen, onEdit, onDelete, sortKey, sortAsc,
                     <button className="row-icon-button" onClick={() => onEdit(meeting)} title="수정" type="button">
                       <Pencil size={14} />
                     </button>
-                    <button className="row-icon-button" onClick={() => onDelete(meeting)} title="삭제" type="button">
-                      <Trash2 size={14} />
-                    </button>
+                    {canDeleteMeeting(meeting, currentMember) && (
+                      <button className="row-icon-button" onClick={() => onDelete(meeting)} title="삭제" type="button">
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

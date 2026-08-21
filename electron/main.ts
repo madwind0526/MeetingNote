@@ -1,9 +1,10 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
+import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, session, shell } from "electron";
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveAttachmentPath, toProjectRelativePath } from "../server/attachments.mjs";
+import { readMembers, createMember, updateMember, disableMember, verifyLogin, toPublicMember } from "../server/members.mjs";
 
 const settingsFilePath = path.resolve(process.cwd(), process.env.MEETINGNOTE_SETTINGS_FILE ?? "data/runtime/app-settings.json");
 const allowedWritePaths = new Set<string>();
@@ -109,6 +110,77 @@ ipcMain.handle("dialog:openDirectory", async () => {
   }
 });
 
+// Shortcuts shown in the built-in file navigator (Settings > 탐색기 방식 > 내장 파일 탐색기). This exists
+// because some corporate security policies block Electron's native `dialog` module (and the OS
+// Explorer shell it wraps) entirely, so `dialog:openFile`/`dialog:saveFile`/`dialog:openDirectory`
+// above silently fail there - this gives those users an alternative that only ever touches the
+// filesystem through plain `fs.readdir`/`fs.stat`, no OS shell dialog involved.
+function fileNavigatorShortcuts() {
+  return [
+    { label: "바탕화면", path: app.getPath("desktop") },
+    { label: "문서", path: app.getPath("documents") },
+    { label: "다운로드", path: app.getPath("downloads") },
+    { label: "프로젝트 폴더", path: process.cwd() }
+  ];
+}
+
+ipcMain.handle("fs:listDir", async (_event, dirPath?: string) => {
+  const target = dirPath && dirPath.trim() ? path.resolve(dirPath.trim()) : app.getPath("documents");
+  const shortcuts = fileNavigatorShortcuts();
+
+  try {
+    const info = await stat(target);
+    if (!info.isDirectory()) {
+      throw new Error("폴더가 아닙니다.");
+    }
+
+    const rawEntries = await readdir(target, { withFileTypes: true });
+    const entries = rawEntries
+      .filter((entry) => !entry.name.startsWith("."))
+      .map((entry) => ({ name: entry.name, isDirectory: entry.isDirectory() }))
+      .sort((a, b) => {
+        if (a.isDirectory !== b.isDirectory) {
+          return a.isDirectory ? -1 : 1;
+        }
+        return a.name.localeCompare(b.name, "ko");
+      });
+    const parent = path.dirname(target);
+
+    return { path: target, parent: parent === target ? null : parent, entries, shortcuts };
+  } catch (error) {
+    return {
+      path: target,
+      parent: null,
+      entries: [],
+      shortcuts,
+      error: error instanceof Error ? error.message : "폴더를 열지 못했습니다."
+    };
+  }
+});
+
+ipcMain.handle("fs:readFileBase64", async (_event, filePath: string) => {
+  const buffer = await readFile(path.resolve(filePath));
+  return buffer.toString("base64");
+});
+
+// Mirrors what `dialog:saveFile` already does for the native save dialog - the built-in file
+// navigator's "save" mode calls this once the user confirms a target path, so `file:write` below
+// accepts it through the same allowlist check either picker used.
+ipcMain.handle("fs:registerWritePath", async (_event, filePath: string) => {
+  allowedWritePaths.add(path.resolve(filePath));
+  return true;
+});
+
+// Used by the built-in navigator's "folder" mode (Settings > 저장 폴더) so it enforces the exact
+// same project-relative-only constraint as `dialog:openDirectory` above.
+ipcMain.handle("fs:toProjectRelativePath", async (_event, absolutePath: string) => {
+  try {
+    return { path: toProjectRelativePath(absolutePath) };
+  } catch (error) {
+    return { path: null, error: error instanceof Error ? error.message : "잘못된 폴더입니다." };
+  }
+});
+
 ipcMain.handle("file:write", async (_event, filePath: string, base64: string) => {
   const resolvedPath = path.resolve(filePath);
 
@@ -140,6 +212,19 @@ ipcMain.handle("file:openAttachment", async (_event, relativePath: string) => {
   return errorMessage || "";
 });
 
+ipcMain.handle("auth:login", async (_event, loginId: string, password: string) => verifyLogin(loginId, password));
+
+ipcMain.handle("members:list", async () => {
+  const members = await readMembers();
+  return members.map(toPublicMember);
+});
+
+ipcMain.handle("members:create", async (_event, draft: unknown) => createMember(draft));
+
+ipcMain.handle("members:update", async (_event, id: string, patch: unknown) => updateMember(id, patch));
+
+ipcMain.handle("members:disable", async (_event, id: string) => disableMember(id));
+
 ipcMain.handle("app:quit", () => {
   setTimeout(() => app.quit(), 0);
 
@@ -166,7 +251,30 @@ const createWindow = () => {
   void win.loadFile(path.join(__dirname, "../dist/index.html"));
 };
 
+// Backs "PC 소리 녹음" in MeetingFormModal's 회의 음성 파일 section - the renderer's plain
+// `navigator.mediaDevices.getDisplayMedia({ audio: true, video: true })` call routes through here
+// instead of Chromium's normal screen/window picker dialog. `audio: "loopback"` is what actually
+// gets the PC's speaker output (everything currently playing through it) as a MediaStream track;
+// a `getUserMedia({ audio: true })` call would only ever capture the microphone, never this. The
+// video track this hands back is required by the API shape but immediately discarded by the
+// renderer (see src/lib/systemAudioCapture.ts) - only the audio track is used.
+function registerSystemAudioCaptureHandler() {
+  session.defaultSession.setDisplayMediaRequestHandler(async (_request, callback) => {
+    try {
+      const sources = await desktopCapturer.getSources({ types: ["screen"] });
+      if (sources[0]) {
+        callback({ video: sources[0], audio: "loopback" });
+      } else {
+        callback({});
+      }
+    } catch {
+      callback({});
+    }
+  }, { useSystemPicker: false });
+}
+
 void app.whenReady().then(() => {
+  registerSystemAudioCaptureHandler();
   createWindow();
 
   app.on("activate", () => {

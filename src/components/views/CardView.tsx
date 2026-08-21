@@ -1,10 +1,12 @@
-import { Calendar, Users } from "lucide-react";
-import type { Meeting } from "../../types/domain";
-import { attendeeSummary, computeMeetingStatus, meetingStatusLabels } from "../../types/domain";
+import { Calendar, Users, X } from "lucide-react";
+import type { Meeting, PublicMember } from "../../types/domain";
+import { attendeeSummary, canDeleteMeeting, computeMeetingStatus, meetingStatusLabels } from "../../types/domain";
 
 interface CardViewProps {
   meetings: Meeting[];
+  currentMember: PublicMember;
   onOpen: (meeting: Meeting) => void;
+  onDelete: (meeting: Meeting) => void;
 }
 
 const SUMMARY_PREVIEW_LENGTH = 80;
@@ -26,7 +28,7 @@ function formatTimeRange(startTime: string, endTime: string) {
   return startTime || endTime || "시간 미정";
 }
 
-export function CardView({ meetings, onOpen }: CardViewProps) {
+export function CardView({ meetings, currentMember, onOpen, onDelete }: CardViewProps) {
   if (meetings.length === 0) {
     return (
       <div className="empty-state">
@@ -42,12 +44,25 @@ export function CardView({ meetings, onOpen }: CardViewProps) {
         const status = computeMeetingStatus(meeting);
 
         return (
-          <button className="meeting-card" key={meeting.id} onClick={() => onOpen(meeting)} type="button">
+          <div className={`meeting-card status-${status}`} key={meeting.id} onClick={() => onOpen(meeting)} role="button" tabIndex={0}>
             <div className="meeting-card-top">
               <div className="meeting-card-title">
                 <strong>{meeting.title || "제목 없음"}</strong>
                 <span>{meeting.date || "날짜 미정"}</span>
               </div>
+              {canDeleteMeeting(meeting, currentMember) && (
+                <button
+                  className="meeting-card-delete"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onDelete(meeting);
+                  }}
+                  title="삭제"
+                  type="button"
+                >
+                  <X size={13} />
+                </button>
+              )}
             </div>
             <div className="meeting-card-meta">
               <div>
@@ -65,7 +80,7 @@ export function CardView({ meetings, onOpen }: CardViewProps) {
             <div className="meeting-card-footer">
               <span className={`status-badge ${status}`}>{meetingStatusLabels[status]}</span>
             </div>
-          </button>
+          </div>
         );
       })}
     </div>

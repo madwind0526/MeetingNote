@@ -1,5 +1,23 @@
 # Trouble Shooting
 
+## localhost 브라우저에서는 Electron preload 전용 파일 탐색 기능이 사라진다
+
+### 증상
+
+Electron 앱(`npm start`)에서는 설정의 `탐색기 방식` 메뉴가 보이고, 새 회의록의 `회의 음성 파일`을 클릭하면 OS 기본 탐색기 또는 내장 파일 탐색기가 정상으로 열린다. 하지만 `http://127.0.0.1:5185` 브라우저 또는 Playwright 접속에서는 설정 메뉴가 숨겨지고, 내장 모드가 저장된 상태에서는 파일 선택 클릭이 아무 일도 안 하는 것처럼 보일 수 있다.
+
+### 원인
+
+`SettingsView`가 `isBuiltinFilePickerAvailable()`일 때만 탐색기 방식 섹션을 렌더링했고, 기존 `isBuiltinFilePickerAvailable()`은 `window.meetingNote?.listDirectory`만 확인했다. 이 값은 Electron preload IPC가 주입될 때만 존재하므로 브라우저 접속에서는 내장 탐색기가 항상 unavailable로 판단됐다. 또한 `pickFileWithNavigator()`도 `window.meetingNote.readFileBase64`에 의존해 브라우저에서 선택한 경로를 `File` 객체로 되돌릴 수 없었다.
+
+### 해결
+
+`src/lib/filePicker.ts`에 localhost 브라우저용 Vite middleware fallback을 추가했다. Electron에서는 기존 IPC를 우선 사용하고, 브라우저에서는 `/api/file-navigator/list`, `/api/file-navigator/read`, `/api/file-navigator/to-project-relative`, `/api/file-navigator/write`를 호출한다. `vite.config.mts`에는 같은 origin 검사 후 `fs.readdir`/`fs.stat`/`readFile`/`writeFile`을 수행하는 라우트를 추가했다. `SettingsView`는 탐색기 방식 섹션을 항상 렌더링하고, 브라우저에서도 내장 탐색기 버튼이 활성화된다.
+
+### 검증
+
+`npm run build` 통과. Playwright로 `http://127.0.0.1:5185`에 로그인 후 설정에서 `탐색기 방식` 섹션과 `내장 파일 탐색기` 버튼 노출 확인. 내장 모드 저장 후 새 회의록의 `회의 음성 파일` 클릭 시 내장 파일 탐색기 모달이 열리고 파일 선택 상태로 반영됨을 확인. 기본 모드로 되돌린 뒤 같은 영역 클릭 시 Playwright가 `File chooser` 이벤트를 감지함을 확인. 콘솔 에러는 기존 `favicon.ico` 404뿐.
+
 > 발생했던 버그와 해결 방법. 같은 문제를 두 번 겪지 않기 위한 기록.
 
 ## 여러 sub-agent가 domain.ts를 미리 안 읽으면 shape 불일치가 생길 수 있다 (예방됨, 실제 발생 없음)
@@ -229,6 +247,38 @@ const intSample = Math.round(Math.max(-1, Math.min(1, mono[index])) * 32767);
   틀릴 수 있다. 겉보기에 무해해 보이는 수치 차이라도, 같은 입력을 재현 가능하게 반복 실행해서 "정말
   재현되는 차이인지" 먼저 확인하고, 안 되면 "모델이 원래 그렇다"로 결론 내리기 전에 실제 바이트 레벨까지
   파고들어야 한다.
+
+## B3 화자 음성 프로필: 초기 코사인 유사도 임계값(0.75)이 실제 다른 화자 쌍보다 낮아서 오매칭됨
+
+### 증상
+
+`pyannote`의 `DiarizationPipeline(..., return_embeddings=True)`로 얻은 화자 임베딩으로
+`matchSpeakerProfile()`을 구현하고 `SIMILARITY_THRESHOLD = 0.75`로 설정했는데, 실제 HF 토큰+GPU로
+`data/test-audio/diarize-2speaker-ko-en.wav`(서로 다른 두 화자)를 재현했더니 한 화자만 프로필을
+등록했는데도 **두 화자 모두** 그 프로필로 매칭됐다.
+
+### 원인
+
+"임계값이 너무 낮다"고 바로 단정하지 않고, 두 화자의 실제 임베딩 벡터를 직접 저장해서 코사인 유사도를
+스크립트로 계산해봤다. 결과: 같은 오디오를 반복 실행했을 때 동일 화자끼리는 ~1.0(당연히 결정론적),
+그런데 **이 녹음 안의 서로 다른 두 화자끼리도 0.757**이 나왔다 - 초기 임계값 0.75보다 근소하게 높아서
+둘 다 매칭 조건을 통과해버렸다. 매칭 로직 자체(코사인 유사도 계산, 우선순위 정렬)는 정확했고, 문제는
+순전히 임계값이 이 임베딩 모델·이 화자 쌍의 실제 분포보다 낮게 잡혀 있었던 것.
+
+### 해결
+
+`server/voiceProfiles.mjs`의 `SIMILARITY_THRESHOLD`를 0.85로 올림. 재현 테스트: 등록된 화자는 다시
+정확히 매칭되고, 등록 안 된 다른 화자는 "미등록"으로 남는 것을 확인.
+
+### 재사용 가능한 교훈
+
+- 유사도/거리 기반 매칭에서 "임계값이 이상한 것 같다"는 의심이 들면, 실제 데이터로 both-sides(같은 대상
+  vs 다른 대상)의 실측 유사도 분포를 직접 찍어보고 임계값을 잡아야 한다 - 감으로 잡은 값(이번엔 근거
+  없이 0.75)은 실제 분포와 어긋날 수 있다.
+- 이 프로젝트에서 또 한 번 확인된 패턴(WAV 반올림 버그 항목 참고): "모델/알고리즘이 이상하게 동작하는
+  것 같다" 싶을 때 코드 로직을 의심하기 전에, 먼저 실제 중간값(여기선 임베딩 벡터, 그때는 PCM 샘플)을
+  직접 찍어서 정말 무엇이 일어나고 있는지 확인하는 게 항상 더 빠르고 정확했다.
+- 이 임계값(0.85)은 **합성 음성 1쌍**으로만 검증됐다 - 실제 사람 목소리로 재조정이 필요할 수 있다.
 
 ## Vite dev 서버는 `vite.config.mts`가 import하는 모든 파일 변경에도 전체 재시작한다
 

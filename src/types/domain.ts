@@ -1,4 +1,4 @@
-export type ViewMode = "card" | "list";
+export type ViewMode = "card" | "list" | "mesh";
 
 export interface Attendee {
   id: string;
@@ -20,30 +20,48 @@ export function emptyAttendee(): Attendee {
 
 // A/I List row - action items assigned during the meeting. `material` is a free-text label
 // (e.g. a file name); `materialPath` is set when an actual file was attached via the form and
-// points at its stored location under the configured attachments folder.
+// points at its stored location under the configured attachments folder. `materialMdPath` is set
+// when that file was a PDF/DOCX/PPTX and got an automatic Markdown conversion saved alongside it
+// (B4, see server/converters/toMarkdown.mjs) - used later by B5 to feed the material's content to
+// an LLM together with the matching STT transcript.
 export interface ActionItem {
   no: number;
   title: string;
   material: string;
   materialPath?: string;
+  materialMdPath?: string;
   presenter: string;
 }
 
 export function emptyActionItem(no: number): ActionItem {
-  return { no, title: "", material: "", materialPath: undefined, presenter: "" };
+  return { no, title: "", material: "", materialPath: undefined, materialMdPath: undefined, presenter: "" };
 }
 
+// `presentationSummary` is B5's per-presentation structured output (질문/답변/의견/할일 lines tagged
+// with B1's badge labels) - generated from this item's material + the meeting's full transcript,
+// see PresentationSummaryModal.tsx and server/llm.mjs's buildPresentationSummaryPrompt.
 export interface AgendaItem {
   no: number;
   title: string;
   durationMinutes: number;
   material: string;
   materialPath?: string;
+  materialMdPath?: string;
   presenter: string;
+  presentationSummary?: string;
 }
 
 export function emptyAgendaItem(no: number): AgendaItem {
-  return { no, title: "", durationMinutes: 10, material: "", materialPath: undefined, presenter: "" };
+  return {
+    no,
+    title: "",
+    durationMinutes: 10,
+    material: "",
+    materialPath: undefined,
+    materialMdPath: undefined,
+    presenter: "",
+    presentationSummary: undefined
+  };
 }
 
 // One turn of speech, produced by STT + pause-based diarization. `speaker` is a heuristic label
@@ -68,6 +86,18 @@ export interface AudioAnalysis {
   transcriptSegments: TranscriptSegment[];
   speakerMap: Record<string, string>;
   analyzedAt: string;
+  // B7 audio retention policy: the original recording is kept alongside the meeting's materials
+  // (unlike a hypothetical per-speaker sliced copy, which this app never actually creates -
+  // "화자별 파형" in AudioAnalysisModal is just a client-side highlight of one shared waveform, not
+  // separate files) - set once uploaded via MeetingFormModal's handleAudioComplete.
+  audioPath?: string;
+}
+
+export interface MeetingComment {
+  id: string;
+  authorId: string;
+  content: string;
+  createdAt: string;
 }
 
 export interface Meeting {
@@ -77,16 +107,19 @@ export interface Meeting {
   startTime: string;
   endTime: string;
   organizer: string;
+  secretary: string;
   attendees: Attendee[];
   actionItems: ActionItem[];
   agenda: AgendaItem[];
   audio: AudioAnalysis | null;
   minutes: string;
+  authorId: string;
+  comments: MeetingComment[];
   createdAt: string;
   updatedAt: string;
 }
 
-export type MeetingDraft = Omit<Meeting, "id" | "createdAt" | "updatedAt">;
+export type MeetingDraft = Omit<Meeting, "id" | "authorId" | "comments" | "createdAt" | "updatedAt">;
 
 export const emptyMeetingDraft: MeetingDraft = {
   title: "",
@@ -94,12 +127,48 @@ export const emptyMeetingDraft: MeetingDraft = {
   startTime: "",
   endTime: "",
   organizer: "",
+  secretary: "",
   attendees: [],
   actionItems: [],
   agenda: [],
   audio: null,
   minutes: ""
 };
+
+// A meeting's delete/edit permission (and comment delete permission) is author-or-admin, matching
+// Club's canDeletePost pattern - enforced client-side only, same trust model as every other route
+// in this app (see vite.config.mts's /api/members comment).
+export function canDeleteMeeting(meeting: Pick<Meeting, "authorId">, member: PublicMember): boolean {
+  return member.role === "admin" || meeting.authorId === member.id;
+}
+
+export type BoardCategory = "공지" | "일반" | "요청" | "QnA";
+
+export const boardCategories: BoardCategory[] = ["공지", "일반", "요청", "QnA"];
+
+export interface BoardComment {
+  id: string;
+  authorId: string;
+  content: string;
+  createdAt: string;
+  parentCommentId?: string;
+}
+
+export interface BoardPost {
+  id: string;
+  category: BoardCategory;
+  title: string;
+  content: string;
+  authorId: string;
+  createdAt: string;
+  pinned: boolean;
+  comments: BoardComment[];
+}
+
+// Same author-or-admin permission model as canDeleteMeeting, ported from Club's canDeletePost.
+export function canDeleteBoardPost(post: Pick<BoardPost, "authorId">, member: PublicMember): boolean {
+  return member.role === "admin" || post.authorId === member.id;
+}
 
 export type MeetingStatus = "scheduled" | "needs_minutes" | "completed";
 
@@ -124,28 +193,203 @@ export function computeMeetingStatus(meeting: Pick<Meeting, "date" | "startTime"
   return meeting.minutes.trim() ? "completed" : "needs_minutes";
 }
 
+// LLM-generated minutes end with a "## 태그" section (see vite.config.mts's MINUTES_SYSTEM_PROMPT)
+// listing 5-10 `#태그` tokens on one line. Mesh view uses this to connect meetings that share a tag.
+// Meetings whose minutes predate this feature (or are still empty) simply yield no tags.
+export function extractMeetingTags(meeting: Pick<Meeting, "minutes">): string[] {
+  const minutes = meeting.minutes || "";
+  const headingMatch = minutes.match(/^##\s*태그\s*$/m);
+
+  if (!headingMatch || headingMatch.index === undefined) {
+    return [];
+  }
+
+  const afterHeading = minutes.slice(headingMatch.index + headingMatch[0].length);
+  const nextHeadingIndex = afterHeading.search(/^##\s/m);
+  const tagSection = nextHeadingIndex === -1 ? afterHeading : afterHeading.slice(0, nextHeadingIndex);
+  const tags = tagSection
+    .split(/\s+/)
+    .map((token) => token.replace(/^#+/, "").trim())
+    .filter(Boolean);
+
+  return Array.from(new Set(tags));
+}
+
+// Same cap as Mesh view's Top TAG limit (src/components/views/MeshView.tsx's meshTopTagLimit) -
+// keeping this in sync means the "연결" count this function returns for a meeting always matches
+// what Mesh view's own node degree/tooltip shows for that same meeting, so the connection-count
+// filter and the Mesh view graph never disagree about "how connected" a meeting is.
+const CONNECTION_TOP_TAG_LIMIT = 10;
+
+// Degree of each meeting in the tag-connection graph - two meetings are connected if they share at
+// least one of the dataset's top-N most common tags (see extractMeetingTags above). Used by the
+// filter's Connection range slider; kept independent of MeshView's own edge/layout computation
+// (which additionally caps *rendered* edge lines for visual clarity) since the filter only needs
+// the raw degree, not which specific edges get drawn.
+export function computeMeetingConnectionCounts(meetings: Meeting[]): Map<string, number> {
+  const tagCounts = new Map<string, number>();
+  meetings.forEach((meeting) => {
+    extractMeetingTags(meeting).forEach((tag) => {
+      tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+    });
+  });
+
+  const topTagNames = new Set(
+    Array.from(tagCounts.entries())
+      .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+      .slice(0, CONNECTION_TOP_TAG_LIMIT)
+      .map(([tag]) => tag)
+  );
+
+  const meetingIdsByTag = new Map<string, string[]>();
+  meetings.forEach((meeting) => {
+    extractMeetingTags(meeting)
+      .filter((tag) => topTagNames.has(tag))
+      .forEach((tag) => {
+        meetingIdsByTag.set(tag, [...(meetingIdsByTag.get(tag) ?? []), meeting.id]);
+      });
+  });
+
+  const degrees = new Map<string, number>();
+  meetingIdsByTag.forEach((meetingIds) => {
+    for (let leftIndex = 0; leftIndex < meetingIds.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < meetingIds.length; rightIndex += 1) {
+        const from = meetingIds[leftIndex];
+        const to = meetingIds[rightIndex];
+        degrees.set(from, (degrees.get(from) ?? 0) + 1);
+        degrees.set(to, (degrees.get(to) ?? 0) + 1);
+      }
+    }
+  });
+
+  return degrees;
+}
+
+export type FilterTermOperator = "and" | "or" | "not";
+
+export interface FilterTerm {
+  operator: FilterTermOperator;
+  value: string;
+}
+
+// Small query syntax for the filter modal's free-text fields: comma-separated terms, each
+// optionally prefixed with [*] (AND, required), [+] (OR, at least one required if any [+] terms
+// are present), or [-] (NOT, excluded). A term with no prefix defaults to AND, so a plain single
+// word behaves exactly like the old single-substring filter did.
+export function parseFilterTerms(input: string): FilterTerm[] {
+  return input
+    .split(",")
+    .map((raw) => raw.trim())
+    .filter(Boolean)
+    .map((raw) => {
+      const match = raw.match(/^\[([*+-])\]\s*(.*)$/);
+
+      if (!match) {
+        return { operator: "and" as FilterTermOperator, value: raw.toLowerCase() };
+      }
+
+      const [, symbol, value] = match;
+      const operator: FilterTermOperator = symbol === "+" ? "or" : symbol === "-" ? "not" : "and";
+
+      return { operator, value: value.trim().toLowerCase() };
+    })
+    .filter((term) => term.value);
+}
+
+// Evaluated as (any OR term present, if any exist) AND (no NOT term present) AND (every AND term
+// present) - OR is checked first, then NOT, then AND, per the exact short-circuit order requested,
+// though the final boolean result is the same regardless of check order since it's just an AND of
+// three independent sub-results.
+export function matchesFilterTerms(haystack: string, terms: FilterTerm[]): boolean {
+  if (terms.length === 0) {
+    return true;
+  }
+
+  const lowerHaystack = haystack.toLowerCase();
+  const orTerms = terms.filter((term) => term.operator === "or");
+  const notTerms = terms.filter((term) => term.operator === "not");
+  const andTerms = terms.filter((term) => term.operator === "and");
+
+  if (orTerms.length > 0 && !orTerms.some((term) => lowerHaystack.includes(term.value))) {
+    return false;
+  }
+
+  if (notTerms.some((term) => lowerHaystack.includes(term.value))) {
+    return false;
+  }
+
+  return andTerms.every((term) => lowerHaystack.includes(term.value));
+}
+
 export type ExportFormat = "pdf" | "docx" | "pptx" | "md" | "json";
 export type ImportFormat = "pdf" | "docx" | "pptx" | "md" | "json";
 export type ImportDuplicateMode = "replace" | "add" | "skip";
 
 export interface MeetingFilters {
   statuses: MeetingStatus[];
+  titleText: string;
   organizerText: string;
-  attendeeText: string;
-  // Matches against title, agenda item titles, and A/I List item titles.
-  keywordText: string;
+  // Matches against Agenda/A-I List item `presenter` fields.
+  presenterText: string;
+  // Matches against Agenda items' B5 presentationSummary field.
+  presentationSummaryText: string;
+  // Matches against extractMeetingTags(meeting).
+  tagText: string;
+  // Mesh-view tag-connection degree range (see computeMeetingConnectionCounts). 0 for either bound
+  // is a sentinel for "unset" - connectionMin: 0 means no lower bound, connectionMax: 0 means no
+  // upper bound (rather than "exactly 0 connections"), so the slider's max thumb can represent
+  // "no limit" without needing to know the dataset's current max connection count in advance.
+  connectionMin: number;
+  connectionMax: number;
   dateFrom: string;
   dateTo: string;
 }
 
 export const emptyFilters: MeetingFilters = {
   statuses: [],
+  titleText: "",
   organizerText: "",
-  attendeeText: "",
-  keywordText: "",
+  presenterText: "",
+  presentationSummaryText: "",
+  tagText: "",
+  connectionMin: 0,
+  connectionMax: 0,
   dateFrom: "",
   dateTo: ""
 };
+
+// Shared shape for both the abbreviation dictionary (from=약어, to=확장글) and the correction
+// dictionary (from=수정전, to=수정후) - same UI, same mechanics, only the column labels differ.
+export interface DictionaryEntry {
+  id: string;
+  from: string;
+  to: string;
+  description: string;
+}
+
+export type MemberRole = "admin" | "일반";
+
+export interface Member {
+  id: string;
+  name: string;
+  loginId: string;
+  passwordHash: string;
+  role: MemberRole;
+  createdAt: string;
+  // Soft-delete flag - disabling keeps the account resolvable by id so existing
+  // authorship references (meeting authorId, board post authorId, comments) keep
+  // showing a real name instead of a dangling reference. Disabled accounts can't log in.
+  disabled: boolean;
+}
+
+// Member shape sent to the renderer - never carries the password hash.
+export type PublicMember = Omit<Member, "passwordHash">;
+
+export interface LoginResult {
+  ok: boolean;
+  member?: PublicMember;
+  error?: string;
+}
 
 export type LlmProviderId = "local-preview" | "claude-cli" | "anthropic-api" | "ollama";
 
@@ -260,6 +504,11 @@ export interface AppSettings {
   // (data/attachments next to the app). Only changeable from the Electron desktop app, since a
   // plain browser tab can't pick a real folder path.
   attachmentsFolder: string;
+  // "native" = Electron's OS file/folder dialogs (default). "builtin" = the app's own in-window
+  // folder browser (FileNavigatorModal) instead - added for corporate environments where security
+  // policy blocks the OS's native file dialog/Explorer integration entirely. Only takes effect in
+  // the Electron desktop app.
+  filePickerMode: "native" | "builtin";
 }
 
 export const defaultSettings: AppSettings = {
@@ -271,7 +520,8 @@ export const defaultSettings: AppSettings = {
   sttProvider: "local-whisperx",
   importDuplicateMode: "replace",
   exportDefaultFormat: "json",
-  attachmentsFolder: ""
+  attachmentsFolder: "",
+  filePickerMode: "native"
 };
 
 export function attendeeSummary(attendees: Attendee[]): string {
@@ -280,4 +530,27 @@ export function attendeeSummary(attendees: Attendee[]): string {
 
 export function presenterAttendees(attendees: Attendee[]): Attendee[] {
   return attendees.filter((attendee) => attendee.isPresenter);
+}
+
+// Every attendee gets exactly one label - presenters count as "발표N" (table order among
+// presenters), everyone else as "참석N" (table order among non-presenters). This is also the
+// label vocabulary B5's structured minutes format keys quotes off of (질문/답변/의견/할일 lines are
+// tagged "주관자-이름"/"발표1-이름"/"참석1-이름"), so a presenter never additionally counts as an
+// attendee - one badge per person.
+export function computeAttendeeBadges(attendees: Attendee[]): Record<string, string> {
+  const badges: Record<string, string> = {};
+  let presenterIndex = 0;
+  let attendeeIndex = 0;
+
+  for (const attendee of attendees) {
+    if (attendee.isPresenter) {
+      presenterIndex += 1;
+      badges[attendee.id] = `발표${presenterIndex}`;
+    } else {
+      attendeeIndex += 1;
+      badges[attendee.id] = `참석${attendeeIndex}`;
+    }
+  }
+
+  return badges;
 }

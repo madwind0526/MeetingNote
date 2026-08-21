@@ -1,4 +1,4 @@
-import { LayoutGrid, Moon, NotebookText, Power, Search, Settings, Sun, Table2 } from "lucide-react";
+import { GitBranch, LayoutGrid, LogOut, Moon, NotebookText, Search, Settings, Sun, Table2 } from "lucide-react";
 import type { ViewMode } from "../types/domain";
 
 interface TopToolbarProps {
@@ -6,9 +6,10 @@ interface TopToolbarProps {
   query: string;
   theme: "light" | "dark";
   view: ViewMode;
+  currentMemberName: string;
   onOpenSettings: () => void;
   onQueryChange: (query: string) => void;
-  onPower: () => void;
+  onLogout: () => void;
   onTitleClick: () => void;
   onToggleTheme: () => void;
   onViewChange: (view: ViewMode) => void;
@@ -16,6 +17,7 @@ interface TopToolbarProps {
 }
 
 const VIEW_BUTTONS: { view: ViewMode; label: string; icon: typeof LayoutGrid }[] = [
+  { view: "mesh", label: "Mesh", icon: GitBranch },
   { view: "card", label: "카드", icon: LayoutGrid },
   { view: "list", label: "표", icon: Table2 }
 ];
@@ -25,9 +27,10 @@ export function TopToolbar({
   query,
   theme,
   view,
+  currentMemberName,
   onOpenSettings,
   onQueryChange,
-  onPower,
+  onLogout,
   onTitleClick,
   onToggleTheme,
   onViewChange,
@@ -49,7 +52,7 @@ export function TopToolbar({
         <Search size={18} />
         <input
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="제목, 주관자, 참석자로 검색"
+          placeholder="제목, 주관자, 발표자, 참석자, 발표 내용 등으로 검색"
           value={query}
         />
       </label>
@@ -73,8 +76,8 @@ export function TopToolbar({
         <button className="icon-button" onClick={onToggleTheme} title={theme === "dark" ? "라이트 모드로 전환" : "다크 모드로 전환"} type="button">
           {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
         </button>
-        <button className="icon-button power-button" onClick={onPower} title="앱 종료" type="button">
-          <Power size={20} />
+        <button className="icon-button" onClick={onLogout} title={`로그아웃 (${currentMemberName})`} type="button">
+          <LogOut size={20} />
         </button>
       </nav>
     </header>

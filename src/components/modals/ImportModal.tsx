@@ -5,6 +5,7 @@ import type { ImportDuplicateMode, ImportFormat, MeetingDraft } from "../../type
 import { attendeeSummary } from "../../types/domain";
 import type { ImportSummary } from "../../lib/api";
 import { bulkUpsertMeetingsRequest, importMeetingsRequest } from "../../lib/api";
+import { pickFileWithNavigator, shouldUseBuiltinFilePicker } from "../../lib/filePicker";
 
 interface ImportModalProps {
   duplicateMode: ImportDuplicateMode;
@@ -37,6 +38,20 @@ export function ImportModal({ duplicateMode, onClose, onImported }: ImportModalP
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const activeOption = FORMAT_OPTIONS.find((option) => option.format === format)!;
+
+  const triggerFilePick = async () => {
+    if (shouldUseBuiltinFilePicker()) {
+      const picked = await pickFileWithNavigator([activeOption.accept], `${activeOption.label} 파일 선택`);
+      if (picked) {
+        setFile(picked);
+        setPreview(null);
+        setError("");
+      }
+      return;
+    }
+
+    fileInputRef.current?.click();
+  };
 
   const handleParse = async () => {
     if (!file) {
@@ -123,7 +138,7 @@ export function ImportModal({ duplicateMode, onClose, onImported }: ImportModalP
       </div>
 
       <div className="field full">
-        <div className="import-drop-zone" onClick={() => fileInputRef.current?.click()} role="button" tabIndex={0}>
+        <div className="import-drop-zone" onClick={() => void triggerFilePick()} role="button" tabIndex={0}>
           <Upload size={22} />
           <strong>{file ? file.name : `${activeOption.label} 파일을 선택하세요`}</strong>
           <span className="field-hint">

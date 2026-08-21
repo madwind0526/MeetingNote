@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Bot,
   CheckCircle2,
   Database,
   FolderOpen,
+  FolderTree,
   Image,
   KeyRound,
   Mic,
   Monitor,
   Palette,
   Settings2,
+  ShieldCheck,
   Upload,
   XCircle
 } from "lucide-react";
@@ -17,6 +19,7 @@ import type { AppSettings, ExportFormat, ImportDuplicateMode, LlmProviderId, Stt
 import { llmProviders, sttProviders } from "../types/domain";
 import type { LlmStatus, SttStatus } from "../lib/llm";
 import { pickAttachmentsFolder, readFileAsDataUrl } from "../lib/api";
+import { isBuiltinFilePickerAvailable, pickFileWithNavigator, shouldUseBuiltinFilePicker } from "../lib/filePicker";
 
 interface SettingsViewProps {
   settings: AppSettings;
@@ -24,11 +27,13 @@ interface SettingsViewProps {
   llmStatus: LlmStatus | null;
   sttStatus: SttStatus | null;
   logoVersion: number;
+  isAdmin: boolean;
   onConfigureApiKey: () => void;
   onConfigureSttApiKey: () => void;
   onConfigureNaverClova: () => void;
   onConfigureHuggingFace: () => void;
   onConfigureOllama: () => void;
+  onOpenMemberManagement: () => void;
   onResetToSample: () => void;
   onSelectLlmProvider: (provider: LlmProviderId) => void;
   onSelectSttProvider: (provider: SttProviderId) => void;
@@ -118,11 +123,13 @@ export function SettingsView({
   llmStatus,
   sttStatus,
   logoVersion,
+  isAdmin,
   onConfigureApiKey,
   onConfigureSttApiKey,
   onConfigureNaverClova,
   onConfigureHuggingFace,
   onConfigureOllama,
+  onOpenMemberManagement,
   onResetToSample,
   onSelectLlmProvider,
   onSelectSttProvider,
@@ -131,17 +138,34 @@ export function SettingsView({
 }: SettingsViewProps) {
   const [previewDataUrl, setPreviewDataUrl] = useState("");
   const [folderError, setFolderError] = useState("");
+  const logoFileInputRef = useRef<HTMLInputElement>(null);
+  const builtinFilePickerAvailable = isBuiltinFilePickerAvailable();
 
-  const handleLogoFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
+  const processLogoFile = async (file: File) => {
     const dataUrl = await readFileAsDataUrl(file);
     setPreviewDataUrl(dataUrl);
     onUploadLogo(dataUrl);
+  };
+
+  const handleLogoFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     event.target.value = "";
+
+    if (file) {
+      await processLogoFile(file);
+    }
+  };
+
+  const triggerLogoPick = async () => {
+    if (shouldUseBuiltinFilePicker()) {
+      const file = await pickFileWithNavigator([".png", ".jpg", ".jpeg", ".gif", ".webp"], "로고 이미지 선택");
+      if (file) {
+        await processLogoFile(file);
+      }
+      return;
+    }
+
+    logoFileInputRef.current?.click();
   };
 
   return (
@@ -154,11 +178,11 @@ export function SettingsView({
         <p className="settings-section-desc">
           왼쪽 위 "MeetingNote"를 누르면 뜨는 로고 화면에 표시할 이미지를 등록합니다 (<code>assets/logo.png</code>).
         </p>
-        <label className="ghost-action" style={{ cursor: "pointer", width: "fit-content" }}>
+        <button className="ghost-action" onClick={() => void triggerLogoPick()} style={{ width: "fit-content" }} type="button">
           <Upload size={16} />
           이미지 업로드
-          <input accept="image/*" onChange={handleLogoFileChange} style={{ display: "none" }} type="file" />
-        </label>
+        </button>
+        <input accept="image/*" hidden onChange={handleLogoFileChange} ref={logoFileInputRef} type="file" />
         <div className="logo-preview-frame">
           <img
             alt="로고 미리보기"
@@ -359,6 +383,38 @@ export function SettingsView({
 
       <section className="settings-section">
         <div className="settings-section-title">
+          <FolderTree size={16} />
+          탐색기 방식
+        </div>
+        <p className="settings-section-desc">
+          로고 이미지, 약어/수정 사전 추가하기·불러오기, 회의록 가져오기·자료 첨부·음성 파일 선택, DB저장·내보내기 등 파일을 열고
+          저장하는 모든 곳에서 사용할 방식입니다. 보안 정책으로 Windows 탐색기(파일 선택 창)가 동작하지 않는 환경이라면 내장 파일
+          탐색기로 바꿔주세요.
+        </p>
+        <div className="format-choice-row">
+          <button
+            className={settings.filePickerMode === "native" ? "format-choice-button active" : "format-choice-button"}
+            onClick={() => onUpdate("filePickerMode", "native")}
+            type="button"
+          >
+            탐색기 (OS 기본)
+          </button>
+          <button
+            className={settings.filePickerMode === "builtin" ? "format-choice-button active" : "format-choice-button"}
+            disabled={!builtinFilePickerAvailable}
+            onClick={() => onUpdate("filePickerMode", "builtin")}
+            type="button"
+          >
+            내장 파일 탐색기
+          </button>
+        </div>
+        <span className="field-hint">
+          내장 파일 탐색기는 폴더를 이동하며 파일을 선택하면 경로가 채워지고, "열기"/"저장" 버튼을 눌러 확정합니다.
+        </span>
+      </section>
+
+      <section className="settings-section">
+        <div className="settings-section-title">
           <FolderOpen size={16} />
           저장 폴더
         </div>
@@ -371,7 +427,7 @@ export function SettingsView({
           <label>현재 위치 (프로젝트 폴더 기준 상대 경로)</label>
           <input readOnly value={settings.attachmentsFolder || "기본 위치 사용 (data/attachments)"} />
         </div>
-        {window.meetingNote?.openFolderDialog ? (
+        {window.meetingNote?.openFolderDialog || builtinFilePickerAvailable ? (
           <button
             className="ghost-action"
             onClick={async () => {
@@ -440,6 +496,20 @@ export function SettingsView({
           샘플 데이터로 초기화
         </button>
       </section>
+
+      {isAdmin && (
+        <section className="settings-section">
+          <div className="settings-section-title">
+            <ShieldCheck size={16} />
+            계정 관리
+          </div>
+          <p className="settings-section-desc">회의록/게시판 작성자 구분에 쓰이는 로그인 계정을 추가·관리합니다. admin만 볼 수 있습니다.</p>
+          <button className="ghost-action" onClick={onOpenMemberManagement} style={{ width: "fit-content" }} type="button">
+            <ShieldCheck size={16} />
+            계정 관리 열기
+          </button>
+        </section>
+      )}
     </div>
   );
 }

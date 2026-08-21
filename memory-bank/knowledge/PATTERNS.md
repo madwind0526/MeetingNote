@@ -57,24 +57,41 @@ B의 `interface BProps { ... }`를 정확히 고정해서 A와 B 양쪽 프롬�
 
 **사용 시점:** 진짜(음향 기반) 화자 분리가 필요할 때. 세 가지 경로가 있다:
 
-1. **WhisperX 자체 `--diarize`** (`sttLocalWhisperX.mjs`) — `HUGGINGFACE_TOKEN`이 `.env`에 설정돼 있으면
-   자동으로 `--diarize --hf_token <token>` (+ 참석자 수가 있으면 `--min_speakers 1 --max_speakers N`)을
-   추가한다. pyannote 게이트 모델(`pyannote/speaker-diarization-community-1`)을 쓰므로 hf.co에서 이용
-   약관 동의 + 토큰 발급이 최초 1회 필요(사용자 몫, 자동화 불가). 출력 JSON의 `segments[].speaker`가
-   `"SPEAKER_00"` 같은 flat string으로 그대로 들어온다(`whisperx/utils.py`의 `WriteJSON`이 가공 없이
-   `json.dump` 함).
-2. **Naver Clova 자체 diarization** (`sttNaverClova.mjs`) — `diarization: {enable: true, speakerCountMin,
+1. **로컬 WhisperX** (`sttLocalWhisperX.mjs`) 와 2. **로컬 Whisper CLI**(`sttLocalWhisperCli.mjs`) 둘 다
+   **공용 모듈 `server/audio/pyannoteDiarize.mjs`**를 거친다(2026-08-18, B3에서 통합 — 자세한 배경은
+   아래 "B3 갱신" 참고). `HUGGINGFACE_TOKEN`이 `.env`에 있으면 전사 완료 후 별도 후처리 단계로
+   `runDiarizeWithEmbeddings()`를 호출해 `whisperx.diarize.DiarizationPipeline(..., return_embeddings=True)`
+   → `(diarize_df, {"SPEAKER_00": [float,...], ...})`를 얻고, `assign_word_speakers(diarize_df,
+   whisper_result, speaker_embeddings=embeddings)`로 화자 라벨을 병합한다. pyannote 게이트 모델
+   (`pyannote/speaker-diarization-community-1`)을 쓰므로 hf.co에서 이용 약관 동의 + 토큰 발급이 최초
+   1회 필요(사용자 몫, 자동화 불가). **주의**: pyannote/whisperx는 로딩 중 INFO 로그를 stdout에 쓰므로,
+   병합 결과·임베딩을 stdout으로 `print`하면 JSON 파싱이 깨진다 — 반드시 별도 파일에 써서 Node가 그
+   파일을 다시 읽어야 한다.
+3. **Naver Clova 자체 diarization** (`sttNaverClova.mjs`) — `diarization: {enable: true, speakerCountMin,
    speakerCountMax}`를 요청 params에 넣으면 응답 세그먼트에 `diarization.label`(화자 번호 문자열)이 온다.
-   API 자체 기능이라 별도 모델/토큰 불필요, Invoke URL/Secret Key만 있으면 자동 적용.
-3. **로컬 Whisper CLI(품질이 WhisperX의 faster-whisper 백엔드보다 낫다는 사용자 피드백) + pyannote 수동
-   병합** (`sttLocalWhisperCli.mjs`) — WhisperX 패키지가 이미 `.venv-whisperx`에 설치돼 있으므로, WhisperX의
-   자체 ASR은 쓰지 않고 `whisperx.diarize.DiarizationPipeline`/`assign_word_speakers`만 직접 import해서
-   Whisper CLI의 전사 결과(JSON)에 화자를 병합한다. **주의**: pyannote/whisperx는 로딩 중 INFO 로그를
-   stdout에 쓰므로, 병합 결과를 stdout으로 `print`하면 JSON 파싱이 깨진다 — 반드시 별도 파일에 써서
-   Node가 그 파일을 다시 읽어야 한다.
+   API 자체 기능이라 별도 모델/토큰 불필요, Invoke URL/Secret Key만 있으면 자동 적용. 임베딩은 제공하지
+   않으므로 B3의 음성 프로필 매칭은 이 경로에서 적용되지 않는다(위치 기반 폴백만).
 
 **공통 안전장치**: 세 경로 모두 "best-effort, 실패해도 기존 대본은 그대로 반환"(하드 실패 없음) — HF
 토큰이 없거나 pyannote 로딩이 실패해도 화자 분리만 빠지고 텍스트 인식 자체는 항상 성공한다.
+
+**B3 갱신(2026-08-18, 화자 음성 프로필 영속화)**: WhisperX는 원래 자체 `--diarize`/`--hf_token` CLI
+플래그로 diarization까지 한 번에 처리했는데, 그 플래그는 내부적으로 pyannote를 블랙박스로 호출해서
+임베딩을 꺼낼 방법이 없었다. B3에서 음성 프로필(재사용 가능한 화자 식별)을 붙이려면 임베딩이 꼭
+필요했으므로, WhisperX 경로도 Whisper-CLI처럼 "순수 전사만 하고 diarization은 공용 모듈로 별도
+후처리" 구조로 리팩터했다(`--diarize` 플래그 제거). WhisperX의 `--diarize`도 내부적으로 같은
+`DiarizationPipeline`을 호출하므로 정확도가 떨어지지 않을 거라는 가설을, 실제 HF 토큰+GPU 환경에서
+`data/test-audio/diarize-2speaker-ko-en.wav`로 리팩터 전후 둘 다 재현해서 검증했다(2명 정확히 분리
+유지 확인 — 자세한 내용은 `trouble-shooting.md`의 임계값 버그 항목, `STATE.md`의 B3 체크포인트 참고).
+
+`server/voiceProfiles.mjs`가 `data/db/voiceProfiles.json`에 `{id, name, embeddings: number[][],
+updatedAt}`로 화자별 임베딩 샘플(최대 20개 롤링)을 저장하고, 코사인 유사도로 매칭한다(`matchSpeakerProfile`).
+매칭 우선순위는 이 회의 등록 참석자 → 그 외 전체 프로필 → 미등록(`server/audio/diarize.mjs`의
+`assignSpeakersWithProfiles`, `UNREGISTERED_SPEAKER_PREFIX = "미등록 화자 "`). 확정 매칭은 그 자리에서
+`registerVoiceProfile`로 샘플을 추가해 프로필을 계속 보강한다. 미등록 화자는 `AudioAnalysisModal`에서
+사용자가 실명으로 바꿀 때만(완료 버튼 클릭 시 자동/최종 이름 diff) `/api/voice-profiles/register`를 통해
+새로 등록된다 — `speakerEmbeddings`는 `TranscribeResult`에만 있는 일시적 필드로, 저장되는
+`Meeting.audio`에는 절대 안 들어간다(등록 후 버림).
 
 클라이언트(`src/lib/audio.ts`)와 UI(`AudioAnalysisModal.tsx`)의 오디오 처리/화자별 waveform 렌더링 방식은
 기존과 동일 - `AudioContext.decodeAudioData` → 모노 믹스다운 → WAV 핸드롤 인코딩, 화자별 레인은 실제 음원

@@ -18,6 +18,10 @@ function normalizeSettings(parsed: Partial<AppSettings> | null): AppSettings {
     settings.sttProvider = defaultSettings.sttProvider;
   }
 
+  if (!["native", "builtin"].includes(settings.filePickerMode)) {
+    settings.filePickerMode = defaultSettings.filePickerMode;
+  }
+
   return settings;
 }
 

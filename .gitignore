@@ -15,3 +15,4 @@ imports/
 *.tsbuildinfo
 *.log
 tmp_*
+.playwright-mcp/

@@ -1,6 +1,9 @@
 // Browser-only audio pipeline: decode an uploaded file via Web Audio API, produce waveform
-// envelope data for canvas rendering, apply simple client-side preprocessing, and re-encode as
-// a WAV Blob for upload to the server STT endpoint. No Node APIs are used here.
+// envelope data for canvas rendering, and re-encode as a WAV Blob for upload to the server STT
+// endpoint. No Node APIs are used here. Actual preprocessing (Demucs/정규화/DeNoise) happens
+// server-side in the fixed order Demucs -> 정규화 -> DeNoise - see server/audio/audioPreprocess.mjs
+// - so Demucs always sees this untouched original mixdown, never audio 정규화/DeNoise already
+// altered client-side first.
 
 // 16000 Hz because that's the rate every local STT/diarization model here actually runs at
 // internally (Whisper, WhisperX, pyannote all resample to 16kHz regardless of input). Decoding at
@@ -69,49 +72,6 @@ export function computeEnvelope(audioBuffer: AudioBuffer, bucketCount: number): 
   }
 
   return envelope;
-}
-
-export function processMonoPcm(mono: Float32Array, preprocessing: { noiseRemoval: boolean; normalize: boolean }): Float32Array {
-  let result = Float32Array.from(mono);
-
-  if (preprocessing.noiseRemoval) {
-    let peak = 0;
-    for (let index = 0; index < result.length; index += 1) {
-      const amplitude = Math.abs(result[index]);
-      if (amplitude > peak) {
-        peak = amplitude;
-      }
-    }
-
-    // Simple noise gate (not real spectral denoising) - zero out samples quieter than 2% of peak.
-    const gateThreshold = peak * 0.02;
-    for (let index = 0; index < result.length; index += 1) {
-      if (Math.abs(result[index]) < gateThreshold) {
-        result[index] = 0;
-      }
-    }
-  }
-
-  if (preprocessing.normalize) {
-    let peak = 0;
-    for (let index = 0; index < result.length; index += 1) {
-      const amplitude = Math.abs(result[index]);
-      if (amplitude > peak) {
-        peak = amplitude;
-      }
-    }
-
-    if (peak > 0) {
-      const scale = 0.98 / peak;
-      const scaled = new Float32Array(result.length);
-      for (let index = 0; index < result.length; index += 1) {
-        scaled[index] = result[index] * scale;
-      }
-      result = scaled;
-    }
-  }
-
-  return result;
 }
 
 export function encodeWav(mono: Float32Array, sampleRate: number): Blob {

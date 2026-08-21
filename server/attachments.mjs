@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { readAppSettings } from "./settingsFile.mjs";
+import { convertMaterialToMarkdown } from "./converters/toMarkdown.mjs";
 
 export const PROJECT_ROOT = process.cwd();
 const DEFAULT_ATTACHMENTS_RELATIVE_DIR = "data/attachments";
@@ -101,7 +102,28 @@ export async function saveAttachment(meetingFolderLabel, kind, fileName, content
   // NOTE: since the folder is named after a date/title label (not a stable id), editing either
   // field after attaching files does NOT move already-saved files. They stay under the old folder
   // and keep working, while new attachments land under the new folder label.
-  return path.posix.join(folderName, kind, safeName);
+  const relativePath = path.posix.join(folderName, kind, safeName);
+
+  // B4: a presentation material (PDF/DOCX/PPTX) also gets a sibling .md conversion saved right
+  // next to it, so B5 can later feed it to an LLM alongside the matching STT transcript. Never
+  // attempted for "audio" uploads, and any conversion failure is silent - the actual attachment
+  // upload the user is waiting on must never fail because of this best-effort side step.
+  let mdRelativePath = null;
+  if (kind === "materials") {
+    try {
+      const markdown = await convertMaterialToMarkdown(buffer, safeName);
+      if (markdown) {
+        const mdBaseName = path.basename(safeName, path.extname(safeName));
+        const mdSafeName = await uniqueFilePath(meetingDir, `${mdBaseName}.md`);
+        await writeFile(path.join(meetingDir, mdSafeName), markdown, "utf8");
+        mdRelativePath = path.posix.join(folderName, kind, mdSafeName);
+      }
+    } catch {
+      mdRelativePath = null;
+    }
+  }
+
+  return { path: relativePath, mdPath: mdRelativePath };
 }
 
 // Resolves a stored relative path (as returned by saveAttachment) to an absolute path under the

@@ -7,6 +7,14 @@ import type {
   Meeting,
   MeetingDraft
 } from "../types/domain";
+import {
+  isBuiltinFilePickerAvailable,
+  pickFolderWithNavigator,
+  pickSaveTargetWithNavigator,
+  registerWritePathIfNeeded,
+  shouldUseBuiltinFilePicker,
+  writeFileWithNavigator
+} from "./filePicker";
 
 const MAX_IMPORT_FILE_BYTES = 80 * 1024 * 1024;
 const MAX_AUDIO_FILE_BYTES = 200 * 1024 * 1024;
@@ -47,12 +55,30 @@ export async function fetchMeetings(): Promise<Meeting[]> {
 // `presetId` lets MeetingFormModal keep the same client-generated id it already used while
 // uploading attachments during this create session (see cloneDraft's folderId), so the meeting
 // record ends up owning the exact folder those files were already copied into.
-export async function createMeetingRequest(draft: MeetingDraft, presetId?: string): Promise<Meeting> {
+export async function createMeetingRequest(draft: MeetingDraft, authorId: string, presetId?: string): Promise<Meeting> {
   const response = await fetch("/api/meetings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(presetId ? { ...draft, id: presetId } : draft)
+    body: JSON.stringify({ ...draft, authorId, ...(presetId ? { id: presetId } : {}) })
   });
+  const payload = await parseJsonResponse<{ meeting: Meeting }>(response);
+
+  return payload.meeting;
+}
+
+export async function addMeetingCommentRequest(meetingId: string, authorId: string, content: string): Promise<Meeting> {
+  const response = await fetch(`/api/meetings/${meetingId}/comments`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ authorId, content })
+  });
+  const payload = await parseJsonResponse<{ meeting: Meeting }>(response);
+
+  return payload.meeting;
+}
+
+export async function deleteMeetingCommentRequest(meetingId: string, commentId: string): Promise<Meeting> {
+  const response = await fetch(`/api/meetings/${meetingId}/comments/${commentId}`, { method: "DELETE" });
   const payload = await parseJsonResponse<{ meeting: Meeting }>(response);
 
   return payload.meeting;
@@ -134,6 +160,10 @@ const MAX_ATTACHMENT_FILE_BYTES = 50 * 1024 * 1024;
 export interface UploadedAttachment {
   path: string;
   fileName: string;
+  // B4: set when the uploaded material was a PDF/DOCX/PPTX and got an automatic .md conversion
+  // saved alongside it (see server/converters/toMarkdown.mjs) - absent for audio uploads and for
+  // formats that don't convert.
+  mdPath?: string;
 }
 
 // Uploads a material or meeting audio file into
@@ -172,6 +202,14 @@ export async function openAttachment(relativePath: string): Promise<void> {
 // rejects any folder outside that tree and this throws with its Korean error message in that
 // case. Returns null both when running outside Electron and when the user cancels the dialog.
 export async function pickAttachmentsFolder(): Promise<string | null> {
+  if (shouldUseBuiltinFilePicker() || (!window.meetingNote?.openFolderDialog && isBuiltinFilePickerAvailable())) {
+    const result = await pickFolderWithNavigator("저장 폴더 선택");
+    if (result.error) {
+      throw new Error(result.error);
+    }
+    return result.path;
+  }
+
   if (!window.meetingNote?.openFolderDialog) {
     return null;
   }
@@ -239,6 +277,18 @@ export function base64ToBlob(base64: string, mimeType: string): Blob {
 }
 
 export async function saveExportedFile(result: ExportResult): Promise<string> {
+  if (shouldUseBuiltinFilePicker()) {
+    const filePath = await pickSaveTargetWithNavigator(result.fileName);
+
+    if (!filePath) {
+      return "";
+    }
+
+    await registerWritePathIfNeeded(filePath);
+    await writeFileWithNavigator(filePath, result.contentBase64);
+    return filePath;
+  }
+
   if (window.meetingNote?.saveFileDialog) {
     const filePath = await window.meetingNote.saveFileDialog({ defaultPath: result.fileName });
 
@@ -278,23 +328,47 @@ export interface TranscribeRequest {
   // process output; cloud/mock providers get a smooth time-based estimate instead, since a single
   // blocking API call has no real sub-progress to report.
   onProgress?: (percent: number) => void;
+  // Polled alongside onProgress - segments parsed live from the local Whisper/WhisperX process
+  // before diarization/dictionary substitution run, so the transcript panel can fill in while the
+  // job is still running instead of only once it's done. Always empty for providers with no
+  // incremental signal (mock/openai-whisper/naver-clova).
+  onPartialSegments?: (segments: { startSec: number; endSec: number; text: string }[]) => void;
+  // Aborting stops polling and tells the server to kill whatever process is running for this job
+  // (see /api/stt/transcribe/cancel) - it doesn't just abandon the request client-side, since that
+  // would leave a local Whisper/WhisperX/Demucs process (or a paid API call) running to completion
+  // for nothing.
+  signal?: AbortSignal;
 }
 
 export type TranscribeResult = AudioAnalysis & {
   processedAudioBase64?: string;
   processedAudioMimeType?: string;
   processedFileName?: string;
+  // Transient, present only when the local WhisperX/Whisper-CLI diarization path produced
+  // per-speaker voice embeddings (HF token configured) - keyed by the same label used in
+  // speakerMap. Never persisted with the meeting; AudioAnalysisModal uses it once, right when the
+  // user renames a "미등록" speaker, to register a new voice profile (see registerVoiceProfileRequest).
+  speakerEmbeddings?: Record<string, number[]>;
 };
 
 interface SttJobStatus {
-  status: "running" | "done" | "error";
+  status: "running" | "done" | "error" | "cancelled";
   progress: number;
+  partialSegments?: { startSec: number; endSec: number; text: string }[];
   result?: TranscribeResult;
   error?: string;
 }
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function cancelTranscribeJob(jobId: string) {
+  void fetch("/api/stt/transcribe/cancel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jobId })
+  });
 }
 
 export async function transcribeAudioRequest(request: TranscribeRequest): Promise<TranscribeResult> {
@@ -314,18 +388,56 @@ export async function transcribeAudioRequest(request: TranscribeRequest): Promis
   });
   const { jobId } = await parseJsonResponse<{ jobId: string }>(startResponse);
 
-  for (;;) {
-    await sleep(700);
-    const statusResponse = await fetch(`/api/stt/transcribe/status?jobId=${encodeURIComponent(jobId)}`);
-    const job = await parseJsonResponse<SttJobStatus>(statusResponse);
+  const signal = request.signal;
+  let cancelledByUser = false;
+  const handleAbort = () => {
+    cancelledByUser = true;
+    cancelTranscribeJob(jobId);
+  };
 
-    request.onProgress?.(Math.round(job.progress * 100));
-
-    if (job.status === "done" && job.result) {
-      return job.result;
-    }
-    if (job.status === "error") {
-      throw new Error(job.error || "음성 분석에 실패했습니다.");
+  if (signal) {
+    if (signal.aborted) {
+      handleAbort();
+    } else {
+      signal.addEventListener("abort", handleAbort, { once: true });
     }
   }
+
+  try {
+    for (;;) {
+      if (cancelledByUser) {
+        throw new DOMException("음성 분석을 중지했습니다.", "AbortError");
+      }
+
+      await sleep(700);
+      const statusResponse = await fetch(`/api/stt/transcribe/status?jobId=${encodeURIComponent(jobId)}`);
+      const job = await parseJsonResponse<SttJobStatus>(statusResponse);
+
+      request.onProgress?.(Math.round(job.progress * 100));
+      if (job.status === "running" && job.partialSegments) {
+        request.onPartialSegments?.(job.partialSegments);
+      }
+
+      if (job.status === "done" && job.result) {
+        return job.result;
+      }
+      if (job.status === "cancelled") {
+        throw new DOMException(job.error || "음성 분석을 중지했습니다.", "AbortError");
+      }
+      if (job.status === "error") {
+        throw new Error(job.error || "음성 분석에 실패했습니다.");
+      }
+    }
+  } finally {
+    signal?.removeEventListener("abort", handleAbort);
+  }
+}
+
+export async function registerVoiceProfileRequest(name: string, embedding: number[]): Promise<void> {
+  const response = await fetch("/api/voice-profiles/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, embedding })
+  });
+  await parseJsonResponse<{ ok: boolean }>(response);
 }

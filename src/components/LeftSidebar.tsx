@@ -1,14 +1,16 @@
-import { Bot, Database, DatabaseBackup, Download, FilePlus2, List, Search, SlidersHorizontal, Upload } from "lucide-react";
+import { BookMarked, Bot, Database, DatabaseBackup, FilePlus2, List, MessageSquare, SpellCheck2, Search, SlidersHorizontal } from "lucide-react";
 
 interface LeftSidebarProps {
+  boardActive: boolean;
   filterActive: boolean;
   queryActive: boolean;
   searchActive: boolean;
+  onAbbreviationDictionary: () => void;
+  onBoard: () => void;
+  onCorrectionDictionary: () => void;
   onDbRestore: () => void;
   onDbSave: () => void;
   onFilter: () => void;
-  onImportMeeting: () => void;
-  onExportMeeting: () => void;
   onList: () => void;
   onNewMeeting: () => void;
   onQuery: () => void;
@@ -16,14 +18,16 @@ interface LeftSidebarProps {
 }
 
 export function LeftSidebar({
+  boardActive,
   filterActive,
   queryActive,
   searchActive,
+  onAbbreviationDictionary,
+  onBoard,
+  onCorrectionDictionary,
   onDbRestore,
   onDbSave,
   onFilter,
-  onImportMeeting,
-  onExportMeeting,
   onList,
   onNewMeeting,
   onQuery,
@@ -40,13 +44,17 @@ export function LeftSidebar({
           <FilePlus2 size={20} />
           <span>새 회의록</span>
         </button>
-        <button className="icon-nav-button" onClick={onImportMeeting} title="가져오기" type="button">
-          <Upload size={20} />
-          <span>가져오기</span>
+        <button className="icon-nav-button" onClick={onAbbreviationDictionary} title="약어 사전" type="button">
+          <BookMarked size={20} />
+          <span>약어 사전</span>
         </button>
-        <button className="icon-nav-button" onClick={onExportMeeting} title="내보내기" type="button">
-          <Download size={20} />
-          <span>내보내기</span>
+        <button className="icon-nav-button" onClick={onCorrectionDictionary} title="수정 사전" type="button">
+          <SpellCheck2 size={20} />
+          <span>수정 사전</span>
+        </button>
+        <button className={boardActive ? "icon-nav-button active" : "icon-nav-button"} onClick={onBoard} title="게시판" type="button">
+          <MessageSquare size={20} />
+          <span>게시판</span>
         </button>
       </nav>
 

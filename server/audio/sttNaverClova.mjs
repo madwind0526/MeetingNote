@@ -9,7 +9,7 @@ function normalizeInvokeUrl(invokeUrl) {
   return invokeUrl.replace(/\/+$/, "");
 }
 
-export async function transcribeNaverClova(audioBuffer, fileName, attendeeNames = []) {
+export async function transcribeNaverClova(audioBuffer, fileName, attendeeNames = [], signal) {
   const env = await readEnvFile();
   const invokeUrl = env.NAVER_CLOVA_INVOKE_URL;
   const secretKey = env.NAVER_CLOVA_SECRET_KEY;
@@ -46,7 +46,8 @@ export async function transcribeNaverClova(audioBuffer, fileName, attendeeNames 
     headers: {
       "X-CLOVASPEECH-API-KEY": secretKey
     },
-    body: formData
+    body: formData,
+    signal
   });
 
   if (!response.ok) {

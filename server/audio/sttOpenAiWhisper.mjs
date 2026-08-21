@@ -2,7 +2,7 @@ import { readEnvFile } from "../envFile.mjs";
 
 const WHISPER_API_URL = "https://api.openai.com/v1/audio/transcriptions";
 
-export async function transcribeWhisper(audioBuffer, fileName, model = "whisper-1") {
+export async function transcribeWhisper(audioBuffer, fileName, model = "whisper-1", signal) {
   const env = await readEnvFile();
   const apiKey = env.OPENAI_API_KEY;
 
@@ -22,7 +22,8 @@ export async function transcribeWhisper(audioBuffer, fileName, model = "whisper-
     headers: {
       Authorization: `Bearer ${apiKey}`
     },
-    body: formData
+    body: formData,
+    signal
   });
 
   if (!response.ok) {

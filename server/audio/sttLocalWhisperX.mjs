@@ -1,9 +1,9 @@
-import spawn from "cross-spawn";
 import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { readEnvFile } from "../envFile.mjs";
+import { runPythonCommand, runDiarizeWithEmbeddings, createLineSplitter } from "./pyannoteDiarize.mjs";
 
 const CHECK_TIMEOUT_MS = 20000;
 const TRANSCRIBE_TIMEOUT_MS = 900000;
@@ -18,51 +18,27 @@ function ffmpegBinPath() {
   return process.env.MEETINGNOTE_FFMPEG_BIN || DEFAULT_FFMPEG_BIN;
 }
 
-// See sttLocalWhisperCli.mjs's runCommand for why PYTHONIOENCODING/PYTHONUTF8 are set - same
+// See pyannoteDiarize.mjs's runPythonCommand for why PYTHONIOENCODING/PYTHONUTF8 are set - same
 // Windows console-codepage crash risk applies here (whisperx's logger also writes decoded text
 // to stdout).
-function runCommand(command, args, { timeoutMs, cwd, onStdoutChunk } = {}) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
-      timeout: timeoutMs,
-      cwd,
-      env: { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUTF8: "1" }
-    });
-    let stdout = "";
-    let stderr = "";
-
-    child.stdout?.on("data", (chunk) => {
-      const text = chunk.toString();
-      stdout += text;
-      onStdoutChunk?.(text);
-    });
-    child.stderr?.on("data", (chunk) => {
-      stderr += chunk;
-    });
-
-    child.on("error", (error) => {
-      reject(error);
-    });
-
-    child.on("close", (code) => {
-      resolve({ code, stdout: stdout.trim(), stderr: stderr.trim() });
-    });
-  });
-}
+const runCommand = runPythonCommand;
 
 // Matches whisperx's "Transcript: [start --> end]  text" log lines (plain seconds, not mm:ss).
-// The end timestamp divided by the known audio duration is used as a real progress fraction.
-const SEGMENT_TIMESTAMP_RE = /Transcript:\s*\[[\d.]+\s*-->\s*([\d.]+)\]/g;
+// The end timestamp divided by the known audio duration is used as a real progress fraction, and
+// the trailing text is surfaced live via onSegment - see transcribeLocalWhisperX below.
+const SEGMENT_LINE_RE = /Transcript:\s*\[([\d.]+)\s*-->\s*([\d.]+)\]\s*(.*)/;
 
-function parseLatestEndSeconds(text) {
-  let match;
-  let lastEndSec = null;
-
-  while ((match = SEGMENT_TIMESTAMP_RE.exec(text))) {
-    lastEndSec = Number(match[1]);
+function parseSegmentLine(line) {
+  const match = SEGMENT_LINE_RE.exec(line);
+  if (!match) {
+    return null;
   }
 
-  return lastEndSec;
+  return {
+    startSec: Number(match[1]),
+    endSec: Number(match[2]),
+    text: (match[3] ?? "").trim()
+  };
 }
 
 function buildBootstrapCode(body) {
@@ -114,7 +90,7 @@ function pickExtension(fileName) {
   return ext || ".wav";
 }
 
-export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "base", expectedDurationSec = 0, onProgress, attendeeNames = []) {
+export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "base", expectedDurationSec = 0, onProgress, attendeeNames = [], onSegment, signal) {
   const pythonPath = whisperXPythonPath();
 
   if (!existsSync(pythonPath)) {
@@ -131,6 +107,13 @@ export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "ba
   // NaverClovaConfigModal's counterpart, the HF token modal, wired from Settings' "로컬 WhisperX
   // GPU" provider card. Without a token, transcription still runs, just without speaker labels
   // (matches the behavior before diarization support existed - never a hard failure).
+  //
+  // This used to pass WhisperX's own `--diarize`/`--hf_token` CLI flags, which run pyannote
+  // internally as a black box with no way to get per-speaker embeddings out. It now runs plain
+  // transcription here, then diarizes as a separate step via the same shared
+  // pyannoteDiarize.mjs helper sttLocalWhisperCli.mjs uses - identical diarization mechanics on
+  // both paths (WhisperX's --diarize called the same DiarizationPipeline internally anyway), but
+  // this way both paths expose embeddings for B3's persistent voice-profile matching.
   const env = await readEnvFile();
   const hfToken = env.HUGGINGFACE_TOKEN;
   const speakerCount = Array.isArray(attendeeNames) ? attendeeNames.filter(Boolean).length : 0;
@@ -152,15 +135,6 @@ export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "ba
           "    '--compute_type', os.environ.get('MEETINGNOTE_WHISPERX_COMPUTE_TYPE', 'float16'),",
           "    '--output_format', 'json',",
           `    '--output_dir', ${JSON.stringify(workDir)},`,
-          ...(hfToken
-            ? [
-                "    '--diarize',",
-                `    '--hf_token', ${JSON.stringify(hfToken)},`,
-                ...(speakerCount > 0
-                  ? [`    '--min_speakers', '1',`, `    '--max_speakers', ${JSON.stringify(String(speakerCount))},`]
-                  : [])
-              ]
-            : []),
           "]",
           "cli()"
         ].join("\n")
@@ -171,13 +145,18 @@ export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "ba
     const result = await runCommand(pythonPath, [scriptPath], {
       timeoutMs: TRANSCRIBE_TIMEOUT_MS,
       cwd: workDir,
-      onStdoutChunk: expectedDurationSec > 0 && onProgress
-        ? (text) => {
-            const endSec = parseLatestEndSeconds(text);
-            if (endSec !== null) {
-              onProgress(Math.min(0.99, endSec / expectedDurationSec));
+      signal,
+      onStdoutChunk: onProgress || onSegment
+        ? createLineSplitter((line) => {
+            const segment = parseSegmentLine(line);
+            if (!segment) {
+              return;
             }
-          }
+            if (expectedDurationSec > 0 && onProgress) {
+              onProgress(Math.min(0.99, segment.endSec / expectedDurationSec));
+            }
+            onSegment?.(segment);
+          })
         : undefined
     });
 
@@ -193,19 +172,45 @@ export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "ba
       throw new Error("WhisperX 결과 파일을 읽지 못했습니다.");
     }
 
+    let embeddings = {};
+    if (signal?.aborted) {
+      throw new DOMException("음성 분석을 중지했습니다.", "AbortError");
+    }
+    if (hfToken) {
+      const diarized = await runDiarizeWithEmbeddings({
+        pythonPath,
+        workDir,
+        audioPath: inputPath,
+        whisperResult: outputJson,
+        hfToken,
+        speakerCount,
+        ffmpegBin: ffmpegBinPath(),
+        device: process.env.MEETINGNOTE_WHISPERX_DEVICE || "cuda",
+        timeoutMs: TRANSCRIBE_TIMEOUT_MS,
+        signal
+      });
+      // Best-effort inside runDiarizeWithEmbeddings swallows a signal-triggered kill and falls
+      // back to the plain transcript, so a cancel mid-diarization has to be re-checked here.
+      if (signal?.aborted) {
+        throw new DOMException("음성 분석을 중지했습니다.", "AbortError");
+      }
+      outputJson = diarized.whisperResult;
+      embeddings = diarized.embeddings;
+    }
+
     const rawSegments = Array.isArray(outputJson.segments) ? outputJson.segments : [];
     const segments = rawSegments.map((segment) => ({
       startSec: Number(segment.start ?? 0),
       endSec: Number(segment.end ?? 0),
       text: String(segment.text ?? "").trim(),
-      // Only present when --diarize ran (see above) - whisperx writes a flat "SPEAKER_00"-style
-      // string per segment, which diarizeSegments (server/audio/diarize.mjs) picks up as-is.
+      // Only present when diarization ran above - a flat "SPEAKER_00"-style string per segment,
+      // which diarize.mjs picks up as-is.
       ...(typeof segment.speaker === "string" && segment.speaker ? { speaker: segment.speaker } : {})
     }));
     const lastSegment = segments[segments.length - 1];
     const durationSec = lastSegment ? lastSegment.endSec : 0;
 
-    return { durationSec, segments };
+    return { durationSec, segments, embeddings };
   } finally {
     try {
       await rm(workDir, { recursive: true, force: true });

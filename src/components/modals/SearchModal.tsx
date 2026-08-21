@@ -35,7 +35,7 @@ export function SearchModal({ query, onApply, onClear, onClose }: SearchModalPro
       }
     >
       <div className="field full">
-        <label htmlFor="search-input">제목 / 주관자 / 참석자</label>
+        <label htmlFor="search-input">전체 내용 검색</label>
         <input
           autoFocus
           id="search-input"
@@ -45,7 +45,7 @@ export function SearchModal({ query, onApply, onClear, onClose }: SearchModalPro
               onApply(draft);
             }
           }}
-          placeholder="제목, 주관자, 참석자로 검색"
+          placeholder="제목, 주관자, 발표자, 참석자, 발표 내용 등으로 검색"
           value={draft}
         />
       </div>

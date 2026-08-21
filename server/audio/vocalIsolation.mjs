@@ -24,8 +24,13 @@ function demucsDevice() {
   return process.env.MEETINGNOTE_DEMUCS_DEVICE || "cuda";
 }
 
-function runCommand(command, args, { timeoutMs, cwd } = {}) {
+function runCommand(command, args, { timeoutMs, cwd, signal } = {}) {
   return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("음성 분석을 중지했습니다.", "AbortError"));
+      return;
+    }
+
     const env = { ...process.env };
     const ffmpegBin = ffmpegBinPath();
 
@@ -36,6 +41,13 @@ function runCommand(command, args, { timeoutMs, cwd } = {}) {
     const child = spawn(command, args, { timeout: timeoutMs, cwd, env });
     let stdout = "";
     let stderr = "";
+    let aborted = false;
+
+    const onAbort = () => {
+      aborted = true;
+      child.kill();
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
 
     child.stdout?.on("data", (chunk) => {
       stdout += chunk;
@@ -45,10 +57,16 @@ function runCommand(command, args, { timeoutMs, cwd } = {}) {
     });
 
     child.on("error", (error) => {
+      signal?.removeEventListener("abort", onAbort);
       reject(error);
     });
 
     child.on("close", (code) => {
+      signal?.removeEventListener("abort", onAbort);
+      if (aborted) {
+        reject(new DOMException("음성 분석을 중지했습니다.", "AbortError"));
+        return;
+      }
       resolve({ code, stdout: stdout.trim(), stderr: stderr.trim() });
     });
   });
@@ -73,7 +91,7 @@ async function findFileByName(rootDir, fileName) {
   return null;
 }
 
-export async function isolateVocalsWithDemucs(audioBuffer, fileName) {
+export async function isolateVocalsWithDemucs(audioBuffer, fileName, signal) {
   const executable = pythonPath();
 
   if (!existsSync(executable)) {
@@ -91,7 +109,7 @@ export async function isolateVocalsWithDemucs(audioBuffer, fileName) {
     const result = await runCommand(
       executable,
       ["-m", "demucs.separate", "--two-stems", "vocals", "-n", model, "--device", demucsDevice(), "-o", outputRoot, inputPath],
-      { timeoutMs: DEMUCS_TIMEOUT_MS, cwd: workDir }
+      { timeoutMs: DEMUCS_TIMEOUT_MS, cwd: workDir, signal }
     );
 
     if (result.code !== 0) {

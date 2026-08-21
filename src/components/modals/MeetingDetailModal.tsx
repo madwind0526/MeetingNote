@@ -1,43 +1,81 @@
 import { useState } from "react";
-import { Calendar, Clock, Download, FolderOpen, Pencil, Trash2, User, Users } from "lucide-react";
+import { Calendar, Clock, Download, FileText, FolderOpen, MessageSquare, Mic, Pencil, Send, Trash2, User, Users, X } from "lucide-react";
 import { ModalShell } from "./ModalShell";
-import type { Meeting } from "../../types/domain";
-import { attendeeSummary, computeMeetingStatus, meetingStatusLabels } from "../../types/domain";
+import type { Meeting, PublicMember } from "../../types/domain";
+import { canDeleteMeeting, computeAttendeeBadges, computeMeetingStatus, meetingStatusLabels } from "../../types/domain";
 import { openAttachment } from "../../lib/api";
 
+function formatDateTime(iso: string) {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? iso : date.toLocaleString("ko-KR", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function resolveMemberName(members: PublicMember[], authorId: string) {
+  return members.find((member) => member.id === authorId)?.name ?? "알 수 없음";
+}
+
 // Renders the "발표 자료" cell as a plain label, or - when a real file was attached via the
-// form - a clickable button that opens it (OS default app in Electron, browser tab otherwise).
-function MaterialCell({ material, materialPath, onError }: { material: string; materialPath?: string; onError: (message: string) => void }) {
+// form - a clickable button that opens it (OS default app in Electron, browser tab otherwise),
+// plus a second button to open its .md conversion when one exists (B4).
+function MaterialCell({
+  material,
+  materialPath,
+  materialMdPath,
+  onError
+}: {
+  material: string;
+  materialPath?: string;
+  materialMdPath?: string;
+  onError: (message: string) => void;
+}) {
   if (!materialPath) {
     return <>{material || "-"}</>;
   }
 
+  const handleOpen = async (path: string, errorMessage: string) => {
+    try {
+      await openAttachment(path);
+    } catch (error) {
+      onError(error instanceof Error ? error.message : errorMessage);
+    }
+  };
+
   return (
-    <button
-      className="ghost-action"
-      onClick={async () => {
-        try {
-          await openAttachment(materialPath);
-        } catch (error) {
-          onError(error instanceof Error ? error.message : "첨부파일을 여는 데 실패했습니다.");
-        }
-      }}
-      style={{ minHeight: 26, padding: "0 8px", fontSize: "0.86rem" }}
-      title="첨부파일 열기"
-      type="button"
-    >
-      <FolderOpen size={13} />
-      {material || "첨부파일"}
-    </button>
+    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      <button
+        className="ghost-action"
+        onClick={() => handleOpen(materialPath, "첨부파일을 여는 데 실패했습니다.")}
+        style={{ minHeight: 26, padding: "0 8px", fontSize: "0.86rem" }}
+        title="첨부파일 열기"
+        type="button"
+      >
+        <FolderOpen size={13} />
+        {material || "첨부파일"}
+      </button>
+      {materialMdPath && (
+        <button
+          className="row-icon-button"
+          onClick={() => handleOpen(materialMdPath, "Markdown 변환본을 여는 데 실패했습니다.")}
+          title="Markdown 변환본 열기"
+          type="button"
+        >
+          <FileText size={13} />
+        </button>
+      )}
+    </div>
   );
 }
 
 interface MeetingDetailModalProps {
   meeting: Meeting;
+  currentMember: PublicMember;
+  members: PublicMember[];
   onClose: () => void;
   onEdit: (meeting: Meeting) => void;
   onDelete: (meeting: Meeting) => void;
   onExport: (meeting: Meeting) => void;
+  onAddComment: (meetingId: string, content: string) => void;
+  onDeleteComment: (meetingId: string, commentId: string) => void;
 }
 
 function formatTimeRange(startTime: string, endTime: string) {
@@ -48,9 +86,30 @@ function formatTimeRange(startTime: string, endTime: string) {
   return startTime || endTime || "시간 미정";
 }
 
-export function MeetingDetailModal({ meeting, onClose, onEdit, onDelete, onExport }: MeetingDetailModalProps) {
+export function MeetingDetailModal({
+  meeting,
+  currentMember,
+  members,
+  onClose,
+  onEdit,
+  onDelete,
+  onExport,
+  onAddComment,
+  onDeleteComment
+}: MeetingDetailModalProps) {
   const status = computeMeetingStatus(meeting);
+  const attendeeBadges = computeAttendeeBadges(meeting.attendees);
   const [materialError, setMaterialError] = useState("");
+  const [commentDraft, setCommentDraft] = useState("");
+
+  const handleSubmitComment = () => {
+    if (!commentDraft.trim()) {
+      return;
+    }
+
+    onAddComment(meeting.id, commentDraft.trim());
+    setCommentDraft("");
+  };
 
   return (
     <ModalShell
@@ -59,10 +118,12 @@ export function MeetingDetailModal({ meeting, onClose, onEdit, onDelete, onExpor
       width="wide"
       footer={
         <div className="modal-footer-actions" style={{ marginLeft: "auto" }}>
-          <button className="danger-action" onClick={() => onDelete(meeting)} type="button">
-            <Trash2 size={16} />
-            삭제
-          </button>
+          {canDeleteMeeting(meeting, currentMember) && (
+            <button className="danger-action" onClick={() => onDelete(meeting)} type="button">
+              <Trash2 size={16} />
+              삭제
+            </button>
+          )}
           <button className="ghost-action" onClick={() => onExport(meeting)} type="button">
             <Download size={16} />
             내보내기
@@ -100,10 +161,58 @@ export function MeetingDetailModal({ meeting, onClose, onEdit, onDelete, onExpor
         </div>
         <div className="meeting-detail-row">
           <dt>
+            <User size={14} /> 간사
+          </dt>
+          <dd>{meeting.secretary || "-"}</dd>
+        </div>
+        <div className="meeting-detail-row">
+          <dt>
             <Users size={14} /> 참석자
           </dt>
-          <dd>{attendeeSummary(meeting.attendees) || "-"}</dd>
+          <dd>
+            {meeting.attendees.length === 0 ? (
+              "-"
+            ) : (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {meeting.attendees.map((attendee) => (
+                  <span key={attendee.id} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    <span className={`attendee-badge ${attendee.isPresenter ? "presenter" : "attendee"}`}>
+                      {attendeeBadges[attendee.id]}
+                    </span>
+                    {attendee.name || "-"}
+                  </span>
+                ))}
+              </div>
+            )}
+          </dd>
         </div>
+        {meeting.audio && (
+          <div className="meeting-detail-row">
+            <dt>
+              <Mic size={14} /> 음성 파일
+            </dt>
+            <dd>
+              {meeting.audio.fileName || "-"} · {Math.round(meeting.audio.durationSec)}초
+              {meeting.audio.audioPath && (
+                <button
+                  className="row-icon-button"
+                  onClick={async () => {
+                    try {
+                      await openAttachment(meeting.audio!.audioPath!);
+                    } catch (error) {
+                      setMaterialError(error instanceof Error ? error.message : "원본 오디오를 여는 데 실패했습니다.");
+                    }
+                  }}
+                  style={{ marginLeft: 6 }}
+                  title="원본 오디오 열기"
+                  type="button"
+                >
+                  <FolderOpen size={13} />
+                </button>
+              )}
+            </dd>
+          </div>
+        )}
       </dl>
 
       <div className="field full">
@@ -128,7 +237,12 @@ export function MeetingDetailModal({ meeting, onClose, onEdit, onDelete, onExpor
                     <td>{item.no}</td>
                     <td>{item.title || "-"}</td>
                     <td>
-                      <MaterialCell material={item.material} materialPath={item.materialPath} onError={setMaterialError} />
+                      <MaterialCell
+                        material={item.material}
+                        materialMdPath={item.materialMdPath}
+                        materialPath={item.materialPath}
+                        onError={setMaterialError}
+                      />
                     </td>
                     <td>{item.presenter || "-"}</td>
                   </tr>
@@ -163,7 +277,12 @@ export function MeetingDetailModal({ meeting, onClose, onEdit, onDelete, onExpor
                     <td>{item.title || "-"}</td>
                     <td>{item.durationMinutes}분</td>
                     <td>
-                      <MaterialCell material={item.material} materialPath={item.materialPath} onError={setMaterialError} />
+                      <MaterialCell
+                        material={item.material}
+                        materialMdPath={item.materialMdPath}
+                        materialPath={item.materialPath}
+                        onError={setMaterialError}
+                      />
                     </td>
                     <td>{item.presenter || "-"}</td>
                   </tr>
@@ -177,6 +296,51 @@ export function MeetingDetailModal({ meeting, onClose, onEdit, onDelete, onExpor
       <div className="field full">
         <label>회의록</label>
         <div className="meeting-minutes-body">{meeting.minutes.trim() || "회의록이 아직 작성되지 않았습니다."}</div>
+      </div>
+
+      <div className="field full">
+        <label>
+          <MessageSquare size={14} /> 댓글 ({meeting.comments.length})
+        </label>
+        {meeting.comments.length === 0 ? (
+          <span className="field-hint">아직 댓글이 없습니다.</span>
+        ) : (
+          <div className="comment-list">
+            {meeting.comments.map((comment) => (
+              <div className="comment-item" key={comment.id}>
+                <div className="comment-meta">
+                  <span>
+                    {resolveMemberName(members, comment.authorId)} · {formatDateTime(comment.createdAt)}
+                  </span>
+                  {(currentMember.role === "admin" || comment.authorId === currentMember.id) && (
+                    <button
+                      className="row-icon-button"
+                      onClick={() => onDeleteComment(meeting.id, comment.id)}
+                      title="댓글 삭제"
+                      type="button"
+                    >
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
+                <div className="comment-content">{comment.content}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="comment-form">
+          <textarea
+            onChange={(event) => setCommentDraft(event.target.value)}
+            placeholder="댓글을 입력하세요"
+            rows={2}
+            value={commentDraft}
+          />
+          <button className="ghost-action" onClick={handleSubmitComment} style={{ alignSelf: "flex-end" }} type="button">
+            <Send size={14} />
+            등록
+          </button>
+        </div>
       </div>
     </ModalShell>
   );

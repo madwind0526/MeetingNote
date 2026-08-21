@@ -1,9 +1,9 @@
-import spawn from "cross-spawn";
 import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { readEnvFile } from "../envFile.mjs";
+import { runPythonCommand, runDiarizeWithEmbeddings, createLineSplitter } from "./pyannoteDiarize.mjs";
 
 const CHECK_TIMEOUT_MS = 10000;
 // Local CPU transcription is slow (minutes per file), so this needs a much longer budget than
@@ -39,60 +39,28 @@ function ffmpegBinPath() {
 
 // Same shell-out pattern as PhoneBook's server/llm.mjs runCommand/checkClaudeCliAvailable -
 // cross-spawn resolves the real whisper(.exe) shim on Windows and passes args through argv
-// (not a shell string), so it can't be abused via shell metacharacters.
-//
-// PYTHONIOENCODING/PYTHONUTF8 are required on Windows: openai-whisper prints each decoded
-// segment's text to stdout as it works (used below for progress), and Python defaults stdout to
-// the OS console codepage (cp949 on a Korean-locale Windows install) rather than UTF-8. Any
-// transcribed character outside that codepage then throws UnicodeEncodeError mid-run - the CLI
-// catches it, skips the file, and still exits 0 with no JSON output, which otherwise surfaces
-// only as a confusing "결과 파일을 읽지 못했습니다" error with no indication of the real cause.
-function runCommand(command, args, { timeoutMs, cwd, onStdoutChunk } = {}) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
-      timeout: timeoutMs,
-      cwd,
-      env: { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUTF8: "1" }
-    });
-    let stdout = "";
-    let stderr = "";
-
-    child.stdout?.on("data", (chunk) => {
-      const text = chunk.toString();
-      stdout += text;
-      onStdoutChunk?.(text);
-    });
-    child.stderr?.on("data", (chunk) => {
-      stderr += chunk;
-    });
-
-    child.on("error", (error) => {
-      reject(error);
-    });
-
-    child.on("close", (code) => {
-      // The openai-whisper CLI doesn't have a simple `--version` flag on all versions, so
-      // "the process ran and produced some output" (even a non-zero exit for `-h`-like usage
-      // text) is treated as good enough evidence that the command exists.
-      resolve({ code, stdout: stdout.trim(), stderr: stderr.trim() });
-    });
-  });
-}
+// (not a shell string), so it can't be abused via shell metacharacters. See pyannoteDiarize.mjs's
+// runPythonCommand for why PYTHONIOENCODING/PYTHONUTF8 are required (shared with the diarization
+// step below, which uses the exact same Python environment).
+const runCommand = runPythonCommand;
 
 // Matches the "[mm:ss.ms --> mm:ss.ms]  text" lines openai-whisper prints per decoded segment
 // (its default non-tqdm verbose mode). The end timestamp divided by the known audio duration is
-// used as a real progress fraction - see transcribeLocalWhisperCli's onProgress usage below.
-const SEGMENT_TIMESTAMP_RE = /\[(\d+):(\d+(?:\.\d+)?)\s*-->\s*(\d+):(\d+(?:\.\d+)?)\]/g;
+// used as a real progress fraction, and the trailing text is surfaced live via onSegment - see
+// transcribeLocalWhisperCli below.
+const SEGMENT_LINE_RE = /\[(\d+):(\d+(?:\.\d+)?)\s*-->\s*(\d+):(\d+(?:\.\d+)?)\]\s*(.*)/;
 
-function parseLatestEndSeconds(text) {
-  let match;
-  let lastEndSec = null;
-
-  while ((match = SEGMENT_TIMESTAMP_RE.exec(text))) {
-    lastEndSec = Number(match[3]) * 60 + Number(match[4]);
+function parseSegmentLine(line) {
+  const match = SEGMENT_LINE_RE.exec(line);
+  if (!match) {
+    return null;
   }
 
-  return lastEndSec;
+  return {
+    startSec: Number(match[1]) * 60 + Number(match[2]),
+    endSec: Number(match[3]) * 60 + Number(match[4]),
+    text: (match[5] ?? "").trim()
+  };
 }
 
 export async function checkLocalWhisperAvailable() {
@@ -117,85 +85,7 @@ function pickExtension(fileName) {
   return ext || ".wav";
 }
 
-// Runs pyannote.audio's speaker diarization directly (the same model/library WhisperX's own
-// --diarize flag uses under the hood - see sttLocalWhisperX.mjs) and merges the resulting speaker
-// turns into openai-whisper's own transcript segments, using whisperx's own
-// DiarizationPipeline/assign_word_speakers helpers so the overlap-matching logic is identical to
-// WhisperX's. This lets local-whisper-cli (better transcription quality than WhisperX's
-// faster-whisper backend, per user feedback) also get real speaker labels, instead of only
-// local-whisperx.
-function buildDiarizeScript({ audioPath, whisperJsonPath, mergedJsonPath, hfToken, minSpeakers, maxSpeakers }) {
-  const ffmpegPath = JSON.stringify(ffmpegBinPath());
-
-  return [
-    "import os",
-    `ffmpeg_bin = ${ffmpegPath}`,
-    "if ffmpeg_bin:",
-    "    os.environ['PATH'] = ffmpeg_bin + os.pathsep + os.environ.get('PATH', '')",
-    "    if hasattr(os, 'add_dll_directory'):",
-    "        os.add_dll_directory(ffmpeg_bin)",
-    "import json",
-    "from whisperx.diarize import DiarizationPipeline, assign_word_speakers",
-    "",
-    `with open(${JSON.stringify(whisperJsonPath)}, "r", encoding="utf-8") as f:`,
-    "    whisper_result = json.load(f)",
-    "",
-    `pipeline = DiarizationPipeline(token=${JSON.stringify(hfToken)}, device=os.environ.get('MEETINGNOTE_WHISPER_DEVICE', 'cuda'))`,
-    `diarize_df = pipeline(${JSON.stringify(audioPath)}` +
-      (minSpeakers ? `, min_speakers=${minSpeakers}` : "") +
-      (maxSpeakers ? `, max_speakers=${maxSpeakers}` : "") +
-      ")",
-    "merged = assign_word_speakers(diarize_df, whisper_result)",
-    // whisperx/pyannote log INFO/warning lines to stdout during loading, so the merged result is
-    // written to its own file instead of printed - stdout can't be trusted to contain only JSON.
-    `with open(${JSON.stringify(mergedJsonPath)}, "w", encoding="utf-8") as f:`,
-    "    json.dump(merged, f, ensure_ascii=False)"
-  ].join("\n");
-}
-
-// Best-effort: any failure here (no GPU memory, model download hiccup, etc.) falls back to the
-// plain (non-diarized) transcript rather than failing the whole analysis - matches
-// transcribeLocalWhisperX's "no hard failure" behavior when diarization can't run.
-async function diarizeWithPyannote(inputPath, outputJson, hfToken, speakerCount) {
-  const pythonPath = whisperXPythonPath();
-  if (!existsSync(pythonPath)) {
-    return outputJson;
-  }
-
-  const workDir = path.dirname(inputPath);
-  const whisperJsonPath = path.join(workDir, "whisper-for-diarize.json");
-  const mergedJsonPath = path.join(workDir, "whisper-diarized.json");
-  const scriptPath = path.join(workDir, "run_diarize.py");
-
-  try {
-    await writeFile(whisperJsonPath, JSON.stringify(outputJson), "utf8");
-    await writeFile(
-      scriptPath,
-      buildDiarizeScript({
-        audioPath: inputPath,
-        whisperJsonPath,
-        mergedJsonPath,
-        hfToken,
-        minSpeakers: speakerCount > 0 ? 1 : undefined,
-        maxSpeakers: speakerCount > 0 ? speakerCount : undefined
-      }),
-      "utf8"
-    );
-
-    const result = await runCommand(pythonPath, [scriptPath], { timeoutMs: DIARIZE_TIMEOUT_MS, cwd: workDir });
-
-    if (result.code !== 0) {
-      return outputJson;
-    }
-
-    const mergedRaw = await readFile(mergedJsonPath, "utf8");
-    return JSON.parse(mergedRaw);
-  } catch {
-    return outputJson;
-  }
-}
-
-export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "base", expectedDurationSec = 0, onProgress, attendeeNames = []) {
+export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "base", expectedDurationSec = 0, onProgress, attendeeNames = [], onSegment, signal) {
   const workDir = await mkdtemp(path.join(tmpdir(), "meetingnote-whisper-"));
   const inputExt = pickExtension(fileName);
   const inputBaseName = `input${inputExt}`;
@@ -225,13 +115,18 @@ export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "
         {
           timeoutMs: TRANSCRIBE_TIMEOUT_MS,
           cwd: workDir,
-          onStdoutChunk: expectedDurationSec > 0 && onProgress
-            ? (text) => {
-                const endSec = parseLatestEndSeconds(text);
-                if (endSec !== null) {
-                  onProgress(Math.min(0.99, endSec / expectedDurationSec));
+          signal,
+          onStdoutChunk: onProgress || onSegment
+            ? createLineSplitter((line) => {
+                const segment = parseSegmentLine(line);
+                if (!segment) {
+                  return;
                 }
-              }
+                if (expectedDurationSec > 0 && onProgress) {
+                  onProgress(Math.min(0.99, segment.endSec / expectedDurationSec));
+                }
+                onSegment?.(segment);
+              })
             : undefined
         }
       );
@@ -263,12 +158,36 @@ export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "
     // Diarization is applied automatically whenever a Hugging Face token is configured - same
     // opt-in condition as local-whisperx (see NaverClovaConfigModal's counterpart, the HF token
     // modal, wired from Settings). Best-effort: falls back silently to the plain transcript above
-    // if it fails, since transcription itself already succeeded.
+    // if it fails, since transcription itself already succeeded. return_embeddings gives per-
+    // speaker voice embeddings for B3's persistent voice-profile matching (see diarize.mjs).
     const env = await readEnvFile();
     const hfToken = env.HUGGINGFACE_TOKEN;
-    if (hfToken) {
+    let embeddings = {};
+    if (signal?.aborted) {
+      throw new DOMException("음성 분석을 중지했습니다.", "AbortError");
+    }
+    if (hfToken && existsSync(whisperXPythonPath())) {
       const speakerCount = attendeeNames.filter(Boolean).length;
-      outputJson = await diarizeWithPyannote(inputPath, outputJson, hfToken, speakerCount);
+      const diarized = await runDiarizeWithEmbeddings({
+        pythonPath: whisperXPythonPath(),
+        workDir,
+        audioPath: inputPath,
+        whisperResult: outputJson,
+        hfToken,
+        speakerCount,
+        ffmpegBin: ffmpegBinPath(),
+        device: whisperDevice(),
+        timeoutMs: DIARIZE_TIMEOUT_MS,
+        signal
+      });
+      // runDiarizeWithEmbeddings treats every failure as best-effort (falls back to the plain
+      // transcript) - including a signal-triggered kill - so a cancel mid-diarization has to be
+      // re-checked here instead of trusting that call to have thrown.
+      if (signal?.aborted) {
+        throw new DOMException("음성 분석을 중지했습니다.", "AbortError");
+      }
+      outputJson = diarized.whisperResult;
+      embeddings = diarized.embeddings;
     }
 
     const rawSegments = Array.isArray(outputJson.segments) ? outputJson.segments : [];
@@ -281,7 +200,7 @@ export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "
     const lastSegment = segments[segments.length - 1];
     const durationSec = lastSegment ? lastSegment.endSec : 0;
 
-    return { durationSec, segments };
+    return { durationSec, segments, embeddings };
   } finally {
     // Best-effort cleanup - a failure here should never mask the real transcription result/error.
     try {
