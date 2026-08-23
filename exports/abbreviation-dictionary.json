@@ -1,0 +1,4052 @@
+[
+  {
+    "id": "bc8fa470-c486-42f2-b8af-654ffe9be6bb",
+    "from": "FAB",
+    "to": "Fabrication Facility",
+    "description": "반도체 웨이퍼를 제조하는 생산 공장(팹)"
+  },
+  {
+    "id": "11e7d5c2-bdc6-41fd-8ec1-3c57dadbb8af",
+    "from": "EUV",
+    "to": "Extreme Ultraviolet Lithography",
+    "description": "13.5nm 파장의 극자외선으로 초미세 회로 패턴을 새기는 노광 기술"
+  },
+  {
+    "id": "1bf75b62-d7c2-4feb-a3d8-ae0fc65cec07",
+    "from": "CVD",
+    "to": "Chemical Vapor Deposition",
+    "description": "화학 기상 증착 - 가스 반응으로 웨이퍼 표면에 박막을 형성하는 공정"
+  },
+  {
+    "id": "bdea3516-5d54-455f-a3e6-c3f3db095ee8",
+    "from": "ALD",
+    "to": "Atomic Layer Deposition",
+    "description": "원자층 증착 - 한 층씩 정밀하게 박막을 쌓는 증착 기술, 첨단 공정 게이트 절연막 등에 사용"
+  },
+  {
+    "id": "f987d3a7-8cbd-4671-a6ce-462861166f57",
+    "from": "PVD",
+    "to": "Physical Vapor Deposition",
+    "description": "물리적 기상 증착 - 금속 등을 증발/스퍼터링시켜 박막을 형성하는 공정"
+  },
+  {
+    "id": "160ea11f-8d9f-4061-b8fe-e97d78b6c54c",
+    "from": "CMP",
+    "to": "Chemical Mechanical Planarization",
+    "description": "화학적 기계적 연마 - 웨이퍼 표면을 화학 슬러리와 연마로 평탄화하는 공정"
+  },
+  {
+    "id": "5b5653ac-7a54-4c54-a6bf-a4a0215c46dc",
+    "from": "FOUP",
+    "to": "Front Opening Unified Pod",
+    "description": "클린룸에서 웨이퍼(보통 25장)를 안전하게 담아 이동하는 밀폐 용기"
+  },
+  {
+    "id": "9410d8e6-5bbc-48a5-baa9-98efee5cc4dd",
+    "from": "OHT",
+    "to": "Overhead Hoist Transport",
+    "description": "팹 천장 레일을 따라 웨이퍼 캐리어를 자동 이송하는 반송 시스템"
+  },
+  {
+    "id": "cccdcf56-cd4b-4f18-aa44-30682113aaed",
+    "from": "FEOL",
+    "to": "Front-End of Line",
+    "description": "웨이퍼 위에 트랜지스터 등 능동 소자를 형성하는 전공정"
+  },
+  {
+    "id": "7802bcf1-44df-4955-aa69-00dbfb64e0f0",
+    "from": "BEOL",
+    "to": "Back-End of Line",
+    "description": "형성된 소자들을 금속 배선으로 연결하는 후공정"
+  },
+  {
+    "id": "0d0dea72-fa8a-4be9-ad22-2e84cb530a66",
+    "from": "EDA",
+    "to": "Electronic Design Automation",
+    "description": "반도체 회로 설계·검증·레이아웃에 사용하는 소프트웨어 툴 산업"
+  },
+  {
+    "id": "89aa3407-8e23-4cb6-bc7f-d5e3292ae5f6",
+    "from": "RTL",
+    "to": "Register-Transfer Level",
+    "description": "디지털 회로의 동작을 레지스터 간 데이터 흐름으로 기술하는 하드웨어 설계 언어 수준"
+  },
+  {
+    "id": "674164d4-beec-43a3-b681-6acc432d0fad",
+    "from": "PDK",
+    "to": "Process Design Kit",
+    "description": "파운드리가 제공하는, 특정 공정에 맞춰 설계할 수 있게 해주는 설계 키트"
+  },
+  {
+    "id": "80564dd2-82ae-4313-a254-386d81b4f389",
+    "from": "DFT",
+    "to": "Design for Testability",
+    "description": "칩 제조 후 테스트가 쉽도록 설계 단계에서 테스트 회로를 추가하는 설계 기법"
+  },
+  {
+    "id": "7ffc0f12-4f59-4750-9737-a71f418faff8",
+    "from": "ATE",
+    "to": "Automatic Test Equipment",
+    "description": "제조된 칩의 전기적 특성을 자동으로 검사하는 테스트 장비"
+  },
+  {
+    "id": "9bf19f0b-d18f-42f2-9070-121dce61aeec",
+    "from": "OSAT",
+    "to": "Outsourced Semiconductor Assembly and Test",
+    "description": "패키징과 테스트를 전문으로 위탁 수행하는 외주 업체"
+  },
+  {
+    "id": "02be5aa5-e888-4b9f-bb6b-ae2ad9962afa",
+    "from": "WLP",
+    "to": "Wafer-Level Packaging",
+    "description": "웨이퍼 상태에서 패키징 공정까지 마치는 웨이퍼 레벨 패키징 기술"
+  },
+  {
+    "id": "e47786b0-0388-421e-831c-b42d75b41dba",
+    "from": "TSV",
+    "to": "Through-Silicon Via",
+    "description": "실리콘을 관통하는 수직 배선으로 칩을 3차원으로 적층 연결하는 기술"
+  },
+  {
+    "id": "1caf3c52-49b4-497b-b49f-39cfcc1b55e5",
+    "from": "CoWoS",
+    "to": "Chip on Wafer on Substrate",
+    "description": "TSMC의 첨단 패키징 기술 - 실리콘 인터포저 위에 로직과 메모리를 함께 집적"
+  },
+  {
+    "id": "742d0fa6-cbaa-420d-88c3-850584339fa8",
+    "from": "HBM",
+    "to": "High Bandwidth Memory",
+    "description": "D램을 수직으로 적층해 TSV로 연결한 고대역폭 메모리, AI 가속기 등에 사용"
+  },
+  {
+    "id": "d6e5e5ef-ff07-411b-8f3b-0493ca3762c7",
+    "from": "DRAM",
+    "to": "Dynamic Random Access Memory",
+    "description": "주기적으로 재충전이 필요한 휘발성 메모리, 주 메모리로 사용"
+  },
+  {
+    "id": "8fe36b3d-5df6-401d-92b5-7dce5680a3c5",
+    "from": "NAND",
+    "to": "NAND Flash Memory",
+    "description": "전원이 꺼져도 데이터가 유지되는 비휘발성 메모리, SSD·저장장치에 사용"
+  },
+  {
+    "id": "3de970ed-c481-486a-a849-c573dd787ae7",
+    "from": "SoC",
+    "to": "System on Chip",
+    "description": "프로세서·메모리·주변장치 등을 하나의 칩에 통합한 시스템"
+  },
+  {
+    "id": "a41118e5-b059-4dcf-ae5c-36fe47b7bc64",
+    "from": "ASIC",
+    "to": "Application-Specific Integrated Circuit",
+    "description": "특정 용도에 맞춰 설계된 주문형 반도체"
+  },
+  {
+    "id": "a91edf9c-49c6-4423-84aa-9d6110c60154",
+    "from": "FinFET",
+    "to": "Fin Field-Effect Transistor",
+    "description": "채널이 지느러미(핀) 형태로 서 있는 3차원 구조의 트랜지스터"
+  },
+  {
+    "id": "6a58a459-53e6-41da-9419-0fc16b27df01",
+    "from": "GAA",
+    "to": "Gate-All-Around",
+    "description": "게이트가 채널을 사방으로 감싸는 차세대 트랜지스터 구조"
+  },
+  {
+    "id": "1b62398c-2c40-4326-ad73-8c25b59ea491",
+    "from": "STI",
+    "to": "Shallow Trench Isolation",
+    "description": "얕은 트렌치를 파고 절연물을 채워 인접 소자를 분리하는 공정"
+  },
+  {
+    "id": "aa58c71f-3b29-4453-8f0c-629de12d84bc",
+    "from": "UPW",
+    "to": "Ultra-Pure Water",
+    "description": "웨이퍼 세정 등 공정에 사용하는 초순수(고순도 정제수)"
+  },
+  {
+    "id": "42f1fca5-93d8-42ce-b1f7-920d75cc2e7d",
+    "from": "PPA",
+    "to": "Power, Performance, Area",
+    "description": "반도체 설계 최적화의 3대 핵심 지표(전력·성능·면적)"
+  },
+  {
+    "id": "db16d2c0-cf4b-4316-a9f2-cee9f73cc592",
+    "from": "IDM",
+    "to": "Integrated Device Manufacturer",
+    "description": "설계부터 제조·판매까지 직접 수행하는 종합 반도체 기업"
+  },
+  {
+    "id": "a65a7dfa-4340-404c-ac2d-0a124e62c410",
+    "from": "3DIC",
+    "to": "Three-Dimensional Integrated Circuit",
+    "description": "여러 개의 실리콘 다이를 TSV로 수직 적층한 3차원 집적회로"
+  },
+  {
+    "id": "01b5a92b-3fb1-409f-a2fc-0254436e8da0",
+    "from": "ABF",
+    "to": "Ajinomoto Build-up Film",
+    "description": "첨단 IC 기판(서브스트레이트) 제조에 쓰이는 절연 적층 필름"
+  },
+  {
+    "id": "519bb289-dbe6-4bcf-bdb3-b1786e14a004",
+    "from": "BCD",
+    "to": "Bipolar-CMOS-DMOS",
+    "description": "바이폴라·CMOS·DMOS 세 가지 소자를 한 공정에 결합한 혼성 신호 공정"
+  },
+  {
+    "id": "514a59a4-f495-4826-9f31-5451f54388a5",
+    "from": "BGA",
+    "to": "Ball Grid Array",
+    "description": "패키지 밑면에 솔더볼로 접점을 배열한 실장 방식"
+  },
+  {
+    "id": "81c38065-bfea-40ee-a7b8-856bc3ffd8ee",
+    "from": "CIS",
+    "to": "CMOS Image Sensor",
+    "description": "빛을 전기 신호로 변환하는 CMOS 기반 이미지 센서"
+  },
+  {
+    "id": "d0f661b3-5cbb-4da7-8b6a-226ecae3a31e",
+    "from": "CMOS",
+    "to": "Complementary Metal-Oxide-Semiconductor",
+    "description": "NMOS와 PMOS를 상보적으로 결합한 대표적 트랜지스터 구조"
+  },
+  {
+    "id": "cb5a41d2-3f21-4ef0-9647-aea07f0b9b7b",
+    "from": "DDR",
+    "to": "Double Data Rate",
+    "description": "클럭의 상승·하강 양쪽에서 데이터를 전송하는 D램 규격"
+  },
+  {
+    "id": "a8dfa587-2045-4f67-a183-065a153d9abc",
+    "from": "DIMM",
+    "to": "Dual In-line Memory Module",
+    "description": "표준 커넥터를 가진 메모리 모듈 형태"
+  },
+  {
+    "id": "c746e1cd-652b-4293-af43-5eb810b6beb3",
+    "from": "DUV",
+    "to": "Deep Ultraviolet Lithography",
+    "description": "193nm(ArF)·248nm(KrF) 파장을 사용하는 노광 기술, EUV 이전 세대"
+  },
+  {
+    "id": "9dcce538-fa1d-473d-9f5f-1559ac1075c5",
+    "from": "ESD",
+    "to": "Electrostatic Discharge",
+    "description": "대전된 물체 사이에서 순간적으로 발생하는 정전기 방전"
+  },
+  {
+    "id": "f79e2ccb-8957-41aa-8de3-f3e34ea513ac",
+    "from": "GaAs",
+    "to": "Gallium Arsenide",
+    "description": "RF·광소자에 쓰이는 화합물 반도체 소재"
+  },
+  {
+    "id": "d2abd57f-6fba-4e99-a652-a7e09642b139",
+    "from": "GaN",
+    "to": "Gallium Nitride",
+    "description": "전력·RF 응용에 쓰이는 광대역갭 화합물 반도체"
+  },
+  {
+    "id": "d2d0b382-13c9-4156-8864-ec447826d6b3",
+    "from": "GDSII",
+    "to": "Graphic Database System II",
+    "description": "IC 마스크 레이아웃 데이터를 담는 표준 바이너리 파일 포맷"
+  },
+  {
+    "id": "f8790c21-4b45-4e93-b2f2-9c4085ad75cd",
+    "from": "HEMT",
+    "to": "High Electron Mobility Transistor",
+    "description": "RF 응용에 쓰이는 화합물 반도체 고전자이동도 트랜지스터"
+  },
+  {
+    "id": "7213da40-84fa-4eec-9cb6-7b83ef5c3e81",
+    "from": "IC",
+    "to": "Integrated Circuit",
+    "description": "여러 소자를 하나의 반도체 기판에 집적한 회로(칩)"
+  },
+  {
+    "id": "226a6b3c-5633-476d-bac5-7850495f7884",
+    "from": "IGBT",
+    "to": "Insulated Gate Bipolar Transistor",
+    "description": "고전압 스위칭에 쓰이는 전력 반도체 소자"
+  },
+  {
+    "id": "c7b3baff-f200-4bfb-90cf-0041e424de0f",
+    "from": "MCU",
+    "to": "Microcontroller Unit",
+    "description": "CPU·메모리·주변장치를 통합한 소형 제어용 반도체"
+  },
+  {
+    "id": "510ba038-0636-48b8-85d3-970d96a348de",
+    "from": "MOCVD",
+    "to": "Metal-Organic Chemical Vapor Deposition",
+    "description": "유기금속 전구체로 화합물 반도체 결정을 성장시키는 증착 기술"
+  },
+  {
+    "id": "c087763c-3bb4-4635-9819-56c13f457219",
+    "from": "MOSFET",
+    "to": "Metal-Oxide-Semiconductor Field-Effect Transistor",
+    "description": "로직·전력용으로 가장 널리 쓰이는 전계효과 트랜지스터"
+  },
+  {
+    "id": "113971e9-a645-4ec6-9686-fe0ab4bd6c9c",
+    "from": "NF3",
+    "to": "Nitrogen Trifluoride",
+    "description": "증착 챔버 세정에 사용하는 특수 가스"
+  },
+  {
+    "id": "7933345e-329f-4524-a2b1-c3e87c766fb3",
+    "from": "PMIC",
+    "to": "Power Management Integrated Circuit",
+    "description": "전압 레귤레이터 등 전력 관리 기능을 통합한 칩"
+  },
+  {
+    "id": "ebc977e0-c0cb-415e-847b-9415609d8ca1",
+    "from": "RF",
+    "to": "Radio Frequency",
+    "description": "MHz~GHz 대역의 고주파 전기 신호"
+  },
+  {
+    "id": "94f4bbbd-ff7b-41d2-b12a-1b44db9a1125",
+    "from": "RTP",
+    "to": "Rapid Thermal Processing",
+    "description": "짧은 시간에 고온 열처리를 수행하는 공정"
+  },
+  {
+    "id": "f3363a28-a89a-4d2f-924f-41159957bd6c",
+    "from": "SerDes",
+    "to": "Serializer/Deserializer",
+    "description": "병렬 데이터와 직렬 데이터를 상호 변환하는 반도체 블록"
+  },
+  {
+    "id": "5fc8b696-a3a1-46b3-b18c-513434617eb7",
+    "from": "SiC",
+    "to": "Silicon Carbide",
+    "description": "전력 반도체에 쓰이는 광대역갭 소재"
+  },
+  {
+    "id": "0a128dce-f29f-4ceb-b5f1-4676d454af4c",
+    "from": "SiGe",
+    "to": "Silicon Germanium",
+    "description": "고성능 트랜지스터에 쓰이는 실리콘-저마늄 합금"
+  },
+  {
+    "id": "87bd32c0-69ae-4915-bdf1-f583c0319e03",
+    "from": "SRAM",
+    "to": "Static Random Access Memory",
+    "description": "래치 구조로 동작하는 고속 휘발성 메모리"
+  },
+  {
+    "id": "a30243b6-c21d-4d03-95b6-edefd4621001",
+    "from": "WFE",
+    "to": "Wafer Fab Equipment",
+    "description": "반도체 제조에 쓰이는 자본 장비 총칭"
+  },
+  {
+    "id": "88fa54b0-6fd2-413c-b512-1283fbf887f5",
+    "from": "WSPM",
+    "to": "Wafer Starts Per Month",
+    "description": "팹의 월간 웨이퍼 투입량을 나타내는 생산능력 지표"
+  },
+  {
+    "id": "c4ceb3c4-f564-45dd-9fe5-fc1f4ab132d9",
+    "from": "NOR",
+    "to": "NOR Flash Memory",
+    "description": "병렬 셀 구조의 비휘발성 메모리, 빠른 랜덤 읽기 속도가 특징"
+  },
+  {
+    "id": "a9c9275b-6269-421f-a9d0-97b50024c614",
+    "from": "RAM",
+    "to": "Random Access Memory",
+    "description": "자유롭게 읽고 쓸 수 있는 휘발성 메모리"
+  },
+  {
+    "id": "522d00e8-562c-410c-bd59-792ef7c4a9c7",
+    "from": "ROM",
+    "to": "Read Only Memory",
+    "description": "한 번 기록된 정보를 읽기만 할 수 있는 비휘발성 메모리"
+  },
+  {
+    "id": "9fe7541e-940f-49ef-8de1-86a8f038c986",
+    "from": "LED",
+    "to": "Light Emitting Diode",
+    "description": "전류를 흘리면 빛을 내는 반도체 발광 소자"
+  },
+  {
+    "id": "269f490a-4cd9-4349-993a-fe7514e4e8fb",
+    "from": "AP",
+    "to": "Application Processor",
+    "description": "스마트폰 등 모바일 기기의 중앙처리 칩"
+  },
+  {
+    "id": "9533bb59-92c1-4bf3-9210-4bef3aaf25a7",
+    "from": "BLU",
+    "to": "Backlight Unit",
+    "description": "LCD 디스플레이의 광원으로 사용되는 백라이트 부품"
+  },
+  {
+    "id": "38d4e461-4e9b-4331-aa11-5f173954e53d",
+    "from": "CCD",
+    "to": "Charge Coupled Device",
+    "description": "전하 결합 방식으로 빛을 전기 신호로 바꾸는 이미지 센서"
+  },
+  {
+    "id": "df498811-4a39-400d-82bd-0464543106e7",
+    "from": "DDI",
+    "to": "Display Driver IC",
+    "description": "디스플레이를 구동하는 구동칩"
+  },
+  {
+    "id": "8bac9ba2-9df4-4b7e-bba9-ad413aff540f",
+    "from": "DSP",
+    "to": "Digital Signal Processor",
+    "description": "디지털 신호를 연산 처리하는 전용 프로세서"
+  },
+  {
+    "id": "7ff3d70a-4687-4a7a-8406-a5b405fec312",
+    "from": "EDS",
+    "to": "Electrical Die Sorting",
+    "description": "웨이퍼 상태에서 칩의 전기적 동작을 선별하는 검사 공정"
+  },
+  {
+    "id": "97817910-8a3f-4acf-9005-4c76362c7923",
+    "from": "eMMC",
+    "to": "embedded Multi Media Card",
+    "description": "모바일 기기에 내장하는 저장용 메모리 반도체"
+  },
+  {
+    "id": "7518a9ae-2e60-4ccc-8f92-2fdc2afee430",
+    "from": "HDD",
+    "to": "Hard Disk Drive",
+    "description": "자성 디스크에 데이터를 저장하는 대용량 저장장치"
+  },
+  {
+    "id": "68a3f928-5015-48d5-a1c2-0972445daa41",
+    "from": "MCP",
+    "to": "Multi Chip Package",
+    "description": "여러 개의 반도체 칩을 하나로 묶은 패키지"
+  },
+  {
+    "id": "8c7937cd-5136-4a77-9058-2dd5a245f9f7",
+    "from": "NFC",
+    "to": "Near Field Communication",
+    "description": "10cm 이내 근거리에서 데이터를 교환하는 무선통신 기술"
+  },
+  {
+    "id": "818af592-80db-4b65-833e-f645a2d015e9",
+    "from": "NPU",
+    "to": "Neural Processing Unit",
+    "description": "AI 연산에 특화된 신경망 처리 전용 프로세서"
+  },
+  {
+    "id": "d2e4f865-48e9-42b2-b0eb-4832ba681034",
+    "from": "NVMe",
+    "to": "Non-Volatile Memory Express",
+    "description": "PCIe 기반 고속 SSD 인터페이스 프로토콜"
+  },
+  {
+    "id": "693b687e-f768-4661-bdf3-37adfac4c374",
+    "from": "PCIe",
+    "to": "PCI Express",
+    "description": "고속 직렬 데이터 전송 인터페이스 규격"
+  },
+  {
+    "id": "3a0aeb9b-ff5c-4df7-8094-e73dc0d5da61",
+    "from": "SATA",
+    "to": "Serial ATA",
+    "description": "직렬 전송 방식의 저장장치 인터페이스 규격"
+  },
+  {
+    "id": "03a0e131-8cf6-4721-a423-a5936b09b67b",
+    "from": "SSD",
+    "to": "Solid State Drive",
+    "description": "메모리 반도체를 저장매체로 사용하는 대용량 저장장치"
+  },
+  {
+    "id": "d485f4e5-dbc3-40a1-9aaf-8c7d475e8592",
+    "from": "UFS",
+    "to": "Universal Flash Storage",
+    "description": "모바일 기기용 초고속 내장 플래시 메모리 규격"
+  },
+  {
+    "id": "cacae7c2-671c-482e-ba53-6cf030b73302",
+    "from": "IVI",
+    "to": "In-Vehicle Infotainment",
+    "description": "차량 내 정보 제공 및 엔터테인먼트 시스템"
+  },
+  {
+    "id": "41b5820b-4f39-44e3-99af-9b2bf6eca38c",
+    "from": "GDDR",
+    "to": "Graphics Double Data Rate",
+    "description": "그래픽 처리용으로 최적화된 고대역폭 D램 규격"
+  },
+  {
+    "id": "2fd154ed-e72f-46b2-aeeb-68e3aaa87811",
+    "from": "LPDDR",
+    "to": "Low Power Double Data Rate",
+    "description": "모바일 기기용 저전력 D램 규격"
+  },
+  {
+    "id": "5123546e-d2d7-4f3b-9312-8af1c97e2e60",
+    "from": "CXL",
+    "to": "Compute Express Link",
+    "description": "CPU와 가속기·메모리 간 고속 연결을 위한 인터커넥트 표준"
+  },
+  {
+    "id": "a18c292f-f8ce-432a-9013-d6a28a38c43a",
+    "from": "UWB",
+    "to": "Ultra Wideband",
+    "description": "매우 넓은 대역폭을 사용하는 근거리 고정밀 무선통신 기술"
+  },
+  {
+    "id": "63501ddb-be92-4050-9b87-299af7e15b72",
+    "from": "ToF",
+    "to": "Time of Flight",
+    "description": "빛이 물체에 반사되어 돌아오는 시간을 측정해 거리를 구하는 센서 기술"
+  },
+  {
+    "id": "c63a5d89-e379-41fd-a0b7-0cab5e82b89f",
+    "from": "2.5D",
+    "to": "2.5D Interconnect, 2.5D Packaging",
+    "description": ""
+  },
+  {
+    "id": "55732924-fefb-490d-ac0b-d8bafe75d0f5",
+    "from": "3D",
+    "to": "3D Interconnect / TSV",
+    "description": ""
+  },
+  {
+    "id": "6286aa79-bee3-456d-850c-c2d1a8e557a0",
+    "from": "3D DRAM",
+    "to": "3D DRAM Technology",
+    "description": ""
+  },
+  {
+    "id": "c36565bd-8ffd-4241-9fca-f2b663bcd773",
+    "from": "3D IC",
+    "to": "3D Integrated Circuit",
+    "description": ""
+  },
+  {
+    "id": "21a69b2f-4aca-44c1-8a8b-a4da51b60f8c",
+    "from": "3PL",
+    "to": "Third Party Logistics",
+    "description": ""
+  },
+  {
+    "id": "d7faed24-8bcb-4e63-ad59-074d109b01d1",
+    "from": "5WHY",
+    "to": "Five Why Root Cause",
+    "description": ""
+  },
+  {
+    "id": "752f0bfc-02cb-47fa-8d40-45db4ab4dd3c",
+    "from": "8D",
+    "to": "8 Disciplines Problem Solving",
+    "description": ""
+  },
+  {
+    "id": "70bb87b2-25cd-4756-bfc1-4920f8d38e8d",
+    "from": "ABIST",
+    "to": "Array Built-In Self Test",
+    "description": ""
+  },
+  {
+    "id": "dc22b81e-d067-4efd-925c-edbf3e91e94c",
+    "from": "AC",
+    "to": "AC Test",
+    "description": ""
+  },
+  {
+    "id": "f10e9489-3e73-475b-aee9-2a46e7f62770",
+    "from": "ACF",
+    "to": "Anisotropic Conductive Film",
+    "description": "이방성 도전 필름, 세로 방향으로만 전도"
+  },
+  {
+    "id": "993f29ae-f113-4987-9c84-b9b0f0d9613d",
+    "from": "ACP",
+    "to": "Anisotropic Conductive Paste",
+    "description": ""
+  },
+  {
+    "id": "728729eb-868d-4552-8ec5-b199dd41a07c",
+    "from": "ADAS",
+    "to": "Advanced Driver Assistance System",
+    "description": "첨단 운전자 보조 시스템"
+  },
+  {
+    "id": "76ae1c0f-f329-4cd8-8b18-5810cc48420a",
+    "from": "AES",
+    "to": "Auger Electron Spectroscopy",
+    "description": ""
+  },
+  {
+    "id": "be678e9c-2801-41f4-a5a4-84d5e25bc817",
+    "from": "AFD",
+    "to": "Attention FFN Disaggregation",
+    "description": "어텐션/FFN 분리 아키텍처"
+  },
+  {
+    "id": "246a1722-50e2-48c7-a3a3-a10f8ac5f897",
+    "from": "AFM",
+    "to": "Atomic Force Microscope",
+    "description": ""
+  },
+  {
+    "id": "97739bd1-031f-4a21-8de6-eeb6730f08e2",
+    "from": "AG",
+    "to": "Air Gap Dielectric",
+    "description": ""
+  },
+  {
+    "id": "00a7ea79-dc3f-4f76-bda4-bfc5ad2a53ea",
+    "from": "AGV",
+    "to": "Automated Guided Vehicle",
+    "description": ""
+  },
+  {
+    "id": "3314ef60-92fc-49d1-a28c-2a2d946f0a84",
+    "from": "AHU",
+    "to": "Air Handling Unit",
+    "description": ""
+  },
+  {
+    "id": "72db03cc-0688-497a-a683-2600042eee46",
+    "from": "AI",
+    "to": "Artificial Intelligence",
+    "description": "인공지능"
+  },
+  {
+    "id": "6d831824-d4f0-45db-aae6-48aa345de713",
+    "from": "AIDC",
+    "to": "AI Data Center",
+    "description": "AI 데이터센터 문맥 약어"
+  },
+  {
+    "id": "e3c7e1f8-2781-4d8e-986d-6016a2b2149b",
+    "from": "AiP",
+    "to": "Antenna in Package",
+    "description": "패키지 안테나 통합 구조"
+  },
+  {
+    "id": "e103e7a9-8f01-4b07-ba2a-2e92d969e504",
+    "from": "Al",
+    "to": "Aluminum",
+    "description": ""
+  },
+  {
+    "id": "b22d0413-6353-4b75-95c9-0475c3b9646c",
+    "from": "Al2O3",
+    "to": "Alumina",
+    "description": ""
+  },
+  {
+    "id": "e9a6bbcb-f0ee-4b91-a2eb-49b158265719",
+    "from": "ALE",
+    "to": "Atomic Layer Etch",
+    "description": ""
+  },
+  {
+    "id": "27f26f65-1646-416e-8263-ca39c1d71be4",
+    "from": "AMHS",
+    "to": "Automatic Material Handling System",
+    "description": ""
+  },
+  {
+    "id": "3f807927-bc40-4280-9819-64714f790fbd",
+    "from": "ANN",
+    "to": "Approximate Nearest Neighbor",
+    "description": "근사 최근접 이웃 검색"
+  },
+  {
+    "id": "b346b52d-0ece-44e7-9ada-9caa942865e5",
+    "from": "ANN",
+    "to": "Artificial Neural Network",
+    "description": ""
+  },
+  {
+    "id": "9c029763-27f0-47ce-8f66-54f9dc008d97",
+    "from": "ANOVA",
+    "to": "Analysis of Variance",
+    "description": ""
+  },
+  {
+    "id": "c3a5bd77-2ebd-4c81-8f1e-19c6eb845647",
+    "from": "AO",
+    "to": "Assembly Out",
+    "description": ""
+  },
+  {
+    "id": "b2154a63-4727-4b28-912d-b189ac326ef3",
+    "from": "AOCV",
+    "to": "Advanced On-Chip Variation",
+    "description": ""
+  },
+  {
+    "id": "e914ea48-88b3-4ff6-b98e-f1e96b491933",
+    "from": "AOI",
+    "to": "Automated Optical Inspection",
+    "description": "자동 광학 검사"
+  },
+  {
+    "id": "f0e38c1d-b129-4551-8c5d-7102b5e3fb38",
+    "from": "APAC",
+    "to": "Asia-Pacific",
+    "description": "아태 지역"
+  },
+  {
+    "id": "1a17d705-0a4f-4a8a-87e4-59487f1571ee",
+    "from": "APC",
+    "to": "Advanced Process Control",
+    "description": ""
+  },
+  {
+    "id": "af0a1302-5b33-49a8-b6ef-52a94ee17818",
+    "from": "APCVD",
+    "to": "Atmospheric Pressure CVD",
+    "description": ""
+  },
+  {
+    "id": "abb45663-c165-4bcc-9c1e-9d2730c4b693",
+    "from": "API",
+    "to": "Application Programming Interface",
+    "description": ""
+  },
+  {
+    "id": "74d703e2-39c7-4931-9d8e-fec4fca7542b",
+    "from": "APO",
+    "to": "Assembly Purchasing Order",
+    "description": ""
+  },
+  {
+    "id": "50e831d6-dcf3-45ce-94ff-b3930d8709f8",
+    "from": "APS",
+    "to": "Advanced Planning and Scheduling",
+    "description": ""
+  },
+  {
+    "id": "34208cc5-3b49-479b-b217-43221da21583",
+    "from": "AQL",
+    "to": "Acceptable Quality Level",
+    "description": ""
+  },
+  {
+    "id": "2bf0e6f7-0014-43c9-82da-ce6f90ad9fa4",
+    "from": "AR",
+    "to": "Aspect Ratio",
+    "description": ""
+  },
+  {
+    "id": "6496e580-4434-427d-89e8-9147633956ac",
+    "from": "ArF",
+    "to": "Argon Fluoride Lithography",
+    "description": ""
+  },
+  {
+    "id": "dab4c399-e191-4f42-acbd-070342ecb8d1",
+    "from": "ASM",
+    "to": "Assembly Equipment",
+    "description": ""
+  },
+  {
+    "id": "74da6836-7b2a-4c72-be67-5c7ff82bcaf2",
+    "from": "ASR",
+    "to": "Automatic Speech Recognition",
+    "description": ""
+  },
+  {
+    "id": "e91b5c13-50e4-4c8b-84ac-c8062ac2d305",
+    "from": "ASSP",
+    "to": "Application Specific Standard Product",
+    "description": ""
+  },
+  {
+    "id": "4bdf4995-0499-4f26-9457-9a7b7681b898",
+    "from": "ATP",
+    "to": "Assembly, Test & Packaging",
+    "description": "조립·테스트·패키징 통합"
+  },
+  {
+    "id": "b5ea7492-b302-4806-8379-cb4453c94240",
+    "from": "ATP",
+    "to": "Advanced Process Control",
+    "description": "맥락상 공정 제어 APC와 구분 필요"
+  },
+  {
+    "id": "767637ca-d064-4a2b-996b-ebb864ae062d",
+    "from": "ATPG",
+    "to": "Automatic Test Pattern Generation",
+    "description": "자동 테스트 패턴 생성"
+  },
+  {
+    "id": "48f1bed8-1b21-48b0-a816-90becbbc9e07",
+    "from": "AWS",
+    "to": "Amazon Web Services",
+    "description": "아마존 클라우드 서비스"
+  },
+  {
+    "id": "563cc662-17cf-4071-b75e-df7aa05e3a6e",
+    "from": "A사",
+    "to": "Samsung",
+    "description": ""
+  },
+  {
+    "id": "9323f682-f3ff-4d0e-9c26-cfa5c7cf8319",
+    "from": "BBUL",
+    "to": "Bumpless Build-Up Layer",
+    "description": ""
+  },
+  {
+    "id": "0e80c244-032f-4a95-9827-403e56ed3ca1",
+    "from": "B-die",
+    "to": "Product Improvement Die Revision",
+    "description": ""
+  },
+  {
+    "id": "c727f685-3faf-42fc-87b0-5a119f58923c",
+    "from": "BEL",
+    "to": "Back-End Line",
+    "description": ""
+  },
+  {
+    "id": "b6d36734-0d23-4493-a7a0-d20e898a7c78",
+    "from": "BER",
+    "to": "Bit Error Rate",
+    "description": "비트 오류율"
+  },
+  {
+    "id": "29740c58-4241-44e3-babc-b2a8a5c05393",
+    "from": "BFM",
+    "to": "Bus Functional Model",
+    "description": ""
+  },
+  {
+    "id": "f5bb735b-be1b-43c8-9f3f-d5fe1f12c086",
+    "from": "BG",
+    "to": "Back Grinding",
+    "description": ""
+  },
+  {
+    "id": "17d2d034-a811-4469-9dad-3e2e9b26641c",
+    "from": "Bin",
+    "to": "Bin/Binning",
+    "description": ""
+  },
+  {
+    "id": "e89e86fd-4c6a-4c4b-85ef-622db8d34d35",
+    "from": "BIST",
+    "to": "Built-In Self-Test",
+    "description": "내장 자가 테스트"
+  },
+  {
+    "id": "a75aa240-1871-433d-b84c-0d1c2c96b0ec",
+    "from": "BM",
+    "to": "Benchmarking",
+    "description": ""
+  },
+  {
+    "id": "802394a0-63d2-454f-92ac-c4c8af54e5f9",
+    "from": "BMS",
+    "to": "Building Management System",
+    "description": ""
+  },
+  {
+    "id": "f2ebb451-cf25-41ba-b407-6ca01ea33e04",
+    "from": "BO",
+    "to": "Bump Out",
+    "description": ""
+  },
+  {
+    "id": "191463ec-0b84-4086-a642-d17d521a10cf",
+    "from": "BOC",
+    "to": "Break-Over Current",
+    "description": "문맥상 정의 미상"
+  },
+  {
+    "id": "2f2f5fba-96ea-452f-9816-0c5e463d5c75",
+    "from": "BOM",
+    "to": "Bill of Materials",
+    "description": ""
+  },
+  {
+    "id": "eef5db0e-95d9-4f25-8fc1-969755dba292",
+    "from": "BOMC",
+    "to": "Bill of Materials Cost",
+    "description": ""
+  },
+  {
+    "id": "29aa32a4-a28b-4e6d-9618-b362862dff6b",
+    "from": "BOX",
+    "to": "Buried Oxide",
+    "description": ""
+  },
+  {
+    "id": "df4dea08-240b-4e77-ad4b-e508612f86a1",
+    "from": "BPSG",
+    "to": "Borophosphosilicate Glass",
+    "description": ""
+  },
+  {
+    "id": "e8f42054-f9cd-493f-887f-73a69fdb5aba",
+    "from": "BT",
+    "to": "Bismaleimide Triazine",
+    "description": "BT 수지/기판 소재"
+  },
+  {
+    "id": "06274295-12a6-427f-854e-c3db130e986a",
+    "from": "BTI",
+    "to": "Bias Temperature Instability",
+    "description": ""
+  },
+  {
+    "id": "88f665e8-962d-4851-95e9-e3b225bb4ecd",
+    "from": "BUM",
+    "to": "Bump Underfill Material",
+    "description": ""
+  },
+  {
+    "id": "01a8eb21-05a8-41a4-b311-dcb5268849fa",
+    "from": "B사",
+    "to": "Hynix",
+    "description": ""
+  },
+  {
+    "id": "00efbd22-8a20-419b-b70d-e96d8e247e8f",
+    "from": "C4",
+    "to": "Controlled Collapse Chip Connection",
+    "description": "전통적인 플립칩 솔더 범프 구조"
+  },
+  {
+    "id": "72949730-0c25-4604-ac31-391d8c6d86fe",
+    "from": "CA",
+    "to": "Chip Attach",
+    "description": ""
+  },
+  {
+    "id": "04f810c1-2780-4c16-b016-a99d4ab6d146",
+    "from": "CA",
+    "to": "Contact Angle",
+    "description": ""
+  },
+  {
+    "id": "d14c40cf-3762-4672-ac3e-a13ead40cd68",
+    "from": "CA",
+    "to": "Coverage Analysis (Test)",
+    "description": ""
+  },
+  {
+    "id": "423b644c-0f6b-4207-8cf9-75c6dd5185de",
+    "from": "Ca+/-",
+    "to": "DCA Pin의 Setup/Hold Time Margin",
+    "description": ""
+  },
+  {
+    "id": "8c9c7888-9105-4db4-944a-29da1ce19fae",
+    "from": "CAC",
+    "to": "Command / Address / Control",
+    "description": "DDR 명령·주소·제어 신호군"
+  },
+  {
+    "id": "5d5c063e-6611-41bc-9c17-cd76fd2e3448",
+    "from": "CAD",
+    "to": "Computer-Aided Design",
+    "description": ""
+  },
+  {
+    "id": "7344aad6-076b-478a-957e-0a6c1df16f25",
+    "from": "CAF",
+    "to": "Conductive Anodic Filament",
+    "description": "절연층 내 도전성 필라멘트 불량"
+  },
+  {
+    "id": "f3581faf-d2a3-43d7-b129-4cd6d84041b9",
+    "from": "CAGR",
+    "to": "Compound Annual Growth Rate",
+    "description": "연평균 성장률"
+  },
+  {
+    "id": "eea07a15-94fb-4383-808b-771a0deac183",
+    "from": "CAPA",
+    "to": "Capacity",
+    "description": "생산능력(캐파)"
+  },
+  {
+    "id": "c1b05662-4c26-47e6-82bf-af9adfa7b4bd",
+    "from": "CAPEX",
+    "to": "Capital Expenditure",
+    "description": ""
+  },
+  {
+    "id": "ddfc2af9-3475-44d8-8f47-9db7a682134c",
+    "from": "CB",
+    "to": "Copper Ball",
+    "description": ""
+  },
+  {
+    "id": "b68f1f5e-dc94-4567-8b04-dbca573890a0",
+    "from": "CBGA",
+    "to": "Ceramic Ball Grid Array",
+    "description": ""
+  },
+  {
+    "id": "da7226aa-10f6-49cc-be5b-0e0c1bbf9598",
+    "from": "CCL",
+    "to": "Copper Clad Laminate",
+    "description": "동박 적층판, 기판용 원판"
+  },
+  {
+    "id": "feb51273-e206-422a-9037-5fd515fab193",
+    "from": "CCP",
+    "to": "Capacitively Coupled Plasma",
+    "description": ""
+  },
+  {
+    "id": "cc83fc12-0805-4e9d-8c7e-a6f5f869416a",
+    "from": "CD",
+    "to": "(Register) Clock Driver",
+    "description": ""
+  },
+  {
+    "id": "86357c51-3b32-4f68-9088-c0ab420f54ca",
+    "from": "CD",
+    "to": "Critical Dimension : Line Width",
+    "description": ""
+  },
+  {
+    "id": "c2361ec1-69d9-420c-9ff7-a52ee506111f",
+    "from": "CDA",
+    "to": "Clean Dry Air",
+    "description": ""
+  },
+  {
+    "id": "5083b2d5-f663-41c9-a303-c4c52c33386f",
+    "from": "CDC",
+    "to": "Clock Domain Crossing",
+    "description": ""
+  },
+  {
+    "id": "1ba4647e-b0aa-42b1-b53d-d30b6b1a9a32",
+    "from": "CDF",
+    "to": "Cumulative Distribution Function",
+    "description": ""
+  },
+  {
+    "id": "4a6b5a1b-c4ef-4c82-a679-fedd6a09ad6d",
+    "from": "CDM",
+    "to": "Charged Device Model",
+    "description": ""
+  },
+  {
+    "id": "9c19125d-1a69-43c5-a5a7-2b6320ec45c6",
+    "from": "CDR",
+    "to": "Clock and Data Recovery",
+    "description": ""
+  },
+  {
+    "id": "832f95e0-b85e-4625-952a-aefb74c77a39",
+    "from": "CDRA",
+    "to": "Clock Distribution and Recovery Architecture",
+    "description": ""
+  },
+  {
+    "id": "4d1ce4ef-a218-4ee1-acdf-c1a0e16579e4",
+    "from": "CEB",
+    "to": "Chip Embedding Backplane",
+    "description": ""
+  },
+  {
+    "id": "c6acfcb5-1fda-4c6c-97a1-4d06553bc250",
+    "from": "CEC",
+    "to": "Common-Emitter Configuration",
+    "description": ""
+  },
+  {
+    "id": "1672a16f-adba-49d5-8b12-83dec019d716",
+    "from": "CEL",
+    "to": "Characterization and Extraction Library",
+    "description": ""
+  },
+  {
+    "id": "112049f8-67cc-43c8-bf28-531c5ee99881",
+    "from": "CES",
+    "to": "Consumer Electronics Show",
+    "description": "CES 전시회"
+  },
+  {
+    "id": "5b7cbdf2-a331-4562-9963-fbab2c3a586b",
+    "from": "CFET",
+    "to": "Complementary FET",
+    "description": "상보 FET 구조"
+  },
+  {
+    "id": "7f6b3efc-e4ae-4f6a-b833-b7bb5d48dc09",
+    "from": "CFG",
+    "to": "Configuration",
+    "description": ""
+  },
+  {
+    "id": "9784d856-8b64-4dcd-a48c-5d8604944a90",
+    "from": "CHF",
+    "to": "Chlorofluorocarbon Etch",
+    "description": ""
+  },
+  {
+    "id": "7c64bff5-cf8a-4b22-92a0-2a45fe9f1ef3",
+    "from": "CI",
+    "to": "Continuous Integration, Improvement",
+    "description": ""
+  },
+  {
+    "id": "19971add-f82e-40ff-be69-9a4a7af5f51a",
+    "from": "Cin",
+    "to": "Capacitance Input Pin",
+    "description": ""
+  },
+  {
+    "id": "fd971784-0518-415f-ad14-8d2409153595",
+    "from": "CIP",
+    "to": "Continuous Improvement Plan",
+    "description": ""
+  },
+  {
+    "id": "10a4e3dd-a8ee-4d68-9f80-49de2d9cc5a7",
+    "from": "CIS",
+    "to": "Contact Image Sensor",
+    "description": ""
+  },
+  {
+    "id": "31861acb-f967-41a6-8401-af460e5c09d7",
+    "from": "CK",
+    "to": "Clock",
+    "description": "클럭 신호"
+  },
+  {
+    "id": "a0ded908-ad17-416d-94d8-8ff4fd33f5d4",
+    "from": "CKD",
+    "to": "Clock Driver",
+    "description": ""
+  },
+  {
+    "id": "fa4dc8c4-490a-4c5e-9689-7faa1f7768e5",
+    "from": "CLK",
+    "to": "Clock",
+    "description": ""
+  },
+  {
+    "id": "7bc90b51-f569-451a-be42-029a4410ae3f",
+    "from": "CLT",
+    "to": "Chip Level Test",
+    "description": ""
+  },
+  {
+    "id": "bdde1b33-9f61-48b3-8c2d-f751ffe3c8b6",
+    "from": "CM",
+    "to": "Chemical Mechanical",
+    "description": ""
+  },
+  {
+    "id": "fb66cb9d-460d-482f-a889-6174c51081d5",
+    "from": "CM",
+    "to": "Corrective Maintenance",
+    "description": ""
+  },
+  {
+    "id": "038a4a9a-0553-489e-8fc5-94e80dae504b",
+    "from": "CMM",
+    "to": "Coordinate Measuring Machine",
+    "description": ""
+  },
+  {
+    "id": "3f5568d9-5d25-4a6c-8e42-a7ec7313e1a3",
+    "from": "CMS",
+    "to": "Chemical Management System",
+    "description": ""
+  },
+  {
+    "id": "4484a2de-2266-48f0-8dce-fcfe835bbfbc",
+    "from": "CMS",
+    "to": "Contact Management System",
+    "description": ""
+  },
+  {
+    "id": "e15912dc-9011-460c-97ad-e9058b021a9b",
+    "from": "CMX",
+    "to": "Cache/Memory Extension",
+    "description": "KV 캐시 오프로드 스택"
+  },
+  {
+    "id": "06fc880c-21aa-4fea-98a4-9be2bae9fdf0",
+    "from": "CNT",
+    "to": "Carbon Nanotube",
+    "description": ""
+  },
+  {
+    "id": "7c78db4c-d676-4959-879d-4257a52a9d34",
+    "from": "Co",
+    "to": "Cobalt",
+    "description": ""
+  },
+  {
+    "id": "16ce8583-d3c9-4c4a-9985-f76a2f09b840",
+    "from": "COA",
+    "to": "Certificate of Analysis",
+    "description": ""
+  },
+  {
+    "id": "3f658c67-bdb9-4d1b-9436-6c85ea9c2e01",
+    "from": "CoB",
+    "to": "Chip-on-Board",
+    "description": ""
+  },
+  {
+    "id": "a7e05d49-567e-4f5b-b056-5311108352aa",
+    "from": "COC",
+    "to": "Certificate of Compliance",
+    "description": ""
+  },
+  {
+    "id": "696ec9e8-aca1-48f1-8882-242e47105f26",
+    "from": "COF",
+    "to": "Chip On Film",
+    "description": ""
+  },
+  {
+    "id": "85ad7301-c662-421a-92aa-81cb101b08d2",
+    "from": "COG",
+    "to": "Chip On Glass",
+    "description": ""
+  },
+  {
+    "id": "bb1ee9ec-dca2-4968-a2e5-6b1f21c23471",
+    "from": "COGS",
+    "to": "Cost of Goods Sold",
+    "description": ""
+  },
+  {
+    "id": "87b4e7c4-54fd-4f2a-92f9-641d27d135e9",
+    "from": "COX",
+    "to": "Gate Oxide Capacitance",
+    "description": ""
+  },
+  {
+    "id": "9b7c59f5-e67a-4f5c-adc1-58073f5da7ff",
+    "from": "CP",
+    "to": "Copper Pillar",
+    "description": ""
+  },
+  {
+    "id": "2d2cf1d8-7212-40fa-851a-632236b9be14",
+    "from": "CPE",
+    "to": "Constant Phase Element",
+    "description": ""
+  },
+  {
+    "id": "ade35b92-191a-4212-889e-edb045f8965f",
+    "from": "CPF",
+    "to": "Common Power Format",
+    "description": ""
+  },
+  {
+    "id": "80e72f62-dfea-45c5-8705-542c3b420ce1",
+    "from": "CPK",
+    "to": "Process Capability Index",
+    "description": ""
+  },
+  {
+    "id": "8c416c97-cada-4a1b-a6f4-65129d34b437",
+    "from": "CPN",
+    "to": "Customer Part Number",
+    "description": ""
+  },
+  {
+    "id": "edf6f101-048a-496e-8d5e-003374b521fd",
+    "from": "CPO",
+    "to": "Co-Packaged Optics",
+    "description": "공동 패키지형 광학"
+  },
+  {
+    "id": "dacaba60-2b3a-4adb-8667-390bbfdf93f6",
+    "from": "CPU",
+    "to": "Central Processing Unit",
+    "description": "중앙처리장치"
+  },
+  {
+    "id": "739ae67f-6ec7-4aa1-bd85-9b652af95084",
+    "from": "CQE",
+    "to": "Customer Quality Engineering",
+    "description": ""
+  },
+  {
+    "id": "459b3b0b-68d5-4812-ba9f-7e1a53d83f90",
+    "from": "CR",
+    "to": "Color Reliability",
+    "description": ""
+  },
+  {
+    "id": "61b52504-97a6-4505-8aac-b03acf6c2da4",
+    "from": "CRC",
+    "to": "Cyclic Redundancy Check",
+    "description": ""
+  },
+  {
+    "id": "7c65ebb7-3be6-4626-b669-d29167094284",
+    "from": "CREEP",
+    "to": "Solder Creep Failure",
+    "description": ""
+  },
+  {
+    "id": "d3fa460e-0ad6-4f7e-9c1e-ac2d2654188c",
+    "from": "CS",
+    "to": "Copper Seed",
+    "description": ""
+  },
+  {
+    "id": "ad27959a-a769-4d1f-99e0-a33bad45c396",
+    "from": "CSAC",
+    "to": "Chip Scale Atomic Clock",
+    "description": ""
+  },
+  {
+    "id": "82084b5f-9e44-4a6b-9aa9-34b3769de0cc",
+    "from": "CSBGA",
+    "to": "Ceramic Small Ball Grid Array",
+    "description": ""
+  },
+  {
+    "id": "e45cb1e0-799d-4127-bcb7-1ad5ee5116ab",
+    "from": "CSDIMM",
+    "to": "Clocked Small Outline DIMM",
+    "description": ""
+  },
+  {
+    "id": "2b9558eb-5409-4eeb-868b-3ea85a15e79e",
+    "from": "CSODIMM",
+    "to": "Clocked Small Outline Dual Inline Memory Module",
+    "description": ""
+  },
+  {
+    "id": "d370e23b-b19f-4576-b2d4-2531bf95c5b5",
+    "from": "CSP",
+    "to": "Chip Scale Package",
+    "description": ""
+  },
+  {
+    "id": "d16efc0e-6873-49b0-9b7c-207e27cc2add",
+    "from": "CSPBGA",
+    "to": "Chip Scale Plastic Ball Grid Array",
+    "description": ""
+  },
+  {
+    "id": "b063547d-6bce-4442-855c-2bb143e964fc",
+    "from": "CT",
+    "to": "Cycle Time",
+    "description": ""
+  },
+  {
+    "id": "b8a97300-4c58-4014-9c35-04c0fdd73437",
+    "from": "CTA",
+    "to": "Current-Temperature Acceleration",
+    "description": ""
+  },
+  {
+    "id": "feee10d6-090f-403d-ba86-8ceecdf8a657",
+    "from": "CTB",
+    "to": "Copper-Tantalum Barrier",
+    "description": ""
+  },
+  {
+    "id": "dccdd61f-4ddc-4efb-b396-bd437fd502ed",
+    "from": "CTE",
+    "to": "Coefficient of Thermal Expansion",
+    "description": "열팽창 계수"
+  },
+  {
+    "id": "d4f5122d-28fc-4cc4-a479-6b70efb9f337",
+    "from": "CTLE",
+    "to": "Continuous-Time Linear Equalizer",
+    "description": ""
+  },
+  {
+    "id": "c004ad54-086c-420b-8023-032b927ff426",
+    "from": "CTQ",
+    "to": "Critical to Quality",
+    "description": "품질 핵심 특성"
+  },
+  {
+    "id": "ed864773-f5b0-4555-90ef-f3cbf3e8cd2e",
+    "from": "CTS",
+    "to": "Clock Tree Synthesis",
+    "description": ""
+  },
+  {
+    "id": "7770b18c-511b-4fb8-8c88-ecc7f2226d88",
+    "from": "Cu",
+    "to": "Copper",
+    "description": ""
+  },
+  {
+    "id": "53df406e-b175-4d03-b973-8248a0ecf960",
+    "from": "CUDIMM",
+    "to": "Clocked Unbuffered Dual Inline Memory Module",
+    "description": ""
+  },
+  {
+    "id": "b1737659-aa2e-46a2-9be9-bf1adb4242bb",
+    "from": "CUF",
+    "to": "Capillary Under-Fill",
+    "description": ""
+  },
+  {
+    "id": "1f9effb7-5651-4d18-abc2-92a5c0418e66",
+    "from": "CV",
+    "to": "Capacitance-Voltage Measurement",
+    "description": ""
+  },
+  {
+    "id": "0bf821d8-a054-4f68-9173-17ac61fa3c37",
+    "from": "CV",
+    "to": "Computer Vision",
+    "description": ""
+  },
+  {
+    "id": "e2f1edf0-cb03-48b0-9e48-020e082a1bb9",
+    "from": "CW",
+    "to": "Copper Wire Bonding",
+    "description": ""
+  },
+  {
+    "id": "c4314624-0460-45ee-86e3-f75ca3dda92a",
+    "from": "C사",
+    "to": "Micron",
+    "description": ""
+  },
+  {
+    "id": "136023d1-d5fc-42f7-a797-3ab77c3d995e",
+    "from": "D&C",
+    "to": "Design & Characterization",
+    "description": ""
+  },
+  {
+    "id": "43889af0-3040-47bc-ba32-1754cc206447",
+    "from": "D2D",
+    "to": "Die-to-Die Interconnect",
+    "description": "다이-다이 본딩"
+  },
+  {
+    "id": "399fd3a6-b833-4b1b-8f6c-26b76ea818c1",
+    "from": "D2W",
+    "to": "Die-to-Wafer",
+    "description": "다이-웨이퍼 본딩"
+  },
+  {
+    "id": "1990ab0d-82fc-4231-91f6-0084f5a81285",
+    "from": "DA",
+    "to": "Die Attach Adhesive",
+    "description": ""
+  },
+  {
+    "id": "fa42126c-7f24-4ec5-be8e-b3e7d206ef77",
+    "from": "Damascene",
+    "to": "Damascene Process",
+    "description": ""
+  },
+  {
+    "id": "af19691f-a082-4d32-a797-9ed9616cae3c",
+    "from": "DBB",
+    "to": "Dielectric Breakdown Buffer",
+    "description": ""
+  },
+  {
+    "id": "420cac7a-8593-4aad-a8d7-ec39327d137f",
+    "from": "DC",
+    "to": "Direct Current",
+    "description": "직류 (800V DC 등)"
+  },
+  {
+    "id": "bf5af120-1f81-4da6-9cc7-bf68fd6fb270",
+    "from": "DCA",
+    "to": "RCD Device의 Data 입력 (CA는 Command/Address), Training 항목",
+    "description": ""
+  },
+  {
+    "id": "7d2b7f8f-f3c5-4f3b-b808-35ad029e5164",
+    "from": "DCK",
+    "to": "Data Clock",
+    "description": ""
+  },
+  {
+    "id": "1030622d-2f9c-4f6e-af8d-fae7fb861523",
+    "from": "DCS",
+    "to": "Data Clock Synchronization",
+    "description": ""
+  },
+  {
+    "id": "aaf4969e-e603-4ee7-93ea-0eb32cee45c4",
+    "from": "DD",
+    "to": "Dual Damascene Process",
+    "description": ""
+  },
+  {
+    "id": "ff3d1b94-c3ef-48cb-b776-3cdae121da97",
+    "from": "Decap",
+    "to": "Decoupling Capacitor",
+    "description": "디커플링 캐패시터"
+  },
+  {
+    "id": "75e69fc2-43d7-4d21-9100-72b3d6435581",
+    "from": "DEF",
+    "to": "Design Exchange Format",
+    "description": ""
+  },
+  {
+    "id": "1d6620cc-e87d-4ad1-944b-eccda0ea155c",
+    "from": "Df",
+    "to": "Dissipation Factor",
+    "description": "유전 손실 계수"
+  },
+  {
+    "id": "8720b0e8-fe06-4131-89a0-3b411b1f2d42",
+    "from": "DFB",
+    "to": "Distributed Feedback Laser",
+    "description": "분포 피드백 레이저"
+  },
+  {
+    "id": "e67907d8-f8be-4b73-90ae-9388f505aa11",
+    "from": "DFD",
+    "to": "Design For Debug",
+    "description": ""
+  },
+  {
+    "id": "3e1274a2-affb-4ab4-a75c-ef544baee2e5",
+    "from": "DFM",
+    "to": "Design for Manufacturability",
+    "description": "제조 용이 설계"
+  },
+  {
+    "id": "b721ebd9-6404-4752-8284-62e63b223e22",
+    "from": "DFMEA",
+    "to": "Design FMEA",
+    "description": ""
+  },
+  {
+    "id": "7a1f7069-b0f5-4420-b095-523391b07520",
+    "from": "DFR",
+    "to": "Design For Reliability",
+    "description": ""
+  },
+  {
+    "id": "f68cda9e-4412-4747-8102-c0a93df88e2d",
+    "from": "DFS",
+    "to": "Design For Serviceability",
+    "description": ""
+  },
+  {
+    "id": "fd9fa7fe-1064-4fc4-b931-e4d889cc28cc",
+    "from": "DFT",
+    "to": "Design for Test",
+    "description": "테스트 용이 설계"
+  },
+  {
+    "id": "075c4891-c3dc-42e7-97bb-cd7da79d4adc",
+    "from": "DFX",
+    "to": "Design For X (Manufacturability/Test/etc)",
+    "description": ""
+  },
+  {
+    "id": "da95f66f-6ab8-4a70-a281-3ded622ccf58",
+    "from": "DIP",
+    "to": "Dual Inline Package",
+    "description": ""
+  },
+  {
+    "id": "958dfa61-9dbd-49eb-8f3f-a4333b9f9445",
+    "from": "DJBF",
+    "to": "Dongjin Build-up Film",
+    "description": "동진쎄미켐 ABF 대체재"
+  },
+  {
+    "id": "0f8cebc7-67ed-4354-a93e-f25f955d3625",
+    "from": "Dk",
+    "to": "Dielectric Constant",
+    "description": "유전율"
+  },
+  {
+    "id": "34e98b9d-1312-4189-8cfa-506f0ef9b95d",
+    "from": "Dk/Df",
+    "to": "Dielectric Constant / Dissipation Factor",
+    "description": "유전 특성 묶음 표기"
+  },
+  {
+    "id": "608c976f-57a2-45ed-9dc9-aaeffd17c979",
+    "from": "DL",
+    "to": "Deep Learning",
+    "description": ""
+  },
+  {
+    "id": "6e0d4305-2a12-4bb4-b3cd-318053bc08ca",
+    "from": "DMS",
+    "to": "Data Management System",
+    "description": ""
+  },
+  {
+    "id": "93205645-77ba-4624-a1e2-ff90c6dc94ef",
+    "from": "DOE",
+    "to": "Design of Experiments",
+    "description": ""
+  },
+  {
+    "id": "4d40204a-5e72-408d-812e-9725790c1ff0",
+    "from": "DOF",
+    "to": "Depth of Focus",
+    "description": ""
+  },
+  {
+    "id": "b3d43c13-e7fb-43e9-84ce-eb87fbeba843",
+    "from": "DPM",
+    "to": "Defect Per Million",
+    "description": ""
+  },
+  {
+    "id": "21845320-bfff-4e92-8af1-88c4cce53aa3",
+    "from": "DPS",
+    "to": "Doped Polysilicon",
+    "description": ""
+  },
+  {
+    "id": "364163f3-3767-422e-9391-78a91ef0a5c8",
+    "from": "DQ",
+    "to": "Data Queue",
+    "description": "DDR 데이터 신호"
+  },
+  {
+    "id": "b1d726c4-15ee-488a-b880-924d9e998f68",
+    "from": "DQS",
+    "to": "Data Strobe",
+    "description": "DDR 데이터 스트로브"
+  },
+  {
+    "id": "b02a55e2-d1da-40a0-8d89-85963a52e874",
+    "from": "DRC",
+    "to": "Design Rule Check",
+    "description": "설계 규칙 검사"
+  },
+  {
+    "id": "6b01cd5d-0b10-41d2-9a52-873dcabd0c34",
+    "from": "DRIE",
+    "to": "Deep Reactive Ion Etch",
+    "description": ""
+  },
+  {
+    "id": "907f214a-2763-465a-90ef-f039a2a9b141",
+    "from": "DS",
+    "to": "Wafer Dicing Saw",
+    "description": ""
+  },
+  {
+    "id": "3b221ee5-dd08-44c2-8dd0-85b34d0d5327",
+    "from": "DSA",
+    "to": "Directed Self-Assembly",
+    "description": ""
+  },
+  {
+    "id": "9c32cc53-b4d5-4d88-b7f6-27f5ff1aa1ec",
+    "from": "DSM",
+    "to": "Deep Submicron",
+    "description": ""
+  },
+  {
+    "id": "515ea43b-7688-4b93-b98c-e43f5a39b35b",
+    "from": "DTC",
+    "to": "Design To Cost",
+    "description": ""
+  },
+  {
+    "id": "9675a2e6-6fd1-48d2-a631-4007da9192c4",
+    "from": "DTI",
+    "to": "Die-To-Interposer",
+    "description": ""
+  },
+  {
+    "id": "d6641275-0cf1-4ad4-8046-c7b9af2f7331",
+    "from": "DTY",
+    "to": "Design To Yield",
+    "description": ""
+  },
+  {
+    "id": "646005a9-51a5-4715-8bb3-b4486221d17b",
+    "from": "DUT",
+    "to": "Device Under Test",
+    "description": ""
+  },
+  {
+    "id": "8b2e6059-34a4-4f0e-a902-6634f84d0379",
+    "from": "DVFS",
+    "to": "Dynamic Voltage and Frequency Scaling",
+    "description": "동적 전압·주파수 조절"
+  },
+  {
+    "id": "75495968-2fe4-4541-b593-6ca02de4a09f",
+    "from": "DVI",
+    "to": "Digital Video Interface",
+    "description": ""
+  },
+  {
+    "id": "d73f3962-6340-4582-a553-0631ee63869a",
+    "from": "DVT",
+    "to": "Design Verification Test",
+    "description": "설계 검증 테스트"
+  },
+  {
+    "id": "e0ed6c81-1866-400a-b04d-fe7b4a139e58",
+    "from": "E-Beam",
+    "to": "Electron Beam Evaporation",
+    "description": ""
+  },
+  {
+    "id": "5333f367-409c-46eb-932c-2058a774c758",
+    "from": "ECN",
+    "to": "Engineering Change Notice",
+    "description": "설계 변경 통보"
+  },
+  {
+    "id": "dfb6f396-57b6-431b-bb05-88246647fb36",
+    "from": "ECO",
+    "to": "Engineering Change Order",
+    "description": "설계 변경 지시"
+  },
+  {
+    "id": "eee3b60e-ec38-4b39-8ee6-a6cd45f48f7b",
+    "from": "ECP",
+    "to": "Electrochemical Plating",
+    "description": ""
+  },
+  {
+    "id": "7794b06e-bc80-4ed4-853f-a03d397f49f9",
+    "from": "ECR",
+    "to": "Electron Cyclotron Resonance",
+    "description": ""
+  },
+  {
+    "id": "da8d58d0-f125-4f5e-be17-3f1360ce5006",
+    "from": "ECU",
+    "to": "Electronic Control Unit",
+    "description": "자동차 전자제어 유닛"
+  },
+  {
+    "id": "ffcc04f5-3534-408f-86a6-961c592a90f5",
+    "from": "EFEM",
+    "to": "Equipment Front End Module",
+    "description": ""
+  },
+  {
+    "id": "2c07f978-4342-4e2c-b9d9-0b40b565c2f5",
+    "from": "ELFR",
+    "to": "Early Lifetime Failure Rate",
+    "description": ""
+  },
+  {
+    "id": "77745ac4-c2c4-439a-8b7d-c756ee45c837",
+    "from": "EM",
+    "to": "Electromigration",
+    "description": "전자 이동에 의한 금속 원자 이동·열화 현상"
+  },
+  {
+    "id": "54de654d-1c58-4b25-b1c9-07c028c5eaf1",
+    "from": "EMC",
+    "to": "ElectroMagnetic Compatibility",
+    "description": ""
+  },
+  {
+    "id": "8c93d8e6-52ee-469a-9457-e4041ceccb17",
+    "from": "EMC",
+    "to": "Epoxy Molding Compound",
+    "description": "에폭시 몰딩 컴파운드"
+  },
+  {
+    "id": "0d89ddef-1545-459f-a149-bcbe3867ad70",
+    "from": "eMCP",
+    "to": "Embedded Multi Chip Package",
+    "description": ""
+  },
+  {
+    "id": "bc2bbe8e-32de-42fa-8f56-9961ef13174a",
+    "from": "EMI",
+    "to": "Electromagnetic Interference",
+    "description": "전자파 간섭"
+  },
+  {
+    "id": "91947896-e0eb-4c6b-b11d-c1e901ad6745",
+    "from": "EMIB",
+    "to": "Embedded Multi-Die Interconnect Bridge",
+    "description": "인텔 브리지 인터커넥트"
+  },
+  {
+    "id": "fc768312-9410-4c27-93c3-a264805e3e3e",
+    "from": "EML",
+    "to": "Electro-Absorption Modulated Laser",
+    "description": "전기흡수 변조 레이저"
+  },
+  {
+    "id": "74cd3a34-e735-4a51-96da-de27634a6f18",
+    "from": "ENEPIG",
+    "to": "Electroless Nickel Electroless Palladium Immersion Gold",
+    "description": "Ni/Pd/Au 다층 기판 Finish 공정"
+  },
+  {
+    "id": "b652bdb9-5a5d-422e-bd43-9587c620a95c",
+    "from": "ENIG",
+    "to": "Electroless Nickel Immersion Gold",
+    "description": "무전해 Ni/침지 Au 표면처리 (기판 Finish)"
+  },
+  {
+    "id": "0351387d-19ab-4f0e-bf2f-6760188a05b5",
+    "from": "EOS",
+    "to": "Electrical Over Stress",
+    "description": ""
+  },
+  {
+    "id": "f99b66da-e4fb-4ca9-b750-a47acb78ef6b",
+    "from": "Epi",
+    "to": "Epitaxial Growth, Epitaxial Layer",
+    "description": ""
+  },
+  {
+    "id": "ae7afbb3-5e9c-4f7b-aea7-b78fbea8dba1",
+    "from": "ERC",
+    "to": "Electrical Rule Check",
+    "description": ""
+  },
+  {
+    "id": "771ad223-2343-4a3f-a669-85137c5f4cf2",
+    "from": "ERP",
+    "to": "Enterprise Resource Planning",
+    "description": ""
+  },
+  {
+    "id": "7eacb257-b7a1-45c8-a8ea-f164f4cf9ad1",
+    "from": "ESS",
+    "to": "Environmental Stress Screening",
+    "description": ""
+  },
+  {
+    "id": "abfc1bb3-e0a9-4fce-83fb-2149e851a99c",
+    "from": "ET",
+    "to": "Electrical Test",
+    "description": "전기 검사"
+  },
+  {
+    "id": "7dd1f3d9-94b0-4a70-8347-156320ec63ca",
+    "from": "EVI",
+    "to": "External Visual Inspection",
+    "description": ""
+  },
+  {
+    "id": "e2464d98-a32b-4bbe-a48a-d593490c19b4",
+    "from": "F2B",
+    "to": "Face-to-Back",
+    "description": "전면-후면 적층"
+  },
+  {
+    "id": "aa39fa26-3700-4624-a4e7-910db8eeda3d",
+    "from": "F2F",
+    "to": "Face-to-Face",
+    "description": "전면-전면 적층"
+  },
+  {
+    "id": "9333a787-019d-4e1a-b54f-f57cdb69b95a",
+    "from": "FA",
+    "to": "Failure Analysis",
+    "description": "고장 분석"
+  },
+  {
+    "id": "347fb9bf-adf8-4dff-b4a7-e7fb885e647c",
+    "from": "FAE",
+    "to": "Field Application Engineer",
+    "description": ""
+  },
+  {
+    "id": "93ec7c04-9f1d-4c6a-ad36-79ad92ef188b",
+    "from": "FAI",
+    "to": "First Article Inspection",
+    "description": ""
+  },
+  {
+    "id": "a92a426e-476e-4521-b8cc-d7adeda62cb3",
+    "from": "FBGA",
+    "to": "Fine Pitch Ball Grid Array",
+    "description": ""
+  },
+  {
+    "id": "9007b75a-e308-49c0-8f76-ee5434edf772",
+    "from": "FC",
+    "to": "Flip Chip",
+    "description": ""
+  },
+  {
+    "id": "ea119519-6437-4cd3-9689-cffa3c7969bd",
+    "from": "FCB",
+    "to": "Flip Chip Ball",
+    "description": ""
+  },
+  {
+    "id": "788deb18-0c57-46a9-9efa-87f71b2afa6a",
+    "from": "FCBGA",
+    "to": "Flip Chip Ball Grid Array",
+    "description": "플립칩 BGA 패키지"
+  },
+  {
+    "id": "945dcee9-20c9-475b-b4e2-2c62ec34c8b7",
+    "from": "FCCSP",
+    "to": "Flip Chip Chip Scale Package",
+    "description": "플립칩 CSP 패키지"
+  },
+  {
+    "id": "f0df6d84-1f43-4839-a98d-acfc7ba9640d",
+    "from": "FCFBGA",
+    "to": "Flip Chip Fine Pitch Ball Grid Array",
+    "description": ""
+  },
+  {
+    "id": "130cecb6-8b46-45bd-893a-3effa9199f74",
+    "from": "FDC",
+    "to": "Fault Detection and Classification",
+    "description": ""
+  },
+  {
+    "id": "ddca550f-7940-4005-a807-98691273d55c",
+    "from": "FDSOI",
+    "to": "Fully Depleted SOI",
+    "description": ""
+  },
+  {
+    "id": "33dded62-69ac-48de-8ecd-93e0e3e9ff77",
+    "from": "FEXT",
+    "to": "Far-End Crosstalk",
+    "description": "원단 크로스토크"
+  },
+  {
+    "id": "ccbdd942-351a-44aa-99c9-aeb2fa37910e",
+    "from": "FFU",
+    "to": "Fan Filter Unit",
+    "description": ""
+  },
+  {
+    "id": "a42b3aa8-e472-4806-a7a8-16b72cb36049",
+    "from": "FIB",
+    "to": "Focused Ion Beam",
+    "description": ""
+  },
+  {
+    "id": "9e4bfdb7-c0a5-4fac-ae6b-7cf7f3fab461",
+    "from": "FIT",
+    "to": "Failures In Time",
+    "description": ""
+  },
+  {
+    "id": "6075f1f1-0be9-469f-9e34-c20b339fb593",
+    "from": "FLA",
+    "to": "Flash Lamp Anneal",
+    "description": ""
+  },
+  {
+    "id": "4da0ea9a-813f-4148-bb52-1ab1ca830503",
+    "from": "FMEA",
+    "to": "Failure Mode and Effects Analysis",
+    "description": "고장 유형·영향 분석"
+  },
+  {
+    "id": "ede91a59-4094-45c9-84ca-491584a6d8a3",
+    "from": "FOPLP",
+    "to": "Fan-Out Panel Level Package",
+    "description": ""
+  },
+  {
+    "id": "e0dfc891-2413-4a0a-854e-a33acbac6da4",
+    "from": "FOWLP",
+    "to": "Fan-Out Wafer Level Package",
+    "description": "팬아웃 웨이퍼 레벨 패키지"
+  },
+  {
+    "id": "9c9c46d4-9f82-4376-bbd0-e94f0454fc8e",
+    "from": "FPGA",
+    "to": "Field-Programmable Gate Array",
+    "description": ""
+  },
+  {
+    "id": "8be1331f-9123-4865-b42d-13a528cdca33",
+    "from": "FR-4",
+    "to": "Flame Retardant-4",
+    "description": "범용 에폭시 유리섬유 기판 소재"
+  },
+  {
+    "id": "084898a1-99c6-4755-8748-4309c47d18c0",
+    "from": "FT",
+    "to": "Final Test = Package Level Test",
+    "description": ""
+  },
+  {
+    "id": "d6ba5b2c-2da5-441b-9499-dcb10a8ade9f",
+    "from": "FT",
+    "to": "Fine-Tuning",
+    "description": ""
+  },
+  {
+    "id": "986d539f-b263-4e59-a7fb-e1be1270e2a1",
+    "from": "FT",
+    "to": "Functional Test",
+    "description": ""
+  },
+  {
+    "id": "216ae118-d86b-4f64-90e9-da0298b8bdd0",
+    "from": "FTY",
+    "to": "First Time Yield",
+    "description": ""
+  },
+  {
+    "id": "62af8184-b783-42b2-853a-b11fb5365283",
+    "from": "GAAFET",
+    "to": "Gate-All-Around FET",
+    "description": ""
+  },
+  {
+    "id": "b83e2ac9-d286-4602-80b3-7d6bec58c4ae",
+    "from": "GAN",
+    "to": "Generative Adversarial Network",
+    "description": ""
+  },
+  {
+    "id": "3cb827c0-578f-4bb8-a715-94eb3e3231bd",
+    "from": "GDS",
+    "to": "Graphic Data Stream",
+    "description": ""
+  },
+  {
+    "id": "707c7aab-e8dc-49bd-8b0a-3db725101763",
+    "from": "GenAI",
+    "to": "Generative AI",
+    "description": ""
+  },
+  {
+    "id": "3919947b-cbe1-4f18-8e97-ebe7cd1c7056",
+    "from": "GF",
+    "to": "Global Foundries Service",
+    "description": ""
+  },
+  {
+    "id": "2c0fa65a-6ffe-45cf-80f9-dc7588fa7aa6",
+    "from": "GPIO",
+    "to": "General Purpose Input Output",
+    "description": ""
+  },
+  {
+    "id": "bb3d74e9-519a-47b8-a390-25be7e769352",
+    "from": "GPT",
+    "to": "Generative Pre-trained Transformer",
+    "description": ""
+  },
+  {
+    "id": "c9bf14e5-3896-46e8-9774-f42237689266",
+    "from": "GPU",
+    "to": "Graphics Processing Unit",
+    "description": ""
+  },
+  {
+    "id": "e3911fd0-d4ff-4f5e-9bdd-0f13fa3dfc58",
+    "from": "HAST",
+    "to": "Highly Accelerated Stress Test",
+    "description": ""
+  },
+  {
+    "id": "72a1bfe9-4d15-4ac7-ad18-2dbfe2c52cbb",
+    "from": "HB",
+    "to": "Hybrid Bonding",
+    "description": ""
+  },
+  {
+    "id": "ee6172b9-5703-449e-a5c7-8895d4f0d0a4",
+    "from": "HBF",
+    "to": "Hanwha Build-up Film",
+    "description": "한화솔루션 ABF 대체재 명칭"
+  },
+  {
+    "id": "cf0d294e-7115-47f2-82d2-e6ede033bd0c",
+    "from": "HBM-PIM",
+    "to": "HBM Processing-In-Memory",
+    "description": "HBM 기반 PIM 구조"
+  },
+  {
+    "id": "bcc1c5eb-af9a-4fb5-9f2b-1d77f65e30dc",
+    "from": "HCB",
+    "to": "Hybrid Copper Bonding",
+    "description": "하이브리드 구리 본딩"
+  },
+  {
+    "id": "3cad963c-d4d3-42c5-b1d4-621b894b1c30",
+    "from": "HCI",
+    "to": "Hot Carrier Injection",
+    "description": ""
+  },
+  {
+    "id": "8dec2cc3-d2f8-4837-a04a-25b387273a5a",
+    "from": "HDI",
+    "to": "High Density Interconnect",
+    "description": "고밀도 배선 구조"
+  },
+  {
+    "id": "a233193d-624b-4a45-88bf-669e04635408",
+    "from": "HDL",
+    "to": "Hardware Description Language",
+    "description": ""
+  },
+  {
+    "id": "d3d7e3b7-6bc4-41ee-ad29-a6a090d66952",
+    "from": "HDPCVD",
+    "to": "High Density Plasma CVD",
+    "description": ""
+  },
+  {
+    "id": "faf11561-9b2e-4451-b20b-44cb8ec648a5",
+    "from": "HEPA",
+    "to": "High Efficiency Particulate Air Filter",
+    "description": ""
+  },
+  {
+    "id": "1e6b8da3-81cb-4df4-aa9a-790a4554c36f",
+    "from": "HfO2",
+    "to": "Hafnium Oxide",
+    "description": ""
+  },
+  {
+    "id": "33a36d71-fe6c-43a3-a63f-6e21f4f03476",
+    "from": "HIR",
+    "to": "Heterogeneous Integration Roadmap",
+    "description": "이종집적 로드맵"
+  },
+  {
+    "id": "411c9b8c-4b49-4e51-bdca-74b289607d47",
+    "from": "HK",
+    "to": "High-K Dielectric",
+    "description": ""
+  },
+  {
+    "id": "4789a4a1-25bd-4e83-b965-4e12b906fbe9",
+    "from": "HKMG",
+    "to": "High-k Metal Gate",
+    "description": ""
+  },
+  {
+    "id": "cb4b1e00-47e7-48ac-a62d-d0022c2f89ec",
+    "from": "HPC",
+    "to": "High Performance Computing",
+    "description": "고성능 컴퓨팅"
+  },
+  {
+    "id": "530d5e96-d837-4812-b1b6-aaac9aa5ba5e",
+    "from": "HTOL",
+    "to": "High Temperature Operating Life",
+    "description": "고온 수명 시험"
+  },
+  {
+    "id": "861d7329-eef3-4b59-b386-d7eb6aadbe7a",
+    "from": "HTS",
+    "to": "High Temperature Storage",
+    "description": ""
+  },
+  {
+    "id": "e7948ee3-cf69-4885-af3e-d85ad15c6d9d",
+    "from": "HVM",
+    "to": "High Volume Manufacturing",
+    "description": "대량 양산"
+  },
+  {
+    "id": "0b38c869-78fb-4c42-b5c3-93e91b5ff593",
+    "from": "HVT",
+    "to": "High Vth",
+    "description": ""
+  },
+  {
+    "id": "489f0573-8fef-4230-ba7c-2ca8eecd6a8e",
+    "from": "I2C",
+    "to": "Inter Integrated Circuit",
+    "description": ""
+  },
+  {
+    "id": "82271e66-214a-449c-ab99-cc36dc2d8141",
+    "from": "I3C",
+    "to": "Improved Inter Integrated Circuit",
+    "description": ""
+  },
+  {
+    "id": "020dfb02-6471-42ac-bbe6-8f1515155519",
+    "from": "IBIS",
+    "to": "I/O Buffer Information Specification",
+    "description": ""
+  },
+  {
+    "id": "1b3ae436-778a-47cf-9842-3304efdbadb7",
+    "from": "ICP",
+    "to": "Inductively Coupled Plasma",
+    "description": ""
+  },
+  {
+    "id": "9bd3254c-d9e1-48b0-ae1e-16c0ad947886",
+    "from": "ICP-MS",
+    "to": "Inductively Coupled Plasma MS",
+    "description": ""
+  },
+  {
+    "id": "a7577824-afc6-4081-8eb8-d07fcae5eb6d",
+    "from": "ICT",
+    "to": "Information and Communication Technology",
+    "description": ""
+  },
+  {
+    "id": "50c80987-d36f-4fdd-a47f-3d679bd9f18f",
+    "from": "IDD",
+    "to": "Supply Current Test",
+    "description": ""
+  },
+  {
+    "id": "b4b6c879-5a44-412b-adbe-949eb8f4671c",
+    "from": "IDDQ",
+    "to": "Quiescent Current Test",
+    "description": ""
+  },
+  {
+    "id": "cd69919c-73af-40a6-a898-9956f097da15",
+    "from": "IJTAG",
+    "to": "Internal JTAG",
+    "description": "IEEE 1687 기반 내부 JTAG"
+  },
+  {
+    "id": "65ec15d7-f19a-4ac3-987f-06423f093bdb",
+    "from": "IL",
+    "to": "Insertion Loss",
+    "description": "삽입 손실"
+  },
+  {
+    "id": "c6b3551c-d0fd-4b59-b305-10f82817fc78",
+    "from": "ILD",
+    "to": "Inter Layer Dielectric",
+    "description": ""
+  },
+  {
+    "id": "6d177128-5e82-4696-bcb3-de935edde718",
+    "from": "i-Line",
+    "to": "i-Line Lithography",
+    "description": ""
+  },
+  {
+    "id": "446e6868-5473-4a5a-b9d0-b014d6ee0051",
+    "from": "ILV",
+    "to": "Inter-Layer Via",
+    "description": "층간 비아"
+  },
+  {
+    "id": "c5a36c7b-20c7-4bf0-8a6b-f3966c82a2ae",
+    "from": "IMC",
+    "to": "Intermetallic Compound",
+    "description": "금속간 화합물, 솔더·패드 계면에 형성"
+  },
+  {
+    "id": "13381b61-3940-4afc-82f5-3ca6a6dec7f7",
+    "from": "IMD",
+    "to": "Inter Metal Dielectric",
+    "description": ""
+  },
+  {
+    "id": "0121b533-0ab3-4a1e-885a-3d1cbb368c28",
+    "from": "InFO",
+    "to": "Integrated Fan-Out",
+    "description": ""
+  },
+  {
+    "id": "fe30ab5e-3dcb-49c2-ba14-15829f3a848c",
+    "from": "InP",
+    "to": "Indium Phosphide",
+    "description": "인듐 포스파이드"
+  },
+  {
+    "id": "bda79347-4eda-43ef-afbe-443475f8920f",
+    "from": "Ioff",
+    "to": "Off-State Current",
+    "description": ""
+  },
+  {
+    "id": "d59f09ab-3f40-418f-8835-42aa8d0fd095",
+    "from": "Ion",
+    "to": "On-State Current",
+    "description": ""
+  },
+  {
+    "id": "236dc6c6-c890-416f-98ab-f5af9dfe1de4",
+    "from": "IoT",
+    "to": "Internet of Things",
+    "description": "사물인터넷"
+  },
+  {
+    "id": "fd54288f-6045-459a-ad01-2d7915fdbec5",
+    "from": "IP",
+    "to": "Intellectual Property",
+    "description": "IP 코어"
+  },
+  {
+    "id": "86575223-19b7-4f02-87e1-a5b1f217144a",
+    "from": "IQC",
+    "to": "Incoming Quality Control",
+    "description": ""
+  },
+  {
+    "id": "142d5c9c-adaa-4c40-8ccd-5c13dadff4c6",
+    "from": "IR Drop",
+    "to": "Voltage Drop on Power Path",
+    "description": "전원 경로 전압 강하"
+  },
+  {
+    "id": "08ba4802-310c-4f48-8e3a-951ddb17e167",
+    "from": "IRDS",
+    "to": "International Roadmap for Devices and Systems",
+    "description": "국제 반도체 로드맵"
+  },
+  {
+    "id": "1575f618-e014-4e19-b9c0-9a578d022c4c",
+    "from": "IV",
+    "to": "Current-Voltage Measurement",
+    "description": ""
+  },
+  {
+    "id": "3ab295a6-1b29-4fcd-a16b-bcdffd275873",
+    "from": "I사",
+    "to": "Intel",
+    "description": ""
+  },
+  {
+    "id": "4ba1afce-deaa-4005-a080-e082bb7e3d69",
+    "from": "JEDEC",
+    "to": "JEDEC Solid State Technology Association",
+    "description": "메모리 표준화 기구"
+  },
+  {
+    "id": "70a6cc64-6ba6-462a-88b8-b1de50ff648f",
+    "from": "JTAG",
+    "to": "Joint Test Action Group",
+    "description": "경계주사 표준(IEEE 1149.1)"
+  },
+  {
+    "id": "86cf08bb-ce34-441b-a04d-fb0f1f348a50",
+    "from": "KGD",
+    "to": "Known Good Die",
+    "description": ""
+  },
+  {
+    "id": "b5b30573-252d-4852-8c5e-516fec6ba9c5",
+    "from": "KGSD",
+    "to": "Known-Good Stacked Die",
+    "description": "양품 적층 다이"
+  },
+  {
+    "id": "66252128-828d-4644-b0c0-6652e6bb296b",
+    "from": "KPI",
+    "to": "Key Performance Indicator",
+    "description": ""
+  },
+  {
+    "id": "3ed21392-bdc5-415d-81ee-26c4beee86e8",
+    "from": "KrF",
+    "to": "Krypton Fluoride Scanner",
+    "description": ""
+  },
+  {
+    "id": "20a511fd-2cfb-41b9-a1b8-15881d89f8ee",
+    "from": "KV",
+    "to": "Key-Value (Cache)",
+    "description": "LLM KV 캐시"
+  },
+  {
+    "id": "9d8635b9-960d-45d3-a460-26e510779a00",
+    "from": "K사",
+    "to": "Kingston",
+    "description": "대만"
+  },
+  {
+    "id": "e033f914-a9ef-464a-9362-681798351c66",
+    "from": "LAB",
+    "to": "Laser Assisted Bonding",
+    "description": "레이저로 국부 가열하여 본딩하는 공정"
+  },
+  {
+    "id": "68e0c3bd-17e2-4c3d-a982-5326a754b50a",
+    "from": "LBGA",
+    "to": "Low Profile BGA",
+    "description": ""
+  },
+  {
+    "id": "dc4c211a-f2be-4ca9-ae22-c6651f10045c",
+    "from": "LBIST",
+    "to": "Logic BIST",
+    "description": ""
+  },
+  {
+    "id": "96032d88-f88c-430d-8822-26720b0e6871",
+    "from": "LDO",
+    "to": "Low Drop Out",
+    "description": ""
+  },
+  {
+    "id": "8d9735b4-3f30-498d-a27b-2f83e20bf54a",
+    "from": "LEF",
+    "to": "Library Exchange Format",
+    "description": ""
+  },
+  {
+    "id": "67028e72-7b1e-42bd-893b-753f5ebc382e",
+    "from": "LELE",
+    "to": "Litho-Etch-Litho-Etch",
+    "description": ""
+  },
+  {
+    "id": "ae67cb14-2a47-48e9-82b9-c840374bc4a3",
+    "from": "LELELE",
+    "to": "Triple Patterning",
+    "description": ""
+  },
+  {
+    "id": "78a9b209-14ef-49dc-a6ee-8a6d77992adf",
+    "from": "LER",
+    "to": "Line Edge Roughness",
+    "description": ""
+  },
+  {
+    "id": "db321aec-603f-4029-aca9-0b60b1475a57",
+    "from": "LFBGA",
+    "to": "Low-profile Fine-pitch BGA",
+    "description": ""
+  },
+  {
+    "id": "b93f8b0e-1a10-4cf1-a66a-20abe8a993d2",
+    "from": "LGA",
+    "to": "Land Grid Array",
+    "description": ""
+  },
+  {
+    "id": "6f2c221c-4f34-412d-bf20-3c88d4bd9e7b",
+    "from": "LHB",
+    "to": "Latency Hiding Buffer",
+    "description": "지연 은닉 버퍼"
+  },
+  {
+    "id": "5a0a2676-60cf-4867-8e16-2f7c2c3d5b2a",
+    "from": "LLM",
+    "to": "Large Language Model",
+    "description": "대규모 언어모델"
+  },
+  {
+    "id": "8cc7e948-69e2-4dfa-8cd6-2be05df13bfd",
+    "from": "LLVM",
+    "to": "Low Level Virtual Machine",
+    "description": ""
+  },
+  {
+    "id": "7b82b212-03d1-45d9-906d-b06e0c2eea8d",
+    "from": "LOC",
+    "to": "Lead On Chip",
+    "description": ""
+  },
+  {
+    "id": "fc30b9f5-bac3-4f1b-84a7-bf53e5d7273d",
+    "from": "LOCOS",
+    "to": "Local Oxidation of Silicon",
+    "description": ""
+  },
+  {
+    "id": "5b7d01f4-5d3c-495f-aca4-348ef65744d5",
+    "from": "LoRA",
+    "to": "Low-Rank Adaptation",
+    "description": ""
+  },
+  {
+    "id": "1c2b3e9a-724b-4185-b6eb-a69b55841931",
+    "from": "Low-k",
+    "to": "Low Dielectric Constant",
+    "description": ""
+  },
+  {
+    "id": "c3206f68-cfd6-499f-804d-d90abe0e4c78",
+    "from": "LPCVD",
+    "to": "Low-Pressure CVD",
+    "description": ""
+  },
+  {
+    "id": "dc2fd3be-030c-4097-8977-6fe0244dbabd",
+    "from": "LPO",
+    "to": "Linear-drive Pluggable Optics",
+    "description": "리니어 구동 플러거블 광학"
+  },
+  {
+    "id": "c4cf9f26-085d-4572-9112-086c6f8459b9",
+    "from": "LPP",
+    "to": "Low Power Plus",
+    "description": "삼성 공정 세대 표기(예: 14LPP)"
+  },
+  {
+    "id": "6facd437-222b-4fde-8c29-6fc5fb24efd0",
+    "from": "LPU",
+    "to": "Language Processing Unit",
+    "description": "NVIDIA LPU 개념"
+  },
+  {
+    "id": "e921245d-da93-4005-b0d8-2b670b7ed65d",
+    "from": "LRDIMM",
+    "to": "Load Reduced Dual Inline Memory Module",
+    "description": ""
+  },
+  {
+    "id": "3b2621cb-44bf-42cb-a7d2-b614dac6f93f",
+    "from": "LSA",
+    "to": "Laser Spike Anneal",
+    "description": ""
+  },
+  {
+    "id": "501a7d43-0c48-4412-b8f2-6dc83b5491d1",
+    "from": "LTOL",
+    "to": "Low Temperature Operating Lifetime",
+    "description": ""
+  },
+  {
+    "id": "96facddd-6609-4d6b-acf8-47667592c018",
+    "from": "LTPD",
+    "to": "Lot Tolerance Percent Defective",
+    "description": ""
+  },
+  {
+    "id": "df10132e-ab5a-4712-8f3a-c3a68ebc25f8",
+    "from": "LVDS",
+    "to": "Low Voltage Differential Signaling",
+    "description": ""
+  },
+  {
+    "id": "a232a623-4c45-4205-b2c7-a3ffb3aa1e6a",
+    "from": "LVS",
+    "to": "Layout Versus Schematic",
+    "description": ""
+  },
+  {
+    "id": "31755509-3016-4ad8-979c-a3e49006f9ca",
+    "from": "LVT",
+    "to": "Low Vth",
+    "description": ""
+  },
+  {
+    "id": "8b2be818-de50-4fdf-b016-930d139be8bf",
+    "from": "L사",
+    "to": "Longsys",
+    "description": "중국"
+  },
+  {
+    "id": "f234fd55-82a5-408b-9311-a54458155272",
+    "from": "M3D",
+    "to": "Monolithic 3D Integration",
+    "description": "단일 웨이퍼 3D 집적"
+  },
+  {
+    "id": "1d1fe948-72b1-49ef-8816-81e320c6beaf",
+    "from": "MAU",
+    "to": "Make-Up Air Unit",
+    "description": ""
+  },
+  {
+    "id": "c782de66-9a3c-4f1b-9983-dbe3fb36c501",
+    "from": "MBIST",
+    "to": "Memory Built-In Self-Test",
+    "description": "메모리 BIST"
+  },
+  {
+    "id": "49154314-6a1a-4231-adc1-29fc7317940d",
+    "from": "MCM",
+    "to": "Multi-Chip Module",
+    "description": "멀티칩 모듈"
+  },
+  {
+    "id": "79ae991d-9e96-4d3c-b56b-04102c13ab5a",
+    "from": "MCMM",
+    "to": "Multi-Corner Multi-Mode",
+    "description": ""
+  },
+  {
+    "id": "62cc6f2b-2819-43ab-9d7c-cf41126ae88c",
+    "from": "MEOL",
+    "to": "Middle End Of Line",
+    "description": ""
+  },
+  {
+    "id": "9def714b-4acc-4971-b19c-0ef9c6ca1e42",
+    "from": "MES",
+    "to": "Manufacturing Execution System",
+    "description": ""
+  },
+  {
+    "id": "43b51d96-78bc-421d-9f7c-dbd35530ca09",
+    "from": "MFD",
+    "to": "Mode Field Diameter",
+    "description": "모드 필드 직경"
+  },
+  {
+    "id": "1421b477-6ee8-44ce-85e4-3e3f0e27ff10",
+    "from": "ML",
+    "to": "Machine Learning",
+    "description": "머신러닝"
+  },
+  {
+    "id": "56591996-4e67-43a8-9fc2-ce80bad1a0d0",
+    "from": "MLB",
+    "to": "Multi-Layer Board",
+    "description": "다층 기판(MLB)"
+  },
+  {
+    "id": "db08ad55-7d54-4db7-85e4-e6d5006965a9",
+    "from": "MLOps",
+    "to": "Machine Learning Operations",
+    "description": ""
+  },
+  {
+    "id": "21ff791b-955b-4739-9186-354e6de97306",
+    "from": "MPS",
+    "to": "Master Production Schedule",
+    "description": ""
+  },
+  {
+    "id": "259d895d-af5d-4c86-867c-e6bf4d46e0dd",
+    "from": "MPW",
+    "to": "Multi Project Wafer",
+    "description": ""
+  },
+  {
+    "id": "221a0a0e-9287-48b1-b3c6-73997ad3c854",
+    "from": "MRAM",
+    "to": "Magnetoresistive RAM",
+    "description": "자기저항 메모리"
+  },
+  {
+    "id": "5296380a-82a0-45f2-b204-6494a8975787",
+    "from": "MRB",
+    "to": "Material Review Board",
+    "description": ""
+  },
+  {
+    "id": "64f5e6ce-dd80-4f13-8092-3a5fc04789c2",
+    "from": "MRCD",
+    "to": "Multiplexed Register Clock Driver",
+    "description": ""
+  },
+  {
+    "id": "7b5cbedf-e90c-4648-bb27-6e75c71a9ba5",
+    "from": "MRDIMM",
+    "to": "Multiplexed Rank Dual Inline Memory Module",
+    "description": ""
+  },
+  {
+    "id": "f882609e-c1d3-4af6-ad45-ab5465c5da35",
+    "from": "MR-MUF",
+    "to": "Molded underfill",
+    "description": "몰드 언더필 계열 공정"
+  },
+  {
+    "id": "03bcadd9-6716-46d4-a92c-ab1039fdb06b",
+    "from": "MSA",
+    "to": "Measurement System Analysis",
+    "description": ""
+  },
+  {
+    "id": "6d3645fc-9f52-490d-8c29-2f5a449b0a04",
+    "from": "MSE",
+    "to": "Mean Squared Error",
+    "description": "평균제곱오차"
+  },
+  {
+    "id": "f7c02c00-24a8-4ab5-9db2-b88ac460c2c9",
+    "from": "MSL",
+    "to": "Moisture Sensitivity Level",
+    "description": ""
+  },
+  {
+    "id": "37aa45d8-b68b-45dd-9842-60c711cbde88",
+    "from": "MTBF",
+    "to": "Mean Time Between Failures",
+    "description": ""
+  },
+  {
+    "id": "7a898131-8d4a-43d7-b0d1-2524fb4b1c54",
+    "from": "MTO",
+    "to": "Mask Tooling Out",
+    "description": ""
+  },
+  {
+    "id": "62d84f24-f2fb-4973-9498-6c404220b7c7",
+    "from": "MTTF",
+    "to": "Mean Time To Failure",
+    "description": ""
+  },
+  {
+    "id": "f304d0aa-5898-4e05-94ca-b87c9d3a1005",
+    "from": "MUF",
+    "to": "Molded Under-Fill",
+    "description": ""
+  },
+  {
+    "id": "d7c9d9c1-cb9f-418f-874e-d183e5d883f5",
+    "from": "MWC",
+    "to": "Mobile World Congress",
+    "description": "모바일 월드 콩그레스"
+  },
+  {
+    "id": "6d1c3e50-aa22-4a73-8400-02c08ac02df3",
+    "from": "M사",
+    "to": "Montage 사",
+    "description": ""
+  },
+  {
+    "id": "60c1f20f-eeaf-4264-9ae8-dff029bb6f0c",
+    "from": "N1",
+    "to": "1 Nanometer Node",
+    "description": ""
+  },
+  {
+    "id": "c976dfd4-8d0e-422b-906f-f2ebabb0d6f7",
+    "from": "N2",
+    "to": "2 Nanometer Node",
+    "description": ""
+  },
+  {
+    "id": "e435dea2-9b13-4d94-876e-7991ea7ab9a6",
+    "from": "N3",
+    "to": "3 Nanometer Node",
+    "description": ""
+  },
+  {
+    "id": "1b224ce6-1ffc-4576-b0c7-9573b386b72f",
+    "from": "N4",
+    "to": "4 Nanometer Node",
+    "description": ""
+  },
+  {
+    "id": "6c05f84d-8d25-4644-a8b1-b60650fec625",
+    "from": "N5",
+    "to": "5 Nanometer Node",
+    "description": ""
+  },
+  {
+    "id": "cd54bd57-b676-4eb0-9b9d-03a9bbd916d8",
+    "from": "N6",
+    "to": "6 Nanometer Node",
+    "description": ""
+  },
+  {
+    "id": "9f92630a-ea1c-4510-8132-f72ce96f0ea8",
+    "from": "N7",
+    "to": "7 Nanometer Node",
+    "description": ""
+  },
+  {
+    "id": "8d129f9b-a91b-497c-92e8-47e7cc0fc6e0",
+    "from": "N8",
+    "to": "8 Nanometer Node",
+    "description": ""
+  },
+  {
+    "id": "14ceaab2-4e8b-48fe-bc16-fa849ae918e0",
+    "from": "NA",
+    "to": "Numerical Aperture",
+    "description": ""
+  },
+  {
+    "id": "065614e3-70b4-416f-b33b-e59c4ae81f30",
+    "from": "NAS",
+    "to": "Network Attached Storage",
+    "description": ""
+  },
+  {
+    "id": "89ac13d2-17cc-4c2d-87eb-314220f1dbf7",
+    "from": "NCF",
+    "to": "Non-Conductive Film",
+    "description": "절연성 필름 언더필, TCB와 함께 사용"
+  },
+  {
+    "id": "5790634a-0ca6-4999-be85-143896247bda",
+    "from": "NCP",
+    "to": "Non Conductive Paste",
+    "description": ""
+  },
+  {
+    "id": "3cc0955e-2ce9-4f1d-909a-be5f14252af6",
+    "from": "NDA",
+    "to": "Non Disclosure Agreement",
+    "description": ""
+  },
+  {
+    "id": "d31f92c6-aaa0-40f4-b28a-c7d7be3d756d",
+    "from": "NEXT",
+    "to": "Near-End Crosstalk",
+    "description": "근단 크로스토크"
+  },
+  {
+    "id": "a57aaada-1cbe-4cd8-9a75-573ccd1510a9",
+    "from": "Ni",
+    "to": "Nickel",
+    "description": ""
+  },
+  {
+    "id": "2d46a6dc-6ad3-4392-83c5-f982886ab892",
+    "from": "NLP",
+    "to": "Natural Language Processing",
+    "description": ""
+  },
+  {
+    "id": "24813493-6808-4d5e-8658-d3a984818253",
+    "from": "NPI",
+    "to": "New Product Introduction",
+    "description": ""
+  },
+  {
+    "id": "7f5499e9-fa2d-44c0-bdc1-6b99ba1dd016",
+    "from": "NPO",
+    "to": "Near-Package Optics",
+    "description": "패키지 근접 광학"
+  },
+  {
+    "id": "5926d600-03a7-4dcc-9bca-6310f1ae5e41",
+    "from": "NRE",
+    "to": "Non-Recurring Engineering Cost",
+    "description": ""
+  },
+  {
+    "id": "781f3b34-5ec8-4b03-ae63-7948338b91c7",
+    "from": "NTF",
+    "to": "No Trouble Found",
+    "description": ""
+  },
+  {
+    "id": "b406b190-efd8-400f-a545-dad1b821597b",
+    "from": "NTI",
+    "to": "New Technology Introduction",
+    "description": ""
+  },
+  {
+    "id": "a9f5010a-f54b-46e7-8254-c594afb35ea6",
+    "from": "NVDIMM",
+    "to": "Non-volatile Registered Dual Inline Memory Module",
+    "description": ""
+  },
+  {
+    "id": "d1a872ef-80ab-4aac-8623-c55c3fae9069",
+    "from": "NVL",
+    "to": "NVIDIA NVLink (NVL72/144…)",
+    "description": "NVLink 기반 시스템 크기"
+  },
+  {
+    "id": "841cec44-09ad-48f8-93e1-f679e2eb51a3",
+    "from": "N-Well",
+    "to": "N-type Well",
+    "description": ""
+  },
+  {
+    "id": "3e9f3466-0c30-44f9-acf8-123bea5e4122",
+    "from": "OASIS",
+    "to": "Layout Data Format",
+    "description": ""
+  },
+  {
+    "id": "85ff8940-aa78-4d08-a20e-d6cb4a35ea85",
+    "from": "OBO",
+    "to": "On-Board Optics",
+    "description": "온보드 광학"
+  },
+  {
+    "id": "56c306fc-ae8a-4dc6-9b8f-b8afd3cf2d99",
+    "from": "OCAP",
+    "to": "Out of Control Action Plan",
+    "description": ""
+  },
+  {
+    "id": "539abc81-6d44-4a19-9962-6c599adf569b",
+    "from": "OCV",
+    "to": "On-Chip Variation",
+    "description": ""
+  },
+  {
+    "id": "56fcea22-ac87-4672-9919-a2b00fb62b59",
+    "from": "ODB++",
+    "to": "Open Database Format for PCB/Package",
+    "description": "기판/패키지 제조 데이터 포맷"
+  },
+  {
+    "id": "49be6a4d-54c2-4ee5-b43c-8f553390074a",
+    "from": "OE",
+    "to": "Optical Engine",
+    "description": "광 엔진"
+  },
+  {
+    "id": "5e18e688-4812-473e-982a-d916a0d814fa",
+    "from": "OMS",
+    "to": "Outsourcing Management System",
+    "description": ""
+  },
+  {
+    "id": "b9d14492-497a-4f01-a58c-333fb40f7c87",
+    "from": "ONNX",
+    "to": "Open Neural Network Exchange",
+    "description": ""
+  },
+  {
+    "id": "a6e3c831-816f-4658-a2e4-57aca608eaac",
+    "from": "OOC",
+    "to": "Out Of Control",
+    "description": ""
+  },
+  {
+    "id": "7971f636-7492-4c86-8104-10b2f54228cc",
+    "from": "OPC",
+    "to": "Optical Proximity Correction",
+    "description": ""
+  },
+  {
+    "id": "754a7d07-fb77-46b0-a9a0-8bf162c3716c",
+    "from": "OPEX",
+    "to": "Operating Expenditure",
+    "description": ""
+  },
+  {
+    "id": "ddd3ee90-1175-482b-9610-d73713157f75",
+    "from": "ORDL",
+    "to": "Optical Redistribution Layer",
+    "description": "광 재분배 레이어"
+  },
+  {
+    "id": "76f83cc0-a34b-41f3-bb7d-94643c716431",
+    "from": "ORT",
+    "to": "Ongoing Reliability Test",
+    "description": ""
+  },
+  {
+    "id": "4a640152-f7f6-4c5f-9850-e532a2f20112",
+    "from": "OS",
+    "to": "Operating System",
+    "description": "운영체제"
+  },
+  {
+    "id": "c856545a-0fb7-446c-a5da-2f1e4db51915",
+    "from": "OSP",
+    "to": "Organic Solderability Preservative",
+    "description": "유기계 솔더 접합성 보존 코팅 (기판 Finish)"
+  },
+  {
+    "id": "8233d46b-2d22-4a2b-b821-de35afc48e8c",
+    "from": "OTP",
+    "to": "One Time Program (Programmable ROM, Electrical Fuse)",
+    "description": ""
+  },
+  {
+    "id": "62175fce-3c39-4330-8b25-0eb063a3ca1f",
+    "from": "P&P",
+    "to": "Pick and Place",
+    "description": ""
+  },
+  {
+    "id": "78a008cc-209d-412a-afbe-962de27c0614",
+    "from": "P&R",
+    "to": "Place And Route",
+    "description": ""
+  },
+  {
+    "id": "216ad7db-f94e-4f69-a305-f1a0b405101f",
+    "from": "PAM4",
+    "to": "Pulse Amplitude Modulation 4-level",
+    "description": "4레벨 펄스 진폭 변조"
+  },
+  {
+    "id": "1dc41c81-e2b5-4cc0-9960-bf4f48d8b392",
+    "from": "PAT",
+    "to": "Part Average Test",
+    "description": ""
+  },
+  {
+    "id": "10dd9a26-b043-4697-a853-a8174e951f8d",
+    "from": "PBGA",
+    "to": "Plastic BGA",
+    "description": ""
+  },
+  {
+    "id": "ef92c682-f90a-42f9-be88-5b5d43f9c2f3",
+    "from": "PCB",
+    "to": "Printed Circuit Board",
+    "description": "인쇄 회로 기판"
+  },
+  {
+    "id": "ddf0d78f-d735-4bc8-a670-1f0d2d3d10d9",
+    "from": "PCT",
+    "to": "Pressure Cooker Test",
+    "description": ""
+  },
+  {
+    "id": "bb2d72c2-5bda-4773-89e9-2fd40c35bad6",
+    "from": "PCW",
+    "to": "Process Cooling Water",
+    "description": ""
+  },
+  {
+    "id": "c5cc3bcf-ac61-4752-9782-5fd24932f942",
+    "from": "PDN",
+    "to": "Power Distribution Network",
+    "description": "전원 분배 네트워크"
+  },
+  {
+    "id": "94e2bde2-c2c7-4ded-bec7-ddd061fc95b8",
+    "from": "PEB",
+    "to": "Post-Exposure Bake",
+    "description": ""
+  },
+  {
+    "id": "bd91be2a-4aa8-4677-8533-84cec5ba0fc2",
+    "from": "PECVD",
+    "to": "Plasma-Enhanced CVD",
+    "description": ""
+  },
+  {
+    "id": "28431517-d343-4b9d-ae6c-6ad9e6d1fe14",
+    "from": "PERC",
+    "to": "Power Electrical Rule Check",
+    "description": ""
+  },
+  {
+    "id": "d202fd02-c9d4-406e-aeda-2dc5fe6ca9ed",
+    "from": "PFMEA",
+    "to": "Process FMEA",
+    "description": ""
+  },
+  {
+    "id": "e8a481c5-0138-47fa-b0d9-95574ba15c39",
+    "from": "PGM",
+    "to": "Program",
+    "description": ""
+  },
+  {
+    "id": "60d026c4-7c72-468e-9115-b492d0000fbd",
+    "from": "PI",
+    "to": "Power Integrity",
+    "description": "전원 무결성"
+  },
+  {
+    "id": "2ace70bd-6f09-401a-b45c-9d8ab43f077c",
+    "from": "PIC",
+    "to": "Photonic Integrated Circuit",
+    "description": "광 집적 회로"
+  },
+  {
+    "id": "b79ec358-777b-4b06-8ccf-21783ad39e69",
+    "from": "PIM",
+    "to": "Processing In Memory",
+    "description": "메모리 내 연산"
+  },
+  {
+    "id": "521504e4-e9d5-4af0-b0f9-dee9ade7e8da",
+    "from": "PLP",
+    "to": "Panel Level Package",
+    "description": ""
+  },
+  {
+    "id": "f958965f-0eaf-4187-9875-28e798d2898f",
+    "from": "PM",
+    "to": "Preventive Maintenance",
+    "description": ""
+  },
+  {
+    "id": "03cab1c1-8b1a-48b1-a07f-f008fa7b04d9",
+    "from": "PoP",
+    "to": "Package on Package",
+    "description": "패키지 적층 구조"
+  },
+  {
+    "id": "7773a091-6a57-4b83-8fb9-b7f44c9dd73d",
+    "from": "PPG",
+    "to": "Prepreg",
+    "description": ""
+  },
+  {
+    "id": "64ace011-9241-4e7a-9066-4c6bae945d20",
+    "from": "PPM",
+    "to": "Parts Per Million",
+    "description": ""
+  },
+  {
+    "id": "8fa159d3-6007-4960-a46a-0834ebefa9ec",
+    "from": "PQ",
+    "to": "Product Quantization",
+    "description": "제품 양자화 계열"
+  },
+  {
+    "id": "5ca196e1-39be-4213-885d-f38da830ee25",
+    "from": "PRQ",
+    "to": "Package Reliability Qualification",
+    "description": ""
+  },
+  {
+    "id": "003c27a9-9c2d-4cd0-bd21-213471ed5198",
+    "from": "PSM",
+    "to": "Phase Shift Mask",
+    "description": ""
+  },
+  {
+    "id": "c859e6b7-d511-4875-a58c-d32092f82756",
+    "from": "PTQ",
+    "to": "Post-Training Quantization",
+    "description": ""
+  },
+  {
+    "id": "40a52fbf-d615-4485-b518-61a1e0c61dad",
+    "from": "PVT",
+    "to": "Process / Voltage / Temperature",
+    "description": "공정·전압·온도 코너"
+  },
+  {
+    "id": "d2fe7474-33c6-4144-98c1-c2a4384870e2",
+    "from": "P-Well",
+    "to": "P-type Well",
+    "description": ""
+  },
+  {
+    "id": "66657d61-139b-4efc-8466-d9ffab054485",
+    "from": "QAT",
+    "to": "Quantization-Aware Training",
+    "description": ""
+  },
+  {
+    "id": "5f905ceb-6b28-423f-83b1-ea37e09c3ab6",
+    "from": "QFN",
+    "to": "Quad Flat No-Lead Package",
+    "description": ""
+  },
+  {
+    "id": "6b527535-4a3c-4451-9d0e-67276aee76c8",
+    "from": "QFP",
+    "to": "Quad Flat Package",
+    "description": ""
+  },
+  {
+    "id": "53638bee-ddd8-402b-a718-b7acaf5d7347",
+    "from": "R&D",
+    "to": "Research and Development",
+    "description": "연구개발"
+  },
+  {
+    "id": "20f5e639-74df-474b-9bbb-0cdbf378a9b8",
+    "from": "R2R",
+    "to": "Run-to-Run Control",
+    "description": ""
+  },
+  {
+    "id": "a4727d0f-684f-49f4-9b20-986d0e52dceb",
+    "from": "RAG",
+    "to": "Retrieval-Augmented Generation",
+    "description": "검색 증강 생성"
+  },
+  {
+    "id": "6b097ce1-0311-4402-9695-d824efd04689",
+    "from": "RC",
+    "to": "Resistance/Capacitance Extraction",
+    "description": ""
+  },
+  {
+    "id": "45ba332e-9ff0-4265-bb26-9744d59036a0",
+    "from": "RCD",
+    "to": "Register Clock Driver",
+    "description": ""
+  },
+  {
+    "id": "ca859ef8-41de-420f-a737-2548e4e261a5",
+    "from": "RDIMM",
+    "to": "Registered Dual Inline Memory Module",
+    "description": ""
+  },
+  {
+    "id": "3c12708f-fc10-42ca-b1cd-9a51ab5223e7",
+    "from": "RDL",
+    "to": "Redistribution Layer",
+    "description": "재분배 레이어"
+  },
+  {
+    "id": "efe528de-bfd2-4e29-bbde-eeb645b7ee9a",
+    "from": "ReRAM",
+    "to": "Resistive RAM",
+    "description": "저항 변화 메모리"
+  },
+  {
+    "id": "f1590474-098a-4f57-9b59-b300d865d30d",
+    "from": "RET",
+    "to": "Resolution Enhancement Technique",
+    "description": ""
+  },
+  {
+    "id": "d3e42a88-c209-4e77-9763-00147e8466e1",
+    "from": "RIE",
+    "to": "Reactive Ion Etching",
+    "description": ""
+  },
+  {
+    "id": "36de53ce-4c7a-4b56-821d-8c4e3d7a82e0",
+    "from": "RLGC",
+    "to": "Resistance, Inductance, Conductance, Capacitance",
+    "description": "전송선 파라미터"
+  },
+  {
+    "id": "b6bb18f0-6e17-46ac-a1cd-2cbabd3e463f",
+    "from": "RLHF",
+    "to": "Reinforcement Learning from Human Feedback",
+    "description": ""
+  },
+  {
+    "id": "6fcf3e1e-bc78-4e0c-b19d-caf02094545f",
+    "from": "RMA",
+    "to": "Return Material Authorization",
+    "description": ""
+  },
+  {
+    "id": "e5cde7de-ce2f-4877-84e3-5537519bdf3d",
+    "from": "ROI",
+    "to": "Return on Investment",
+    "description": "투자 수익률"
+  },
+  {
+    "id": "4b40010f-9153-4799-88d4-7151f60cdb04",
+    "from": "Ron",
+    "to": "On Resistance",
+    "description": ""
+  },
+  {
+    "id": "15feb7e8-4aa2-4e49-9f0d-6c735e788fba",
+    "from": "RTA",
+    "to": "Rapid Thermal Anneal",
+    "description": ""
+  },
+  {
+    "id": "23122589-f67f-4748-a2e8-55ebc374352b",
+    "from": "RTY",
+    "to": "Rolled Throughput Yield",
+    "description": ""
+  },
+  {
+    "id": "b3966635-8984-4592-8cf0-41a6a0964463",
+    "from": "Ru",
+    "to": "Ruthenium",
+    "description": ""
+  },
+  {
+    "id": "f2f8c091-37e5-46f7-a920-bcf2e99ab32b",
+    "from": "RX",
+    "to": "Receiver (Input Buffer)",
+    "description": ""
+  },
+  {
+    "id": "f3295292-f8a7-4c5d-bfea-2b1ba239077c",
+    "from": "R사",
+    "to": "Ramaxel",
+    "description": "중국"
+  },
+  {
+    "id": "a722a7b7-d28b-4c19-9f02-5e7ff563ad6e",
+    "from": "S&OP",
+    "to": "Sales and Operations Planning",
+    "description": ""
+  },
+  {
+    "id": "0df99384-ec3e-4144-8037-251fb3cda6f6",
+    "from": "SAC",
+    "to": "Sn-Ag-Cu (Alloy)",
+    "description": "SAC 계열 솔더"
+  },
+  {
+    "id": "895b99ae-3f26-406a-8ad8-ed31ccba920e",
+    "from": "SADP",
+    "to": "Self-Aligned Double Patterning",
+    "description": ""
+  },
+  {
+    "id": "0d4da013-3765-4635-b2d5-994ffbb30e3a",
+    "from": "SALICIDE",
+    "to": "Self-Aligned Silicide",
+    "description": ""
+  },
+  {
+    "id": "9f22df6f-7145-48b0-8035-cb4ba81fecab",
+    "from": "SAQP",
+    "to": "Self-Aligned Quadruple Patterning",
+    "description": ""
+  },
+  {
+    "id": "2505d86f-3d37-488c-ae60-bea2b311f755",
+    "from": "SCM",
+    "to": "Supply Chain Management",
+    "description": "공급망 관리"
+  },
+  {
+    "id": "c637d95c-e252-4a4b-9c03-e6c36beef3ab",
+    "from": "SDF",
+    "to": "Standard Delay Format",
+    "description": ""
+  },
+  {
+    "id": "829c692c-ae6f-40f3-8d14-29ed8e65db07",
+    "from": "SDK",
+    "to": "Software Development Kit",
+    "description": ""
+  },
+  {
+    "id": "022cb1dc-8322-4ffb-95b9-7022da3e55e0",
+    "from": "SEM",
+    "to": "Scanning Electron Microscope",
+    "description": ""
+  },
+  {
+    "id": "3e102b17-2254-4519-a767-3917c08a1f37",
+    "from": "SGD",
+    "to": "Stochastic Gradient Descent",
+    "description": ""
+  },
+  {
+    "id": "c3c1f382-9dc3-4760-b1e9-650ccf744862",
+    "from": "SI",
+    "to": "Signal Integrity",
+    "description": "신호 무결성"
+  },
+  {
+    "id": "f4474a65-1074-48e8-8d77-5fa9812432d6",
+    "from": "Si",
+    "to": "Silicon",
+    "description": ""
+  },
+  {
+    "id": "b76fd391-324e-4c49-9423-b0ea79d1a247",
+    "from": "Si3N4",
+    "to": "Silicon Nitride",
+    "description": ""
+  },
+  {
+    "id": "1b2e6849-e25e-4e5e-96a5-4fae97517e57",
+    "from": "SIMS",
+    "to": "Secondary Ion Mass Spectrometry",
+    "description": ""
+  },
+  {
+    "id": "7b007740-468f-439d-8586-421db89e8783",
+    "from": "SiN",
+    "to": "Silicon Nitride",
+    "description": "실리콘 나이트라이드"
+  },
+  {
+    "id": "0bd10cce-2d3b-449f-8753-2b264dcfbda1",
+    "from": "SiO2",
+    "to": "Silicon Dioxide",
+    "description": "이산화규소, 실리카 유리"
+  },
+  {
+    "id": "dd99eaeb-70c0-4d44-b983-f00e838b7bab",
+    "from": "SiP",
+    "to": "System-in-Package",
+    "description": ""
+  },
+  {
+    "id": "d67ea133-04eb-4efa-ace1-ba98b9f34bd1",
+    "from": "SiPh",
+    "to": "Silicon Photonics",
+    "description": "실리콘 포토닉스"
+  },
+  {
+    "id": "3968a349-8a65-4057-9678-963ae2debb77",
+    "from": "SLM",
+    "to": "Small Language Model",
+    "description": ""
+  },
+  {
+    "id": "f4d9ed9c-66de-45de-b872-be2f44fc80e6",
+    "from": "SLT",
+    "to": "System Level Test",
+    "description": ""
+  },
+  {
+    "id": "3693a581-ca46-4de3-9815-d8345c3537b8",
+    "from": "SMD",
+    "to": "Surface Mount Device",
+    "description": ""
+  },
+  {
+    "id": "913f8371-848b-4ac9-861e-c1d8fdf6f2c4",
+    "from": "SMIC",
+    "to": "Semiconductor Manufacturing International",
+    "description": ""
+  },
+  {
+    "id": "a86d31fb-40af-49e2-b4c4-29794ae69d43",
+    "from": "SMIF",
+    "to": "Standard Mechanical Interface",
+    "description": ""
+  },
+  {
+    "id": "4ddd4ff3-ce65-45ff-b9d8-57aeca9a05c9",
+    "from": "SMO",
+    "to": "Source Mask Optimization",
+    "description": ""
+  },
+  {
+    "id": "98f97b9c-0b99-4252-b84c-f899b21fadf6",
+    "from": "SMT",
+    "to": "Surface Mount technology",
+    "description": ""
+  },
+  {
+    "id": "a1cde1ee-24f8-4398-88b1-977b52076d27",
+    "from": "SOCAMM",
+    "to": "Small Outline Compression Attached Memory Module",
+    "description": ""
+  },
+  {
+    "id": "f66dca57-dbbf-4d67-916e-ffba9142401e",
+    "from": "SOD",
+    "to": "Spin-On Dielectric",
+    "description": ""
+  },
+  {
+    "id": "2c3eed82-db14-4e86-9b42-42d58c4afe5c",
+    "from": "SOI",
+    "to": "Silicon-On-Insulator",
+    "description": "절연막 위 실리콘"
+  },
+  {
+    "id": "176b4a3e-8649-42f2-8274-e812e4cfa914",
+    "from": "SoIC",
+    "to": "System on Integrated Chips",
+    "description": "집적 칩 시스템"
+  },
+  {
+    "id": "2e0060da-0c50-4de2-a5fe-a0375f36654e",
+    "from": "SOP",
+    "to": "Solder On Pad",
+    "description": "기판 패드 위에 솔더를 직접 형성하는 구조"
+  },
+  {
+    "id": "96d92973-a4dd-4976-8a42-0d7413eb9e51",
+    "from": "SPC",
+    "to": "Statistical Process Control",
+    "description": ""
+  },
+  {
+    "id": "db0fddb8-b2c1-4f95-964a-ea0358dbb726",
+    "from": "SPD",
+    "to": "Serial Presence Detect",
+    "description": ""
+  },
+  {
+    "id": "fae6d25a-714b-4c11-b887-4c6801aa77b8",
+    "from": "SPICE",
+    "to": "Circuit Simulator",
+    "description": ""
+  },
+  {
+    "id": "bacc0839-9f86-43bb-9528-38d1bbde8c23",
+    "from": "SPW",
+    "to": "Single Project Wafer",
+    "description": ""
+  },
+  {
+    "id": "c4ba7c85-93e0-4352-8ff6-a5edf7190921",
+    "from": "SQE",
+    "to": "Supply Quality Engineering",
+    "description": ""
+  },
+  {
+    "id": "df00ba5a-590e-4a23-b11d-c8393f4391a3",
+    "from": "SRAF",
+    "to": "Sub-Resolution Assist Feature",
+    "description": ""
+  },
+  {
+    "id": "1ce9886f-6c80-499e-92ca-46aab7dccc5f",
+    "from": "STA",
+    "to": "Static Timing Analysis Tool",
+    "description": ""
+  },
+  {
+    "id": "35d492b5-5171-4a71-8aa4-394593978e4a",
+    "from": "STIL",
+    "to": "Standard Test Interface Language",
+    "description": ""
+  },
+  {
+    "id": "bf4993f8-43ed-43f0-b240-70e3f9d19922",
+    "from": "STP",
+    "to": "Shielded Twisted Pair",
+    "description": ""
+  },
+  {
+    "id": "cb8c2ec2-60b6-4d3b-8885-01714962196c",
+    "from": "SVT",
+    "to": "Standard Vth",
+    "description": ""
+  },
+  {
+    "id": "5535851a-f254-49f9-9f77-1bb031d5c157",
+    "from": "SW",
+    "to": "Software",
+    "description": ""
+  },
+  {
+    "id": "23241644-b250-45b3-8a0d-4d60af03f5c4",
+    "from": "SWAP",
+    "to": "Size Weight And Power",
+    "description": ""
+  },
+  {
+    "id": "1b79330b-8f79-43be-8bce-9a2781e6a878",
+    "from": "TAM",
+    "to": "Total Addressable Market",
+    "description": ""
+  },
+  {
+    "id": "e3204cf8-a753-47b5-b42f-011d9f355363",
+    "from": "TaN",
+    "to": "Tantalum Nitride",
+    "description": ""
+  },
+  {
+    "id": "a55f8737-e030-4bb4-9dcf-77c648e19a0a",
+    "from": "TAT",
+    "to": "Turn Around Time",
+    "description": ""
+  },
+  {
+    "id": "acbb7dbb-e853-4e09-8536-a4dee30f00a5",
+    "from": "TBD",
+    "to": "To Be Determined",
+    "description": ""
+  },
+  {
+    "id": "dc4b9513-8a27-4f99-a15f-38ecf9f9bb7d",
+    "from": "TCB",
+    "to": "ThermoCompression Bonding",
+    "description": "열압착 본딩 공정, 특히 패키지·HBM에 적용"
+  },
+  {
+    "id": "0d03b539-33d1-4ad5-8669-5501ddab4df9",
+    "from": "TCL",
+    "to": "Timing Constraint Language",
+    "description": ""
+  },
+  {
+    "id": "338f75be-f2e2-48ff-9124-3de3b402a43c",
+    "from": "TCO",
+    "to": "Total Cost of Ownership",
+    "description": "총소유비용"
+  },
+  {
+    "id": "4b32004b-372a-4655-b198-2ff8819e44c3",
+    "from": "TCR",
+    "to": "Temperature Coefficient of Resistance",
+    "description": ""
+  },
+  {
+    "id": "42861426-f37a-4f7c-a09c-0413d85139a8",
+    "from": "TDD",
+    "to": "Test Driven Development",
+    "description": ""
+  },
+  {
+    "id": "18d7d5cc-baba-4375-85eb-ae705c46b04a",
+    "from": "TDDB",
+    "to": "Time-Dependent Dielectric Breakdown",
+    "description": ""
+  },
+  {
+    "id": "a5d98c43-0e80-40db-8db2-edae36300814",
+    "from": "TDM",
+    "to": "Time Division Multiplexing",
+    "description": ""
+  },
+  {
+    "id": "128c3aef-6145-4c5e-b181-3b4274e91d95",
+    "from": "TDR",
+    "to": "Time Domain Reflectometry",
+    "description": "시간 영역 반사 측정 방식, interconnect 결함 분석"
+  },
+  {
+    "id": "1a69ee97-28cd-4289-a8ec-5e568e39ec2c",
+    "from": "TEG",
+    "to": "Test Element Group",
+    "description": ""
+  },
+  {
+    "id": "bc81db51-5200-4a8e-844c-a6c4ab62c05c",
+    "from": "TEM",
+    "to": "Transmission Electron Microscope",
+    "description": ""
+  },
+  {
+    "id": "76815ddf-a7b2-4b22-bea0-108930173e11",
+    "from": "TEOS",
+    "to": "Tetraethyl Orthosilicate",
+    "description": ""
+  },
+  {
+    "id": "aece367b-5510-457f-b366-a0c5a2d79e48",
+    "from": "TFLite",
+    "to": "TensorFlow Lite",
+    "description": ""
+  },
+  {
+    "id": "73b8bbe3-18f5-49dd-8c77-427f1d01b658",
+    "from": "TFT",
+    "to": "Thin Film Transistor",
+    "description": ""
+  },
+  {
+    "id": "fe00b55a-7ca4-4876-aae1-b32e26bbf53d",
+    "from": "Tg",
+    "to": "Glass Transition Temperature",
+    "description": "유리전이 온도"
+  },
+  {
+    "id": "69ba5b06-f139-4bfe-bd7e-8b8a9eb7155e",
+    "from": "TGV",
+    "to": "Through-Glass Via",
+    "description": "유리기판 관통 비아 구조"
+  },
+  {
+    "id": "96b2617d-eb72-4de4-b21a-87544573ff66",
+    "from": "THB",
+    "to": "Temperature Humidity Bias",
+    "description": ""
+  },
+  {
+    "id": "0268928a-a9d4-4d84-99cd-77cff5229574",
+    "from": "Ti",
+    "to": "Titanium",
+    "description": ""
+  },
+  {
+    "id": "d7af3373-c4f2-49dd-8793-41c7665fd40e",
+    "from": "TIA",
+    "to": "Transimpedance Amplifier",
+    "description": "트랜스임피던스 증폭기"
+  },
+  {
+    "id": "e4148669-7860-42c6-986f-28f38bf912cc",
+    "from": "TID",
+    "to": "Total Ionizing Dose",
+    "description": ""
+  },
+  {
+    "id": "e9f219ea-3003-4e15-9550-080114812787",
+    "from": "TIM",
+    "to": "Thermal Interface Material",
+    "description": "열 인터페이스 재료"
+  },
+  {
+    "id": "27f214d7-43cb-4c2e-8b63-c65f386ce4ae",
+    "from": "TiN",
+    "to": "Titanium Nitride",
+    "description": ""
+  },
+  {
+    "id": "220c3398-f35b-42cd-bd24-63a1b1f0794c",
+    "from": "TLP",
+    "to": "Transmission Line Pulse",
+    "description": ""
+  },
+  {
+    "id": "3f47bc0a-7e2e-41ae-a072-77d9c81e0c3c",
+    "from": "TMR",
+    "to": "Triple Modular Redundancy",
+    "description": ""
+  },
+  {
+    "id": "6c034e0d-800c-4d04-baf6-df40813f54be",
+    "from": "TO",
+    "to": "Transistor Outline Package",
+    "description": ""
+  },
+  {
+    "id": "6d933711-8296-4107-9384-da76143bd2b8",
+    "from": "TOC",
+    "to": "Total Organic Carbon",
+    "description": ""
+  },
+  {
+    "id": "04377dd0-c8b9-480e-bbb5-43d905edfde4",
+    "from": "TOF-SIMS",
+    "to": "Time-of-Flight SIMS",
+    "description": ""
+  },
+  {
+    "id": "f04b7b41-ea24-47c0-ada5-d9542c2d8267",
+    "from": "TPU",
+    "to": "Tensor Processing Unit",
+    "description": "구글 AI 가속기 TPU"
+  },
+  {
+    "id": "2583f8b6-afaf-4624-8788-7003d85c6b45",
+    "from": "TSMC",
+    "to": "Taiwan Semiconductor Manufacturing Company",
+    "description": ""
+  },
+  {
+    "id": "f53800d0-9187-4561-ba2b-5515617628a6",
+    "from": "TSOP",
+    "to": "Thin Small Outline Package",
+    "description": ""
+  },
+  {
+    "id": "e64a569c-2f0b-4fde-bf9f-74b60da878c3",
+    "from": "TSSOP",
+    "to": "Thin Shrink Small Outline Package",
+    "description": ""
+  },
+  {
+    "id": "726dfb79-5d9e-4eac-bd80-3c09b6ddd348",
+    "from": "TTL",
+    "to": "Transistor-Transistor Logic",
+    "description": ""
+  },
+  {
+    "id": "9e5b9d9f-d7e5-4c3f-93ac-d02ee77a2185",
+    "from": "Tx",
+    "to": "Transmit",
+    "description": ""
+  },
+  {
+    "id": "098a7846-4680-4c6c-81c7-a8756af318b7",
+    "from": "UART",
+    "to": "Universal Asynchronous Receiver Transmitter",
+    "description": ""
+  },
+  {
+    "id": "c2fd8c28-84c5-452a-9c15-b5700357a0be",
+    "from": "UBM",
+    "to": "Under Bump Metallurgy",
+    "description": "범프 하부 금속 구조, 접착·확산 방지막 역할"
+  },
+  {
+    "id": "547b8602-670b-4a7b-91b0-9ca4c6757246",
+    "from": "UCIe",
+    "to": "Universal Chiplet Interconnect Express",
+    "description": ""
+  },
+  {
+    "id": "ab8f9cdf-2271-4651-9a4f-7257a321d98a",
+    "from": "UDIMM",
+    "to": "Unbuffered DIMM",
+    "description": ""
+  },
+  {
+    "id": "9b295754-1cb4-4c15-91c0-116be6f17204",
+    "from": "uHAST",
+    "to": "unbiased High Accelerated Stress Test",
+    "description": ""
+  },
+  {
+    "id": "72e162c6-0112-479a-b419-41dc8269e5b9",
+    "from": "ULP",
+    "to": "Ultra Low Power",
+    "description": ""
+  },
+  {
+    "id": "3a25cb78-9353-4427-bf22-444b9fe019b5",
+    "from": "UPF",
+    "to": "Unified Power Format",
+    "description": ""
+  },
+  {
+    "id": "34ccc51f-06b1-4e6a-95df-61742402d06b",
+    "from": "UPH",
+    "to": "Units Per Hour",
+    "description": ""
+  },
+  {
+    "id": "7b6438ed-acda-4bbf-aa3f-338180e2f87b",
+    "from": "UVM",
+    "to": "Universal Verification Methodology",
+    "description": ""
+  },
+  {
+    "id": "d8604222-2aa6-4be7-841a-30b4802d70d9",
+    "from": "VAE",
+    "to": "Variational Autoencoder",
+    "description": ""
+  },
+  {
+    "id": "0466188a-68be-49d9-9c2f-c9f2465c8414",
+    "from": "VCC",
+    "to": "Supply Voltage (Collector/Drain)",
+    "description": ""
+  },
+  {
+    "id": "ee45ada0-a440-4514-9375-37ae288edf86",
+    "from": "VCO",
+    "to": "Voltage Controlled Oscillator",
+    "description": ""
+  },
+  {
+    "id": "887ef112-9353-4a29-93f0-e8edf684766a",
+    "from": "VCSEL",
+    "to": "Vertical-Cavity Surface-Emitting Laser",
+    "description": "수직공동 표면발광 레이저"
+  },
+  {
+    "id": "dc911ec3-a1f1-4244-b2a1-86a63028dbaa",
+    "from": "VDD",
+    "to": "Drain Supply Voltage",
+    "description": ""
+  },
+  {
+    "id": "ba306c0d-846d-4ac8-b9f2-6cf813b2e758",
+    "from": "VDS",
+    "to": "Drain-Source Voltage",
+    "description": ""
+  },
+  {
+    "id": "bb647be7-14b6-416f-b5ee-8afeecd9ff1a",
+    "from": "VGA",
+    "to": "Video Graphics Array",
+    "description": ""
+  },
+  {
+    "id": "0f73a374-0002-4ea3-b9b6-02972746dd82",
+    "from": "VHDL",
+    "to": "Very High-Speed IC HDL",
+    "description": ""
+  },
+  {
+    "id": "0420ca68-40bd-4a0b-be43-f19ce79933f4",
+    "from": "VIA",
+    "to": "Vertical Interconnect Access",
+    "description": ""
+  },
+  {
+    "id": "36cee924-5a49-4d81-b431-8c1673fb18e9",
+    "from": "VIN",
+    "to": "Input Voltage",
+    "description": ""
+  },
+  {
+    "id": "9cead580-6cb2-4a16-9232-d201dfa9a48f",
+    "from": "VLM",
+    "to": "Vision-Language Model",
+    "description": ""
+  },
+  {
+    "id": "81dc8966-fa4c-43da-a322-75ac49707493",
+    "from": "VLSI",
+    "to": "Very Large Scale Integration",
+    "description": ""
+  },
+  {
+    "id": "59462a76-d19e-470e-a155-c18fdba70005",
+    "from": "VNA",
+    "to": "Vector Network Analyzer",
+    "description": "벡터 네트워크 분석기"
+  },
+  {
+    "id": "12b0bfd8-83fd-4b1c-ad38-b24f876e8c38",
+    "from": "VOH",
+    "to": "Output High Voltage",
+    "description": ""
+  },
+  {
+    "id": "7f931099-9d4a-48f3-9773-3ce30fc05663",
+    "from": "VOL",
+    "to": "Output Low Voltage",
+    "description": ""
+  },
+  {
+    "id": "8e02f11b-b207-4600-bdca-15f3b6b576c5",
+    "from": "VRM",
+    "to": "Voltage Regulator Module",
+    "description": ""
+  },
+  {
+    "id": "3f86dbfe-3486-4564-85ab-c7ee57c53e02",
+    "from": "VSS",
+    "to": "Source Supply (Ground)",
+    "description": ""
+  },
+  {
+    "id": "e70a5db0-4e30-4809-a10e-58db2603edd0",
+    "from": "Vth",
+    "to": "Threshold Voltage",
+    "description": ""
+  },
+  {
+    "id": "bccc2d3b-c8be-432e-8124-c40570cfc5e6",
+    "from": "W",
+    "to": "Tungsten",
+    "description": ""
+  },
+  {
+    "id": "0acd6735-8b2e-4650-8e33-54e468ff7438",
+    "from": "W2W",
+    "to": "Wafer-to-Wafer",
+    "description": "웨이퍼 간 본딩"
+  },
+  {
+    "id": "87156f7d-c500-4232-87eb-26eade127c7c",
+    "from": "WAT",
+    "to": "Wafer Acceptance Test",
+    "description": ""
+  },
+  {
+    "id": "88d2420b-4f50-438d-83b2-343af2325fc6",
+    "from": "WB",
+    "to": "Wire Bonding",
+    "description": ""
+  },
+  {
+    "id": "65c365b3-e582-4dbf-b193-5a737d722173",
+    "from": "WCK",
+    "to": "Write Clock",
+    "description": "LPDDR5 쓰기 전용 클럭"
+  },
+  {
+    "id": "3fafee21-846d-444b-94d0-b8aa61ee16a9",
+    "from": "WIP",
+    "to": "Work In Process",
+    "description": ""
+  },
+  {
+    "id": "59351190-ddcf-4c77-a090-5d17a0600c98",
+    "from": "WL",
+    "to": "Word Line",
+    "description": ""
+  },
+  {
+    "id": "4d6c8a15-5220-43d9-b68f-8276b0695f75",
+    "from": "WLCSP",
+    "to": "Wafer Level Chip Scale Package",
+    "description": ""
+  },
+  {
+    "id": "53a12365-3a36-4e0e-9837-a1930ed69a5f",
+    "from": "WMS",
+    "to": "Warehouse Management System",
+    "description": ""
+  },
+  {
+    "id": "bac77a37-162d-45f4-8900-ec4309025e14",
+    "from": "WPE",
+    "to": "Well Proximity Effect",
+    "description": ""
+  },
+  {
+    "id": "753a2919-02be-4513-be7c-2410fd790303",
+    "from": "WWT",
+    "to": "Waste Water Treatment",
+    "description": ""
+  },
+  {
+    "id": "ea66c67e-dabe-485c-91ce-d7e7e1d57cc9",
+    "from": "XBAR",
+    "to": "Crossbar Switch",
+    "description": ""
+  },
+  {
+    "id": "822ad208-53d8-47eb-87cf-df5171772734",
+    "from": "XDSiP",
+    "to": "eXtreme Dimension System in Package",
+    "description": "Broadcom 3.5D 패키지"
+  },
+  {
+    "id": "c94ddd3f-896a-46df-ab7b-94fef974d830",
+    "from": "XGMI",
+    "to": "External Global Memory Interconnect",
+    "description": ""
+  },
+  {
+    "id": "b6d939e3-3329-431b-92b2-3ddcef5b6538",
+    "from": "XOR",
+    "to": "Exclusive OR",
+    "description": ""
+  },
+  {
+    "id": "bbb96245-4758-47be-97ac-fcf0e1ad941b",
+    "from": "XR",
+    "to": "Extended Reality",
+    "description": "확장현실"
+  },
+  {
+    "id": "1d7a59cd-7ef5-4f4d-9668-77e4cf73a898",
+    "from": "XRD",
+    "to": "X-Ray Diffraction",
+    "description": ""
+  },
+  {
+    "id": "ec6bc739-e63f-424e-8c11-282c0a60e1e0",
+    "from": "XRF",
+    "to": "X-Ray Fluorescence",
+    "description": ""
+  },
+  {
+    "id": "a6968d03-c25e-4b5e-947a-2f68a8959351",
+    "from": "Z0",
+    "to": "Characteristic Impedance",
+    "description": "특성 임피던스"
+  },
+  {
+    "id": "5b90e2db-0afd-4c6e-8e23-748d048250f8",
+    "from": "ZAM",
+    "to": "Z-Angle Memory",
+    "description": "ZAM 메모리"
+  },
+  {
+    "id": "7d278ac1-6dd8-47a9-98db-9de388b543d4",
+    "from": "ZBT",
+    "to": "Zero Bus Turnaround",
+    "description": ""
+  },
+  {
+    "id": "08315520-4741-41a5-950f-4dafd4694cd4",
+    "from": "zHBM",
+    "to": "(Samsung) Zoned HBM",
+    "description": "삼성 zHBM 개념"
+  },
+  {
+    "id": "ab2851ff-18e1-4b05-bfc9-167cb1a36b2c",
+    "from": "ZNS",
+    "to": "Zoned Namespace",
+    "description": ""
+  },
+  {
+    "id": "4200394a-5adf-4b1c-9dcd-03747ef5bd95",
+    "from": "ZQ",
+    "to": "Impedance Calibration Command",
+    "description": ""
+  },
+  {
+    "id": "1c5a75a1-4fef-4776-ab8e-53d999cb524a",
+    "from": "ZQCL",
+    "to": "ZQ Calibration Long",
+    "description": ""
+  },
+  {
+    "id": "d190bacb-3422-422e-b3be-ba369b1e720e",
+    "from": "ZQCS",
+    "to": "ZQ Calibration Short",
+    "description": ""
+  },
+  {
+    "id": "157b8497-75dc-4188-8b4f-981729b19acd",
+    "from": "ZVDD",
+    "to": "Zero-Volt VDD",
+    "description": ""
+  }
+]
