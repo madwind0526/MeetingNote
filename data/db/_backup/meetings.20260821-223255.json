@@ -1,0 +1,791 @@
+[
+  {
+    "id": "m-2026-0710-roadmap",
+    "title": "2026년 3분기 제품 로드맵 리뷰",
+    "date": "2026-07-10",
+    "startTime": "10:00",
+    "endTime": "11:30",
+    "organizer": "김도현 (PM)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "이서연",
+        "role": "디자인 리드",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a3",
+        "name": "박준혁",
+        "role": "백엔드 엔지니어",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a4",
+        "name": "최유나",
+        "role": "프론트엔드 엔지니어",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [
+      {
+        "no": 1,
+        "title": "결제 모듈 API 명세 초안 작성",
+        "material": "api-spec-draft.docx",
+        "materialPath": "2026-07-10-2026년 3분기 제품 로드맵 리뷰/materials/api-spec-draft.docx",
+        "presenter": "박준혁"
+      },
+      {
+        "no": 2,
+        "title": "3분기 디자인 가이드 업데이트",
+        "material": "design-guide-v3.pptx",
+        "materialPath": "2026-07-10-2026년 3분기 제품 로드맵 리뷰/materials/design-guide-v3.pptx",
+        "presenter": "이서연"
+      }
+    ],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "2분기 회고 및 지표 공유",
+        "durationMinutes": 20,
+        "material": "q2-retro.pptx",
+        "materialPath": "2026-07-10-2026년 3분기 제품 로드맵 리뷰/materials/q2-retro.pptx",
+        "presenter": "김도현"
+      },
+      {
+        "no": 2,
+        "title": "3분기 로드맵 제안",
+        "durationMinutes": 40,
+        "material": "roadmap-q3.pptx",
+        "materialPath": "2026-07-10-2026년 3분기 제품 로드맵 리뷰/materials/roadmap-q3.pptx",
+        "presenter": "김도현"
+      },
+      {
+        "no": 3,
+        "title": "디자인 시스템 반영 범위 논의",
+        "durationMinutes": 30,
+        "material": "design-guide-v3.pptx",
+        "materialPath": "2026-07-10-2026년 3분기 제품 로드맵 리뷰/materials/design-guide-v3.pptx",
+        "presenter": "이서연"
+      }
+    ],
+    "audio": null,
+    "minutes": "## 회의 개요\n2026-07-10 10:00~11:30, 3분기 제품 로드맵 리뷰.\n\n## 논의 내용\n- 2분기 회고: 온보딩 전환율 12%p 개선, 결제 실패율 여전히 목표치 미달.\n- 3분기 로드맵: 결제 리뉴얼과 디자인 시스템 개편을 최우선 순위로 확정.\n- 디자인 가이드는 8월 중 1차 배포 후 프론트엔드팀과 순차 적용.\n\n## 결정 사항\n- 결제 모듈 API 명세는 7/24 회의 전까지 초안 공유.\n- 디자인 가이드 v3는 8/5 킥오프에서 상세 리뷰.\n\n## Action Item\n1. 박준혁 - 결제 모듈 API 명세 초안 작성\n2. 이서연 - 3분기 디자인 가이드 업데이트\n\n## 태그\n#로드맵 #결제시스템 #디자인시스템 #3분기전략 #제품전략",
+    "createdAt": "2026-07-08T02:00:00.000Z",
+    "updatedAt": "2026-08-20T16:05:03.577Z",
+    "authorId": "",
+    "comments": [],
+    "secretary": ""
+  },
+  {
+    "id": "m-2026-0724-payments",
+    "title": "신규 결제 시스템 아키텍처 회의",
+    "date": "2026-07-24",
+    "startTime": "14:00",
+    "endTime": "15:00",
+    "organizer": "박준혁 (백엔드 리드)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "박준혁",
+        "role": "백엔드 리드",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      },
+      {
+        "id": "a3",
+        "name": "정민석",
+        "role": "인프라 엔지니어",
+        "isKeyAttendee": false,
+        "isPresenter": true
+      }
+    ],
+    "actionItems": [
+      {
+        "no": 1,
+        "title": "PG사 3곳 견적 비교표 작성",
+        "material": "",
+        "presenter": "박준혁"
+      }
+    ],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "결제 모듈 API 명세 리뷰",
+        "durationMinutes": 25,
+        "material": "api-spec-draft.docx",
+        "presenter": "박준혁",
+        "materialPath": "2026-07-24-신규 결제 시스템 아키텍처 회의/materials/api-spec-draft.docx"
+      },
+      {
+        "no": 2,
+        "title": "인프라 확장 계획",
+        "durationMinutes": 25,
+        "material": "",
+        "presenter": "정민석"
+      }
+    ],
+    "audio": null,
+    "minutes": "## 회의 개요\n2026-07-24 14:00~15:00, 신규 결제 시스템 아키텍처 회의.\n\n## 논의 내용\n- 결제 모듈 API 명세를 함께 리뷰하고 예외 처리 흐름을 보완하기로 함.\n- PG사 3곳 견적 비교표를 우선 작성하기로 함.\n- 결제 트래픽 증가에 대비한 인프라 확장 계획을 정민석이 초안 공유.\n\n## 결정 사항\n- PG사 견적 비교표는 다음 주까지 박준혁이 정리.\n- 인프라 확장은 트래픽 3배 기준으로 설계.\n\n## Action Item\n1. 박준혁 - PG사 3곳 견적 비교표 작성\n\n## 태그\n#결제시스템 #인프라 #PG사연동 #아키텍처 #API명세",
+    "createdAt": "2026-07-20T01:00:00.000Z",
+    "updatedAt": "2026-08-15T16:29:22.103Z",
+    "authorId": "",
+    "comments": [],
+    "secretary": ""
+  },
+  {
+    "id": "m-2026-0805-design-system",
+    "title": "디자인 시스템 개편 킥오프",
+    "date": "2026-08-05",
+    "startTime": "09:30",
+    "endTime": "10:30",
+    "organizer": "이서연 (디자인 리드)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "이서연",
+        "role": "디자인 리드",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "최유나",
+        "role": "프론트엔드 엔지니어",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a3",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": false,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [
+      {
+        "no": 1,
+        "title": "컴포넌트 토큰 목록 정리",
+        "material": "tokens-list.json",
+        "materialPath": "2026-08-05-디자인 시스템 개편 킥오프/materials/tokens-list.json",
+        "presenter": "최유나"
+      }
+    ],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "디자인 가이드 v3 상세 리뷰",
+        "durationMinutes": 30,
+        "material": "design-guide-v3.pptx",
+        "materialPath": "2026-08-05-디자인 시스템 개편 킥오프/materials/design-guide-v3.pptx",
+        "presenter": "이서연"
+      },
+      {
+        "no": 2,
+        "title": "프론트엔드 적용 일정 협의",
+        "durationMinutes": 30,
+        "material": "",
+        "presenter": "최유나"
+      }
+    ],
+    "audio": null,
+    "minutes": "## 회의 개요\n2026-08-05 09:30~10:30, 디자인 시스템 개편 킥오프.\n\n## 논의 내용\n- 디자인 가이드 v3의 색상/타이포 토큰을 8월 3주차부터 순차 적용하기로 함.\n- 컴포넌트 우선순위: 버튼/입력폼/모달 순으로 우선 교체.\n\n## 결정 사항\n- 최유나가 토큰 목록을 정리해 프론트엔드팀에 공유.\n- 9월 첫 주 중간 점검 회의 예정.\n\n## Action Item\n1. 최유나 - 컴포넌트 토큰 목록 정리\n\n## 태그\n#디자인시스템 #컴포넌트 #토큰 #프론트엔드 #디자인가이드",
+    "createdAt": "2026-08-01T00:30:00.000Z",
+    "updatedAt": "2026-08-20T16:05:40.737Z",
+    "authorId": "",
+    "comments": [],
+    "secretary": ""
+  },
+  {
+    "id": "m-2026-0813-hiring",
+    "title": "채용 프로세스 개선 회의",
+    "date": "2026-08-13",
+    "startTime": "16:00",
+    "endTime": "17:00",
+    "organizer": "정민석 (People팀)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "정민석",
+        "role": "People팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      },
+      {
+        "id": "a3",
+        "name": "박준혁",
+        "role": "백엔드 리드",
+        "isKeyAttendee": false,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "현재 채용 파이프라인 현황",
+        "durationMinutes": 20,
+        "material": "hiring-status.xlsx",
+        "presenter": "정민석",
+        "materialPath": "2026-08-13-채용 프로세스 개선 회의/materials/hiring-status.xlsx"
+      },
+      {
+        "no": 2,
+        "title": "기술 면접 프로세스 개선안",
+        "durationMinutes": 40,
+        "material": "",
+        "presenter": "박준혁"
+      }
+    ],
+    "audio": null,
+    "minutes": "## 회의 개요\n2026-08-13 16:00~17:00, 채용 프로세스 개선 회의.\n\n## 논의 내용\n- 현재 채용 파이프라인의 병목 구간(서류~1차 면접 사이 지연)을 점검.\n- 기술 면접 프로세스를 코딩테스트+시스템 설계 2단계로 개선하는 안을 논의.\n\n## 결정 사항\n- 기술 면접 개선안은 박준혁이 초안 작성 후 회람.\n\n## 태그\n#채용 #면접프로세스 #조직문화 #People팀 #기술면접",
+    "createdAt": "2026-08-10T05:00:00.000Z",
+    "updatedAt": "2026-08-15T16:29:22.103Z",
+    "authorId": "",
+    "comments": [],
+    "secretary": ""
+  },
+  {
+    "id": "m-2026-0822-marketing",
+    "title": "9월 마케팅 캠페인 기획 회의",
+    "date": "2026-08-22",
+    "startTime": "13:00",
+    "endTime": "14:30",
+    "organizer": "최유나 (마케팅 협업)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "최유나",
+        "role": "프론트엔드/마케팅 협업",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a3",
+        "name": "이서연",
+        "role": "디자인 리드",
+        "isKeyAttendee": false,
+        "isPresenter": true
+      }
+    ],
+    "actionItems": [
+      {
+        "no": 1,
+        "title": "캠페인 랜딩 페이지 와이어프레임",
+        "material": "",
+        "presenter": "이서연"
+      }
+    ],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "9월 캠페인 컨셉 제안",
+        "durationMinutes": 30,
+        "material": "campaign-concept.pptx",
+        "presenter": "최유나",
+        "materialPath": "2026-08-22-9월 마케팅 캠페인 기획 회의/materials/campaign-concept.pptx"
+      },
+      {
+        "no": 2,
+        "title": "제품 하이라이트 선정",
+        "durationMinutes": 30,
+        "material": "",
+        "presenter": "김도현"
+      },
+      {
+        "no": 3,
+        "title": "랜딩 페이지 디자인 방향",
+        "durationMinutes": 30,
+        "material": "",
+        "presenter": "이서연"
+      }
+    ],
+    "audio": null,
+    "minutes": "## 회의 개요\n2026-08-22 13:00~14:30, 9월 마케팅 캠페인 기획 회의.\n\n## 논의 내용\n- 9월 캠페인 컨셉으로 신규 결제 시스템 개편을 핵심 메시지로 제안.\n- 캠페인에서 강조할 제품 하이라이트를 로드맵 우선순위와 맞춰 선정.\n- 랜딩 페이지는 새 디자인 시스템 컴포넌트를 활용해 제작하기로 함.\n\n## 결정 사항\n- 랜딩 페이지 와이어프레임은 이서연이 초안 작성.\n\n## Action Item\n1. 이서연 - 캠페인 랜딩 페이지 와이어프레임\n\n## 태그\n#마케팅 #캠페인 #제품전략 #랜딩페이지 #디자인시스템",
+    "createdAt": "2026-08-14T06:00:00.000Z",
+    "updatedAt": "2026-08-15T16:29:22.103Z",
+    "authorId": "",
+    "comments": [],
+    "secretary": ""
+  },
+  {
+    "id": "m-2026-0902-feedback",
+    "title": "고객 피드백 분석 및 대응 방안",
+    "date": "2026-09-02",
+    "startTime": "11:00",
+    "endTime": "12:00",
+    "organizer": "김도현 (PM)",
+    "attendees": [
+      {
+        "id": "a1",
+        "name": "김도현",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "a2",
+        "name": "박준혁",
+        "role": "백엔드 리드",
+        "isKeyAttendee": false,
+        "isPresenter": false
+      },
+      {
+        "id": "a3",
+        "name": "최유나",
+        "role": "프론트엔드 엔지니어",
+        "isKeyAttendee": false,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "8월 고객 피드백 요약",
+        "durationMinutes": 25,
+        "material": "feedback-summary.xlsx",
+        "presenter": "김도현",
+        "materialPath": "2026-09-02-고객 피드백 분석 및 대응 방안/materials/feedback-summary.xlsx"
+      },
+      {
+        "no": 2,
+        "title": "우선순위 버그 트리아지",
+        "durationMinutes": 35,
+        "material": "",
+        "presenter": "박준혁"
+      }
+    ],
+    "audio": null,
+    "minutes": "## 회의 개요\n2026-09-02 11:00~12:00, 고객 피드백 분석 및 대응 방안.\n\n## 논의 내용\n- 8월 고객 피드백을 분석한 결과 결제 실패 관련 문의가 가장 많았음.\n- 우선순위가 높은 버그를 트리아지하여 다음 스프린트에 반영하기로 함.\n\n## 결정 사항\n- 결제 실패율 개선을 3분기 로드맵의 최우선 항목으로 재확인.\n\n## 태그\n#고객피드백 #버그트리아지 #결제시스템 #제품전략 #우선순위",
+    "createdAt": "2026-08-14T07:00:00.000Z",
+    "updatedAt": "2026-08-15T16:29:22.103Z",
+    "authorId": "",
+    "comments": [],
+    "secretary": ""
+  },
+  {
+    "id": "a48b7d42-d7a4-4766-b56b-8ada92e79707",
+    "title": "실험",
+    "date": "",
+    "startTime": "",
+    "endTime": "",
+    "organizer": "",
+    "secretary": "",
+    "attendees": [],
+    "actionItems": [],
+    "agenda": [],
+    "audio": {
+      "fileName": "diarize-2speaker-ko-en.wav",
+      "durationSec": 34.34,
+      "preprocessing": {
+        "vocalIsolation": true,
+        "noiseRemoval": true,
+        "normalize": true
+      },
+      "transcriptSegments": [
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 0,
+          "endSec": 2.82,
+          "text": "Good morning, everyone. Let's start today's meeting."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 3.8200000000000003,
+          "endSec": 7.2,
+          "text": "First, let's review last week's progress on the project."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 8.18,
+          "endSec": 15.14,
+          "text": "네. 지난주에는 결제 모듈 개발을 완료했고, 이번 주부터는 테스트를 진행할 예정입니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 16.04,
+          "endSec": 20.22,
+          "text": "That sounds great. Do you think we can finish testing by Friday?"
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 21.22,
+          "endSec": 28.42,
+          "text": "네. 금요일까지 충분히 마무리할 수 있을 것 같습니다. 추가 인력도 필요 없을 것 같아요."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 28.42,
+          "endSec": 34.34,
+          "text": "Perfect. Thank you for the update. Let's move on to the next agenda item."
+        }
+      ],
+      "speakerMap": {
+        "SPEAKER_00": "미등록 화자 1"
+      },
+      "analyzedAt": "2026-08-21T12:31:32.899Z",
+      "audioPath": "no-date-실험/audio/diarize-2speaker-ko-en-2.wav",
+      "transcriptPath": "no-date-실험/audio/diarize-2speaker-ko-en-stt-transcript.txt"
+    },
+    "minutes": "",
+    "authorId": "d3515e17-60e6-4137-a1ee-a315d6ce1c9d",
+    "comments": [],
+    "createdAt": "2026-08-21T11:53:59.293Z",
+    "updatedAt": "2026-08-21T12:33:09.842Z"
+  },
+  {
+    "id": "a785bae2-adca-48a6-9708-576bb1f5392c",
+    "title": "실험2",
+    "date": "",
+    "startTime": "",
+    "endTime": "",
+    "organizer": "",
+    "secretary": "",
+    "attendees": [],
+    "actionItems": [],
+    "agenda": [],
+    "audio": {
+      "fileName": "meeting-8speakers-ko.wav",
+      "durationSec": 268.26,
+      "preprocessing": {
+        "vocalIsolation": false,
+        "noiseRemoval": false,
+        "normalize": false
+      },
+      "transcriptSegments": [
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 0,
+          "endSec": 4.88,
+          "text": "안녕하세요. 오늘 3분기 프로젝트 진행 현황 공유 회의를 시작하겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 6.12,
+          "endSec": 14.26,
+          "text": "오늘은 신제품 개발팀, 마케팅팀, 인프라팀, 고객지원팀 순서로 발표를 듣고 질의응답 시간을 갖겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 15.5,
+          "endSec": 19.3,
+          "text": "먼저 신제품 개발팀 김민서님, 발표 부탁드립니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 21.28,
+          "endSec": 24.400000000000002,
+          "text": "안녕하세요. 신제품 개발팀 김민서입니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 24.94,
+          "endSec": 29.240000000000002,
+          "text": "이번 분기에는 앱 UI 리뉴얼 프로젝트를 진행했습니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 30,
+          "endSec": 37.66,
+          "text": "기존 사용자 피드백을 반영해서 메인 화면의 메뉴 구조를 단순화했고, 다크 모드를 새로 추가했습니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 39.2,
+          "endSec": 46.14,
+          "text": "베타 테스트 결과 사용자 만족도가 15% 상승했고, 4분기 초에 정식 배포를 목표로 하고 있습니다."
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 48.2,
+          "endSec": 50.74,
+          "text": "베타 테스트는 몇 명을 대상으로 진행하셨나요?"
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 51.86,
+          "endSec": 58.78,
+          "text": "베타 테스트는 사내 직원과 일부 파워 유저를 포함해서 총 200명을 대상으로 진행했습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 60,
+          "endSec": 63.1,
+          "text": "정식 배포 일정에 리스크는 없나요?"
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 64.9,
+          "endSec": 71.58,
+          "text": "현재까지는 큰 리스크는 없지만, 안드로이드 저사양 기기 대응 테스트가 조금 더 필요한 상황입니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 73.76,
+          "endSec": 74.5,
+          "text": "네, 감사합니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 75.78,
+          "endSec": 79.66,
+          "text": "다음은 마케팅팀 이수아님, 캠페인 성과 발표해 주시죠."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 79.66,
+          "endSec": 84,
+          "text": "안녕하세요. 마케팅팀 이수아입니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 85.14,
+          "endSec": 90.53999999999999,
+          "text": "이번 분기 신규 캠페인은 SNS 광고와 인플루언서 협업을 중심으로 진행했습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 91.66,
+          "endSec": 99.5,
+          "text": "캠페인 기간 동안 앱 다운로드 수가 전분기 대비 30% 증가했고, 광고비 대비 전환율도 목표치를 상회했습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 99.5,
+          "endSec": 104.5,
+          "text": "다음 분기에는 예산을 조금 더 확대해서 진행할 계획입니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 106.5,
+          "endSec": 109.52,
+          "text": "인플루언서 협업은 어떤 기준으로 선정하셨나요?"
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 111.78,
+          "endSec": 117.5,
+          "text": "팔로워 수보다는 실제 참여율과 우리 타겟 연령대와의 적합성을 우선적으로 고려했습니다."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 119.28,
+          "endSec": 122.26,
+          "text": "다음 분기 예산 확대 규모는 어느 정도인가요?"
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 122.26,
+          "endSec": 127.94,
+          "text": "현재 검토 중이지만 약 20% 정도 증액을 계획하고 있습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 129.78,
+          "endSec": 130.68,
+          "text": "좋은 성과네요."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 131.78,
+          "endSec": 134.66,
+          "text": "이어서 인프라팀 정도윤님 발표 부탁드립니다."
+        },
+        {
+          "speaker": "SPEAKER_07",
+          "startSec": 136.04000000000002,
+          "endSec": 139.54000000000002,
+          "text": "안녕하세요. 인프라팀 정도윤입니다."
+        },
+        {
+          "speaker": "SPEAKER_07",
+          "startSec": 140.72,
+          "endSec": 145.9,
+          "text": "이번 분기에는 온프레미스 서버를 클라우드로 이전하는 작업을 진행했습니다."
+        },
+        {
+          "speaker": "SPEAKER_07",
+          "startSec": 145.9,
+          "endSec": 153.9,
+          "text": "이전 작업은 무중단으로 완료했고, 평균 응답 속도가 기존 대비 40% 개선됐습니다."
+        },
+        {
+          "speaker": "SPEAKER_07",
+          "startSec": 154.94,
+          "endSec": 162.18,
+          "text": "다만 이전 과정에서 일부 로그 수집 파이프라인의 지연이 있었고, 현재는 모두 정상화된 상태입니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 163.78,
+          "endSec": 165.84,
+          "text": "이전 과정에서 장애는 없었나요?"
+        },
+        {
+          "speaker": "SPEAKER_07",
+          "startSec": 167.72,
+          "endSec": 170.9,
+          "text": "짧은 점검 시간 외에는 서비스 중단 없이 완료했습니다."
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 170.9,
+          "endSec": 176.1,
+          "text": "클라우드 전환 이후 비용 변화는 어떻게 되나요?"
+        },
+        {
+          "speaker": "SPEAKER_07",
+          "startSec": 177.78,
+          "endSec": 185.4,
+          "text": "초기에는 이중 운영 비용이 있었지만, 다음 달부터는 기존 대비 약 15% 절감될 것으로 예상됩니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 187.12,
+          "endSec": 187.58,
+          "text": "감사합니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 189.16,
+          "endSec": 192.22,
+          "text": "마지막으로 고객지원팀 최하은님 발표해 주시죠."
+        },
+        {
+          "speaker": "SPEAKER_06",
+          "startSec": 192.22,
+          "endSec": 210.28,
+          "text": "챗봇 1차 응대 비중을 늘리고, 상담사 배정 로직을 개편해서 평균 응답 시간이 40% 단축됐습니다."
+        },
+        {
+          "speaker": "SPEAKER_06",
+          "startSec": 211.72,
+          "endSec": 215.5,
+          "text": "고객 만족도 조사에서도 전분기 대비 점수가 상승했습니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 217.1,
+          "endSec": 221.28,
+          "text": "챗봇 응대 비중이 늘면서 고객 불만은 없었나요?"
+        },
+        {
+          "speaker": "SPEAKER_06",
+          "startSec": 222.22,
+          "endSec": 229.56,
+          "text": "초반에는 일부 불만이 있었지만, 단순 무늬 위주로 챗봇을 활용하도록 조정한 뒤 개선됐습니다."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 231.38,
+          "endSec": 235.07999999999998,
+          "text": "상담사 배정 로직은 구체적으로 어떻게 바뀌었나요?"
+        },
+        {
+          "speaker": "SPEAKER_06",
+          "startSec": 236.57999999999998,
+          "endSec": 240.46,
+          "text": "무늬 유형별로 전문 상담사를 자동으로 매칭하도록 변경했습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 242.5,
+          "endSec": 245.26,
+          "text": "다음 분기 목표 응답 시간은 어느 정도인가요?"
+        },
+        {
+          "speaker": "SPEAKER_06",
+          "startSec": 246.8,
+          "endSec": 251.2,
+          "text": "현재보다 추가로 10% 더 단축하는 것을 목표로 하고 있습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 252.22,
+          "endSec": 255.4,
+          "text": "네, 모든 팀 발표 잘 들었습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 256.56,
+          "endSec": 259.86,
+          "text": "오늘 나온 의견들은 회의록에 정리해서 공유하겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 261.12,
+          "endSec": 262.64,
+          "text": "다들 수고 많으셨습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 263.74,
+          "endSec": 265.42,
+          "text": "이상으로 회의를 마치겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 265.42,
+          "endSec": 266.26,
+          "text": "안녕하세요."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 266.26,
+          "endSec": 268.26,
+          "text": "감사합니다."
+        }
+      ],
+      "speakerMap": {
+        "SPEAKER_05": "미등록 화자 1",
+        "SPEAKER_00": "미등록 화자 2",
+        "SPEAKER_03": "참석자1",
+        "SPEAKER_04": "이수아",
+        "SPEAKER_01": "참석자2",
+        "SPEAKER_02": "미등록 화자 3",
+        "SPEAKER_07": "정도윤",
+        "SPEAKER_06": "미등록 화자 4"
+      },
+      "analyzedAt": "2026-08-21T12:54:52.198Z",
+      "audioPath": "no-date-실험2/audio/meeting-8speakers-ko-2.wav",
+      "transcriptPath": "no-date-실험2/audio/meeting-8speakers-ko-stt-transcript-2.txt"
+    },
+    "minutes": "",
+    "authorId": "d3515e17-60e6-4137-a1ee-a315d6ce1c9d",
+    "comments": [],
+    "createdAt": "2026-08-21T12:41:13.424Z",
+    "updatedAt": "2026-08-21T12:56:29.640Z"
+  }
+]

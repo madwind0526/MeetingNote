@@ -156,7 +156,15 @@ const ATTACHMENT_CONTENT_TYPES: Record<string, string> = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
-  ".gif": "image/gif"
+  ".gif": "image/gif",
+  ".wav": "audio/wav",
+  ".mp3": "audio/mpeg",
+  ".m4a": "audio/mp4",
+  ".aac": "audio/aac",
+  ".ogg": "audio/ogg",
+  ".flac": "audio/flac",
+  ".webm": "audio/webm",
+  ".mp4": "video/mp4"
 };
 
 function readGitValue(command: string, fallback: string) {
@@ -438,6 +446,51 @@ function estimateProcessingSeconds(provider: string, durationSec: number): numbe
     return Math.max(4, durationSec * 0.35);
   }
   return Math.max(5, durationSec * 0.6);
+}
+
+// Mirrors sanitizeFolderName's rules in server/attachments.mjs (strip path-forbidden characters,
+// collapse whitespace, cap length) - a different function since that one lives in a plain .mjs
+// module this .mts file would need a relative import gymnastics dance for just one helper.
+function sanitizeExportFileNameSegment(value: string): string {
+  const base = value.trim() || "제목없음";
+  return (
+    base
+      .replace(/[\\/:*?"<>|]/g, "_")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 80)
+      .trim() || "제목없음"
+  );
+}
+
+// Exporting exactly one meeting (회의 상세's "내보내기") names the file after that meeting - date
+// + title, matching the attachment-folder naming convention - instead of the generic
+// "meetingnote-export.ext" every export used to produce regardless of which meeting(s) it held.
+// A bulk export (0 or 2+ meetings) instead prefixes the generic name with *today's* date (the
+// export date, not any one meeting's date - there's no single meeting to date it by), so repeated
+// bulk exports on different days don't collide/overwrite each other by filename.
+// Local calendar date, not UTC - `toISOString().slice(0, 10)` reads a day behind for anyone east
+// of UTC (e.g. KST) for roughly the first 9 hours of each local day, which would date-stamp an
+// export file with yesterday's date.
+function todayLocalDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function buildExportFileName(meetings: unknown[], defaultFileName: string): string {
+  if (meetings.length !== 1) {
+    return `${todayLocalDateString()}-${defaultFileName}`;
+  }
+
+  const meeting = meetings[0] as { title?: string; date?: string };
+  const ext = defaultFileName.slice(defaultFileName.lastIndexOf("."));
+  const date = (meeting.date ?? "").trim() || "날짜미정";
+  const title = sanitizeExportFileNameSegment(meeting.title ?? "");
+
+  return `${date}-${title}${ext}`;
 }
 
 const EXPORT_BUILDERS: Record<ExportFormat, { build: (meetings: unknown[]) => Promise<Buffer> | Buffer; fileName: string; mimeType: string }> = {
@@ -740,8 +793,36 @@ export default defineConfig(() => {
               }
 
               const ext = path.extname(filePath).toLowerCase();
-              response.setHeader("Content-Type", ATTACHMENT_CONTENT_TYPES[ext] ?? "application/octet-stream");
-              response.setHeader("Content-Length", statSync(filePath).size);
+              const contentType = ATTACHMENT_CONTENT_TYPES[ext] ?? "application/octet-stream";
+              const fileSize = statSync(filePath).size;
+              const range = request.headers.range;
+
+              // Audio/video playback (<audio>/<video> seeking) needs Range support - without it
+              // the element can only play back what's already fully buffered from the start.
+              if (range) {
+                const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+                const start = match?.[1] ? Number(match[1]) : 0;
+                const end = match?.[2] ? Number(match[2]) : fileSize - 1;
+
+                if (Number.isNaN(start) || Number.isNaN(end) || start > end || end >= fileSize) {
+                  response.statusCode = 416;
+                  response.setHeader("Content-Range", `bytes */${fileSize}`);
+                  response.end();
+                  return;
+                }
+
+                response.statusCode = 206;
+                response.setHeader("Content-Type", contentType);
+                response.setHeader("Accept-Ranges", "bytes");
+                response.setHeader("Content-Range", `bytes ${start}-${end}/${fileSize}`);
+                response.setHeader("Content-Length", end - start + 1);
+                createReadStream(filePath, { start, end }).pipe(response);
+                return;
+              }
+
+              response.setHeader("Content-Type", contentType);
+              response.setHeader("Accept-Ranges", "bytes");
+              response.setHeader("Content-Length", fileSize);
               createReadStream(filePath).pipe(response);
             } catch {
               response.statusCode = 400;
@@ -1143,6 +1224,7 @@ export default defineConfig(() => {
                 durationSec?: number;
                 preprocessing?: { vocalIsolation?: boolean; noiseRemoval?: boolean; normalize?: boolean };
                 attendeeNames?: string[];
+                agenda?: { no: number; durationMinutes: number; presenter: string }[];
               };
 
               pruneSttJobs();
@@ -1152,6 +1234,7 @@ export default defineConfig(() => {
               const provider = body.provider ?? "mock";
               const model = normalizeSttModel(provider, body.model);
               const attendeeNames = Array.isArray(body.attendeeNames) ? body.attendeeNames : [];
+              const agenda = Array.isArray(body.agenda) ? body.agenda : [];
               const durationSec = typeof body.durationSec === "number" && body.durationSec > 0 ? body.durationSec : 0;
               const preprocessing = {
                 vocalIsolation: Boolean(body.preprocessing?.vocalIsolation),
@@ -1243,7 +1326,7 @@ export default defineConfig(() => {
                   // local run without embeddings).
                   const hasEmbeddings = raw.embeddings && Object.keys(raw.embeddings).length > 0;
                   const { transcriptSegments, speakerMap } = hasEmbeddings
-                    ? await assignSpeakersWithProfiles(raw.segments, attendeeNames, raw.embeddings)
+                    ? await assignSpeakersWithProfiles(raw.segments, attendeeNames, raw.embeddings, agenda)
                     : diarizeSegments(raw.segments, attendeeNames);
 
                   // Dictionary (약어/수정) substitution happens right after STT produces text, not
@@ -1391,7 +1474,7 @@ export default defineConfig(() => {
               const fileBuffer = await builder.build(meetings);
 
               sendJson(response, 200, {
-                fileName: builder.fileName,
+                fileName: buildExportFileName(meetings, builder.fileName),
                 mimeType: builder.mimeType,
                 contentBase64: fileBuffer.toString("base64")
               });
@@ -1447,7 +1530,15 @@ export default defineConfig(() => {
     server: {
       host: "127.0.0.1",
       port: 5185,
-      strictPort: true
+      strictPort: true,
+      // Vite transforms each module lazily on first request in dev mode - without this, that
+      // first transform pass (large for this app's dependency graph - measured ~23s) only starts
+      // once Electron's window actually requests the page. Warming the entry chain up front lets
+      // it start as soon as Vite boots, overlapping with the Electron main-process build/launch
+      // instead of only starting after them.
+      warmup: {
+        clientFiles: ["./src/main.tsx", "./src/App.tsx"]
+      }
     }
   };
 });

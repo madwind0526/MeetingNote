@@ -91,6 +91,7 @@ export interface AudioAnalysis {
   // "화자별 파형" in AudioAnalysisModal is just a client-side highlight of one shared waveform, not
   // separate files) - set once uploaded via MeetingFormModal's handleAudioComplete.
   audioPath?: string;
+  transcriptPath?: string;
 }
 
 export interface MeetingComment {

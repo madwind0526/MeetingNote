@@ -1,0 +1,394 @@
+[
+  {
+    "ok": true,
+    "meetingId": "66209fe6-14e0-4330-917c-6fbfcd30ba0d",
+    "title": "배치테스트 1회차 - 모바일 앱 성능 개선",
+    "presenterCount": 1,
+    "attendeeCount": 1,
+    "expectedSpeakerCount": 3,
+    "detectedSpeakerCount": 2,
+    "speakerMap": {
+      "SPEAKER_00": "미등록 화자 1",
+      "SPEAKER_01": "미등록 화자 2"
+    },
+    "speakerFiles": [
+      {
+        "speaker": "미등록 화자 1",
+        "segmentCount": 6,
+        "path": "2026-08-23-배치테스트 1회차 - 모바일 앱 성능 개선/audio/speaker-미등록 화자 1.txt"
+      },
+      {
+        "speaker": "미등록 화자 2",
+        "segmentCount": 6,
+        "path": "2026-08-23-배치테스트 1회차 - 모바일 앱 성능 개선/audio/speaker-미등록 화자 2.txt"
+      }
+    ],
+    "minutesLength": 677
+  },
+  {
+    "ok": true,
+    "meetingId": "fce13cf5-7598-41bb-9c6e-c900400d44be",
+    "title": "배치테스트 2회차 - 보안 점검 결과/마케팅 캠페인 성과",
+    "presenterCount": 2,
+    "attendeeCount": 1,
+    "expectedSpeakerCount": 4,
+    "detectedSpeakerCount": 3,
+    "speakerMap": {
+      "SPEAKER_02": "미등록 화자 1",
+      "SPEAKER_00": "정도윤",
+      "SPEAKER_01": "미등록 화자 2"
+    },
+    "speakerFiles": [
+      {
+        "speaker": "미등록 화자 1",
+        "segmentCount": 11,
+        "path": "2026-08-24-배치테스트 2회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 1.txt"
+      },
+      {
+        "speaker": "정도윤",
+        "segmentCount": 2,
+        "path": "2026-08-24-배치테스트 2회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/speaker-정도윤.txt"
+      },
+      {
+        "speaker": "미등록 화자 2",
+        "segmentCount": 7,
+        "path": "2026-08-24-배치테스트 2회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 2.txt"
+      }
+    ],
+    "minutesLength": 709
+  },
+  {
+    "ok": true,
+    "meetingId": "f762a2dc-8748-4cf5-9824-bf5d801241aa",
+    "title": "배치테스트 3회차 - 데이터 파이프라인 안정화/사내 헬프데스크 통계/물류센터 자동화 파일럿",
+    "presenterCount": 3,
+    "attendeeCount": 2,
+    "expectedSpeakerCount": 6,
+    "detectedSpeakerCount": 5,
+    "speakerMap": {
+      "SPEAKER_01": "정도윤",
+      "SPEAKER_00": "미등록 화자 1",
+      "SPEAKER_03": "미등록 화자 2",
+      "SPEAKER_02": "미등록 화자 3",
+      "SPEAKER_04": "미등록 화자 4"
+    },
+    "speakerFiles": [
+      {
+        "speaker": "정도윤",
+        "segmentCount": 7,
+        "path": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/speaker-정도윤.txt"
+      },
+      {
+        "speaker": "미등록 화자 1",
+        "segmentCount": 3,
+        "path": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/speaker-미등록 화자 1.txt"
+      },
+      {
+        "speaker": "미등록 화자 2",
+        "segmentCount": 2,
+        "path": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/speaker-미등록 화자 2.txt"
+      },
+      {
+        "speaker": "미등록 화자 3",
+        "segmentCount": 4,
+        "path": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/speaker-미등록 화자 3.txt"
+      },
+      {
+        "speaker": "미등록 화자 4",
+        "segmentCount": 3,
+        "path": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/speaker-미등록 화자 4.txt"
+      }
+    ],
+    "minutesLength": 947
+  },
+  {
+    "ok": true,
+    "meetingId": "fce9c7ce-066e-44e5-9abc-63c8cda8b3fc",
+    "title": "배치테스트 4회차 - 물류센터 자동화 파일럿/구독형 요금제 개편안/모바일 앱 성능 개선/신규 채용 현황",
+    "presenterCount": 4,
+    "attendeeCount": 2,
+    "expectedSpeakerCount": 7,
+    "detectedSpeakerCount": 6,
+    "speakerMap": {
+      "SPEAKER_02": "미등록 화자 1",
+      "SPEAKER_03": "미등록 화자 2",
+      "SPEAKER_05": "미등록 화자 3",
+      "SPEAKER_00": "미등록 화자 4",
+      "SPEAKER_01": "미등록 화자 5",
+      "SPEAKER_04": "미등록 화자 6"
+    },
+    "speakerFiles": [
+      {
+        "speaker": "미등록 화자 1",
+        "segmentCount": 13,
+        "path": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/audio/speaker-미등록 화자 1.txt"
+      },
+      {
+        "speaker": "미등록 화자 2",
+        "segmentCount": 2,
+        "path": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/audio/speaker-미등록 화자 2.txt"
+      },
+      {
+        "speaker": "미등록 화자 3",
+        "segmentCount": 4,
+        "path": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/audio/speaker-미등록 화자 3.txt"
+      },
+      {
+        "speaker": "미등록 화자 4",
+        "segmentCount": 2,
+        "path": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/audio/speaker-미등록 화자 4.txt"
+      },
+      {
+        "speaker": "미등록 화자 5",
+        "segmentCount": 5,
+        "path": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/audio/speaker-미등록 화자 5.txt"
+      },
+      {
+        "speaker": "미등록 화자 6",
+        "segmentCount": 4,
+        "path": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/audio/speaker-미등록 화자 6.txt"
+      }
+    ],
+    "minutesLength": 1121
+  },
+  {
+    "ok": true,
+    "meetingId": "0a98fc3e-4362-4815-ba73-df57ce10d210",
+    "title": "배치테스트 5회차 - 모바일 앱 성능 개선/신규 채용 현황/보안 점검 결과/마케팅 캠페인 성과/데이터 파이프라인 안정화",
+    "presenterCount": 5,
+    "attendeeCount": 2,
+    "expectedSpeakerCount": 8,
+    "detectedSpeakerCount": 7,
+    "speakerMap": {
+      "SPEAKER_01": "미등록 화자 1",
+      "SPEAKER_03": "미등록 화자 2",
+      "SPEAKER_02": "미등록 화자 3",
+      "SPEAKER_00": "미등록 화자 4",
+      "SPEAKER_04": "미등록 화자 5",
+      "SPEAKER_06": "정도윤",
+      "SPEAKER_05": "미등록 화자 6"
+    },
+    "speakerFiles": [
+      {
+        "speaker": "미등록 화자 1",
+        "segmentCount": 10,
+        "path": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/audio/speaker-미등록 화자 1.txt"
+      },
+      {
+        "speaker": "미등록 화자 2",
+        "segmentCount": 4,
+        "path": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/audio/speaker-미등록 화자 2.txt"
+      },
+      {
+        "speaker": "미등록 화자 3",
+        "segmentCount": 6,
+        "path": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/audio/speaker-미등록 화자 3.txt"
+      },
+      {
+        "speaker": "미등록 화자 4",
+        "segmentCount": 4,
+        "path": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/audio/speaker-미등록 화자 4.txt"
+      },
+      {
+        "speaker": "미등록 화자 5",
+        "segmentCount": 2,
+        "path": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/audio/speaker-미등록 화자 5.txt"
+      },
+      {
+        "speaker": "정도윤",
+        "segmentCount": 3,
+        "path": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/audio/speaker-정도윤.txt"
+      },
+      {
+        "speaker": "미등록 화자 6",
+        "segmentCount": 4,
+        "path": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/audio/speaker-미등록 화자 6.txt"
+      }
+    ],
+    "minutesLength": 1280
+  },
+  {
+    "ok": true,
+    "meetingId": "b5bc2169-4bca-4adc-b92b-c093a43eaa9f",
+    "title": "배치테스트 6회차 - 보안 점검 결과/마케팅 캠페인 성과",
+    "presenterCount": 2,
+    "attendeeCount": 1,
+    "expectedSpeakerCount": 4,
+    "detectedSpeakerCount": 3,
+    "speakerMap": {
+      "SPEAKER_02": "미등록 화자 1",
+      "SPEAKER_00": "정도윤",
+      "SPEAKER_01": "미등록 화자 2"
+    },
+    "speakerFiles": [
+      {
+        "speaker": "미등록 화자 1",
+        "segmentCount": 13,
+        "path": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 1.txt"
+      },
+      {
+        "speaker": "정도윤",
+        "segmentCount": 3,
+        "path": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/speaker-정도윤.txt"
+      },
+      {
+        "speaker": "미등록 화자 2",
+        "segmentCount": 4,
+        "path": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 2.txt"
+      }
+    ],
+    "minutesLength": 835
+  },
+  {
+    "ok": true,
+    "meetingId": "df667fb9-f54f-4452-9ba9-1880a5948f72",
+    "title": "배치테스트 7회차 - 데이터 파이프라인 안정화/사내 헬프데스크 통계/물류센터 자동화 파일럿",
+    "presenterCount": 3,
+    "attendeeCount": 2,
+    "expectedSpeakerCount": 6,
+    "detectedSpeakerCount": 5,
+    "speakerMap": {
+      "SPEAKER_01": "미등록 화자 1",
+      "SPEAKER_00": "미등록 화자 2",
+      "SPEAKER_02": "미등록 화자 3",
+      "SPEAKER_04": "미등록 화자 4",
+      "SPEAKER_03": "미등록 화자 5"
+    },
+    "speakerFiles": [
+      {
+        "speaker": "미등록 화자 1",
+        "segmentCount": 8,
+        "path": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/speaker-미등록 화자 1.txt"
+      },
+      {
+        "speaker": "미등록 화자 2",
+        "segmentCount": 6,
+        "path": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/speaker-미등록 화자 2.txt"
+      },
+      {
+        "speaker": "미등록 화자 3",
+        "segmentCount": 3,
+        "path": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/speaker-미등록 화자 3.txt"
+      },
+      {
+        "speaker": "미등록 화자 4",
+        "segmentCount": 1,
+        "path": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/speaker-미등록 화자 4.txt"
+      },
+      {
+        "speaker": "미등록 화자 5",
+        "segmentCount": 5,
+        "path": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/speaker-미등록 화자 5.txt"
+      }
+    ],
+    "minutesLength": 890
+  },
+  {
+    "ok": true,
+    "meetingId": "15fef666-7a2c-4747-a01c-1228605ff5d1",
+    "title": "배치테스트 8회차 - 물류센터 자동화 파일럿",
+    "presenterCount": 1,
+    "attendeeCount": 1,
+    "expectedSpeakerCount": 3,
+    "detectedSpeakerCount": 2,
+    "speakerMap": {
+      "SPEAKER_01": "미등록 화자 1",
+      "SPEAKER_00": "미등록 화자 2"
+    },
+    "speakerFiles": [
+      {
+        "speaker": "미등록 화자 1",
+        "segmentCount": 6,
+        "path": "2026-08-30-배치테스트 8회차 - 물류센터 자동화 파일럿/audio/speaker-미등록 화자 1.txt"
+      },
+      {
+        "speaker": "미등록 화자 2",
+        "segmentCount": 4,
+        "path": "2026-08-30-배치테스트 8회차 - 물류센터 자동화 파일럿/audio/speaker-미등록 화자 2.txt"
+      }
+    ],
+    "minutesLength": 574
+  },
+  {
+    "ok": true,
+    "meetingId": "da3609e5-c4ea-4a05-977c-0a37ef2861e6",
+    "title": "배치테스트 9회차 - 모바일 앱 성능 개선/신규 채용 현황/보안 점검 결과/마케팅 캠페인 성과",
+    "presenterCount": 4,
+    "attendeeCount": 2,
+    "expectedSpeakerCount": 7,
+    "detectedSpeakerCount": 6,
+    "speakerMap": {
+      "SPEAKER_05": "미등록 화자 1",
+      "SPEAKER_01": "미등록 화자 2",
+      "SPEAKER_02": "미등록 화자 3",
+      "SPEAKER_00": "정도윤",
+      "SPEAKER_03": "미등록 화자 4",
+      "SPEAKER_04": "미등록 화자 5"
+    },
+    "speakerFiles": [
+      {
+        "speaker": "미등록 화자 1",
+        "segmentCount": 9,
+        "path": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 1.txt"
+      },
+      {
+        "speaker": "미등록 화자 2",
+        "segmentCount": 4,
+        "path": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 2.txt"
+      },
+      {
+        "speaker": "미등록 화자 3",
+        "segmentCount": 4,
+        "path": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 3.txt"
+      },
+      {
+        "speaker": "정도윤",
+        "segmentCount": 5,
+        "path": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/audio/speaker-정도윤.txt"
+      },
+      {
+        "speaker": "미등록 화자 4",
+        "segmentCount": 4,
+        "path": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 4.txt"
+      },
+      {
+        "speaker": "미등록 화자 5",
+        "segmentCount": 3,
+        "path": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 5.txt"
+      }
+    ],
+    "minutesLength": 1310
+  },
+  {
+    "ok": true,
+    "meetingId": "9548d33e-053d-4a0f-973c-b419ed666129",
+    "title": "배치테스트 10회차 - 보안 점검 결과/마케팅 캠페인 성과",
+    "presenterCount": 2,
+    "attendeeCount": 1,
+    "expectedSpeakerCount": 4,
+    "detectedSpeakerCount": 3,
+    "speakerMap": {
+      "SPEAKER_01": "미등록 화자 1",
+      "SPEAKER_02": "미등록 화자 2",
+      "SPEAKER_00": "미등록 화자 3"
+    },
+    "speakerFiles": [
+      {
+        "speaker": "미등록 화자 1",
+        "segmentCount": 7,
+        "path": "2026-08-32-배치테스트 10회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 1.txt"
+      },
+      {
+        "speaker": "미등록 화자 2",
+        "segmentCount": 3,
+        "path": "2026-08-32-배치테스트 10회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 2.txt"
+      },
+      {
+        "speaker": "미등록 화자 3",
+        "segmentCount": 5,
+        "path": "2026-08-32-배치테스트 10회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/speaker-미등록 화자 3.txt"
+      }
+    ],
+    "minutesLength": 820
+  }
+]

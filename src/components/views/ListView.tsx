@@ -60,56 +60,62 @@ export function ListView({ meetings, currentMember, onOpen, onEdit, onDelete, so
       <table className="meeting-table">
         <thead>
           <tr>
+            <th style={{ textAlign: "center" }}>No</th>
             {SORTABLE_COLUMNS.map((column) => (
-              <th key={column.key} onClick={() => handleHeaderClick(column.key)}>
+              <th
+                key={column.key}
+                onClick={() => handleHeaderClick(column.key)}
+                style={column.key === "date" ? { textAlign: "center" } : undefined}
+              >
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                   {column.label}
                   {sortKey === column.key && (sortAsc ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
                 </span>
               </th>
             ))}
-            <th>시간</th>
-            <th onClick={() => handleHeaderClick("organizer")}>
+            <th style={{ textAlign: "center" }}>시간</th>
+            <th onClick={() => handleHeaderClick("organizer")} style={{ textAlign: "center" }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                 주관자
                 {sortKey === "organizer" && (sortAsc ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
               </span>
             </th>
             <th>참석자</th>
-            <th onClick={() => handleHeaderClick("status")}>
+            <th onClick={() => handleHeaderClick("status")} style={{ textAlign: "center" }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                 상태
                 {sortKey === "status" && (sortAsc ? <ArrowUp size={12} /> : <ArrowDown size={12} />)}
               </span>
             </th>
-            <th>작업</th>
+            <th style={{ textAlign: "center" }}>작업</th>
           </tr>
         </thead>
         <tbody>
-          {sorted.map((meeting) => {
+          {sorted.map((meeting, index) => {
             const status = computeMeetingStatus(meeting);
 
             return (
               <tr className={`status-row status-${status}`} key={meeting.id} onClick={() => onOpen(meeting)}>
+                <td style={{ textAlign: "center" }}>{String(index + 1).padStart(4, "0")}</td>
                 <td>{meeting.title || "제목 없음"}</td>
-                <td>{meeting.date || "-"}</td>
-                <td>
+                <td style={{ textAlign: "center" }}>{meeting.date || "-"}</td>
+                <td style={{ textAlign: "center" }}>
                   {meeting.startTime && meeting.endTime
                     ? `${meeting.startTime} - ${meeting.endTime}`
                     : meeting.startTime || meeting.endTime || "-"}
                 </td>
-                <td>{meeting.organizer || "-"}</td>
+                <td style={{ textAlign: "center" }}>{meeting.organizer || "-"}</td>
                 <td>{attendeeSummary(meeting.attendees) || "-"}</td>
-                <td>
+                <td style={{ textAlign: "center" }}>
                   <span className={`status-badge ${status}`}>{meetingStatusLabels[status]}</span>
                 </td>
                 <td>
                   <div className="row-actions" onClick={(event) => event.stopPropagation()}>
-                    <button className="row-icon-button" onClick={() => onEdit(meeting)} title="수정" type="button">
+                    <button aria-label="수정" className="row-icon-button" data-tooltip="수정" onClick={() => onEdit(meeting)} type="button">
                       <Pencil size={14} />
                     </button>
                     {canDeleteMeeting(meeting, currentMember) && (
-                      <button className="row-icon-button" onClick={() => onDelete(meeting)} title="삭제" type="button">
+                      <button aria-label="삭제" className="row-icon-button" data-tooltip="삭제" onClick={() => onDelete(meeting)} type="button">
                         <Trash2 size={14} />
                       </button>
                     )}

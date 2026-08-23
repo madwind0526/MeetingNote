@@ -23,6 +23,11 @@ export interface FileNavigatorListing {
   error?: string;
 }
 
+export interface ConfiguredFilePickResult {
+  handled: boolean;
+  file: File | null;
+}
+
 type HostListener = (request: PendingFileNavigatorRequest | null) => void;
 
 let hostListener: HostListener | null = null;
@@ -60,6 +65,14 @@ function base64ToFile(base64: string, fileName: string): File {
   return new File([bytes], fileName);
 }
 
+function acceptToElectronFilters(accept?: string[], name = "파일"): { name: string; extensions: string[] }[] | undefined {
+  const extensions = (accept ?? [])
+    .map((extension) => extension.trim().replace(/^\./, "").toLowerCase())
+    .filter((extension) => extension && !extension.includes("*") && !extension.includes("/"));
+
+  return extensions.length > 0 ? [{ name, extensions }] : undefined;
+}
+
 function canUseFileNavigatorApi(): boolean {
   if (typeof window === "undefined") {
     return false;
@@ -74,6 +87,10 @@ export function isBuiltinFilePickerAvailable(): boolean {
 
 export function shouldUseBuiltinFilePicker(): boolean {
   return getFilePickerMode() === "builtin" && isBuiltinFilePickerAvailable();
+}
+
+export function isNativeFileDialogAvailable(): boolean {
+  return Boolean(window.meetingNote?.openFileDialog && window.meetingNote?.readFileBase64);
 }
 
 async function fetchNavigatorJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -141,6 +158,38 @@ export async function pickFileWithNavigator(accept?: string[], title = "파일 �
   const base64 = await readFileBase64WithNavigator(path);
   const fileName = path.split(/[\\/]/).pop() || "file";
   return base64ToFile(base64, fileName);
+}
+
+export async function pickFileWithNativeDialog(accept?: string[], title = "파일 선택"): Promise<File | null> {
+  if (!window.meetingNote?.openFileDialog || !window.meetingNote?.readFileBase64) {
+    return null;
+  }
+
+  const path = await window.meetingNote.openFileDialog({ title, filters: acceptToElectronFilters(accept, title) });
+  if (!path) {
+    return null;
+  }
+
+  const base64 = await window.meetingNote.readFileBase64(path);
+  const fileName = path.split(/[\\/]/).pop() || "file";
+  return base64ToFile(base64, fileName);
+}
+
+export async function pickFileWithConfiguredPicker(accept?: string[], title = "파일 선택"): Promise<ConfiguredFilePickResult> {
+  if (shouldUseBuiltinFilePicker()) {
+    return { handled: true, file: await pickFileWithNavigator(accept, title) };
+  }
+
+  if (!isNativeFileDialogAvailable()) {
+    return { handled: false, file: null };
+  }
+
+  try {
+    return { handled: true, file: await pickFileWithNativeDialog(accept, title) };
+  } catch (error) {
+    console.error("Native file dialog failed.", error);
+    return { handled: false, file: null };
+  }
 }
 
 export async function pickSaveTargetWithNavigator(

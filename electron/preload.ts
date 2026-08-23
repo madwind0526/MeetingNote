@@ -5,7 +5,7 @@ contextBridge.exposeInMainWorld("meetingNote", {
   getBuildInfo: () => ipcRenderer.invoke("build:getInfo"),
   loadSettings: () => ipcRenderer.invoke("settings:load"),
   saveSettings: (settings: unknown) => ipcRenderer.invoke("settings:save", settings),
-  openFileDialog: (options: { filters?: { name: string; extensions: string[] }[] }) =>
+  openFileDialog: (options: { title?: string; filters?: { name: string; extensions: string[] }[] }) =>
     ipcRenderer.invoke("dialog:openFile", options),
   openFolderDialog: () => ipcRenderer.invoke("dialog:openDirectory"),
   saveFileDialog: (options: { defaultPath?: string; filters?: { name: string; extensions: string[] }[] }) =>

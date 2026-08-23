@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { createMemberRequest, login, saveSession } from "../lib/auth";
+import { createMemberRequest, login, saveSession, skipLogin } from "../lib/auth";
 import type { PublicMember } from "../types/domain";
 
 interface LoginViewProps {
@@ -15,6 +15,7 @@ export function LoginView({ theme, logoVersion, onLoginSuccess }: LoginViewProps
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
 
   const [requestName, setRequestName] = useState("");
   const [requestLoginId, setRequestLoginId] = useState("");
@@ -53,6 +54,31 @@ export function LoginView({ theme, logoVersion, onLoginSuccess }: LoginViewProps
       onLoginSuccess(result.member);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    if (isSkipping) {
+      return;
+    }
+
+    setIsSkipping(true);
+    setError("");
+
+    try {
+      const member = await skipLogin();
+
+      if (!member) {
+        setError("건너뛸 수 있는 계정이 없습니다.");
+        return;
+      }
+
+      saveSession(member);
+      onLoginSuccess(member);
+    } catch (skipError) {
+      setError(skipError instanceof Error ? skipError.message : "건너뛰기에 실패했습니다.");
+    } finally {
+      setIsSkipping(false);
     }
   };
 
@@ -213,6 +239,9 @@ export function LoginView({ theme, logoVersion, onLoginSuccess }: LoginViewProps
         </button>
         <button className="ghost-action" onClick={() => switchMode("request")} type="button">
           계정 신청
+        </button>
+        <button className="ghost-action" disabled={isSkipping} onClick={handleSkip} type="button">
+          {isSkipping ? "건너뛰는 중..." : "건너뛰기 (로그인 없이 계속)"}
         </button>
       </form>
     </div>

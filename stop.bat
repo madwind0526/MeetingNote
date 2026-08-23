@@ -11,4 +11,6 @@ rem Only closes the MeetingNote window, not other unrelated Electron apps that m
 rem running (Electron dev processes all share the image name "electron.exe").
 taskkill /F /IM electron.exe /FI "WINDOWTITLE eq MeetingNote*" >nul 2>&1
 
+del /f /q "%~dp0data\runtime\meetingnote.lock" >nul 2>&1
+
 echo Done.

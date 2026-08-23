@@ -1,30 +1,40 @@
 import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, session, shell } from "electron";
-import { execSync } from "node:child_process";
+import { execFile } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
 import { resolveAttachmentPath, toProjectRelativePath } from "../server/attachments.mjs";
 import { readMembers, createMember, updateMember, disableMember, verifyLogin, toPublicMember } from "../server/members.mjs";
+
+const execFileAsync = promisify(execFile);
 
 const settingsFilePath = path.resolve(process.cwd(), process.env.MEETINGNOTE_SETTINGS_FILE ?? "data/runtime/app-settings.json");
 const allowedWritePaths = new Set<string>();
 
-function readGitValue(command: string, fallback: string) {
+async function readGitValue(args: string[], fallback: string) {
   try {
-    return execSync(command, { cwd: process.cwd(), encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim() || fallback;
+    const { stdout } = await execFileAsync("git", args, { cwd: process.cwd() });
+    return stdout.trim() || fallback;
   } catch {
     return fallback;
   }
 }
 
-function buildVersionInfo() {
+async function buildVersionInfo() {
   const packageJson = JSON.parse(readFileSync(path.resolve(process.cwd(), "package.json"), "utf8")) as { version?: string };
   const version = packageJson.version ?? "0.0.0";
   const majorVersion = version.split(".")[0] || "0";
-  const commitCount = readGitValue("git rev-list --count HEAD", "0");
-  const commitSha = readGitValue("git rev-parse --short HEAD", "unknown");
+  // These three `git` calls are independent of each other - run them concurrently instead of
+  // blocking the main process on each one in turn (execSync previously did both: sequential *and*
+  // synchronous, freezing all other IPC handling for the duration of all three).
+  const [commitCount, commitSha, statusPorcelain] = await Promise.all([
+    readGitValue(["rev-list", "--count", "HEAD"], "0"),
+    readGitValue(["rev-parse", "--short", "HEAD"], "unknown"),
+    readGitValue(["status", "--porcelain"], "")
+  ]);
   const shaPatch = Number.parseInt(commitSha.slice(0, 1), 16);
-  const stateLabel = readGitValue("git status --porcelain", "") ? "dirty" : "clean";
+  const stateLabel = statusPorcelain ? "dirty" : "clean";
   const buildVersion = `${majorVersion}.${commitCount}.${Number.isFinite(shaPatch) ? shaPatch : 0}`;
 
   return {
@@ -62,11 +72,13 @@ ipcMain.handle("settings:clear", async () => {
   return true;
 });
 
-ipcMain.handle("dialog:saveFile", async (_event, options: { defaultPath?: string; filters?: Electron.FileFilter[] }) => {
-  const result = await dialog.showSaveDialog({
+ipcMain.handle("dialog:saveFile", async (event, options: { defaultPath?: string; filters?: Electron.FileFilter[] }) => {
+  const owner = BrowserWindow.fromWebContents(event.sender);
+  const dialogOptions: Electron.SaveDialogOptions = {
     defaultPath: options.defaultPath,
     filters: options.filters
-  });
+  };
+  const result = owner ? await dialog.showSaveDialog(owner, dialogOptions) : await dialog.showSaveDialog(dialogOptions);
 
   if (result.canceled || !result.filePath) {
     return null;
@@ -78,11 +90,14 @@ ipcMain.handle("dialog:saveFile", async (_event, options: { defaultPath?: string
   return filePath;
 });
 
-ipcMain.handle("dialog:openFile", async (_event, options: { filters?: Electron.FileFilter[] }) => {
-  const result = await dialog.showOpenDialog({
+ipcMain.handle("dialog:openFile", async (event, options: { title?: string; filters?: Electron.FileFilter[] }) => {
+  const owner = BrowserWindow.fromWebContents(event.sender);
+  const dialogOptions: Electron.OpenDialogOptions = {
+    title: options.title,
     filters: options.filters,
     properties: ["openFile"]
-  });
+  };
+  const result = owner ? await dialog.showOpenDialog(owner, dialogOptions) : await dialog.showOpenDialog(dialogOptions);
 
   return result.canceled ? null : result.filePaths[0];
 });
@@ -93,11 +108,13 @@ ipcMain.handle("dialog:openFile", async (_event, options: { filters?: Electron.F
 // so it's immediately converted to a path relative to the project root (see
 // toProjectRelativePath) before being handed back to the renderer - nothing absolute ever gets
 // persisted into AppSettings.
-ipcMain.handle("dialog:openDirectory", async () => {
-  const result = await dialog.showOpenDialog({
+ipcMain.handle("dialog:openDirectory", async (event) => {
+  const owner = BrowserWindow.fromWebContents(event.sender);
+  const dialogOptions: Electron.OpenDialogOptions = {
     defaultPath: process.cwd(),
     properties: ["openDirectory", "createDirectory"]
-  });
+  };
+  const result = owner ? await dialog.showOpenDialog(owner, dialogOptions) : await dialog.showOpenDialog(dialogOptions);
 
   if (result.canceled || !result.filePaths[0]) {
     return { path: null };

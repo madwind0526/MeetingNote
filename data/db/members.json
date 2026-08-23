@@ -1,0 +1,11 @@
+[
+  {
+    "id": "d3515e17-60e6-4137-a1ee-a315d6ce1c9d",
+    "name": "관리자",
+    "loginId": "admin",
+    "passwordHash": "ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270",
+    "role": "admin",
+    "createdAt": "2026-08-18T12:45:31.935Z",
+    "disabled": false
+  }
+]

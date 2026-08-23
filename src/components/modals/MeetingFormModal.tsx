@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Bot, FileInput, FileText, FolderOpen, Mic, Paperclip, Plus, Square, Trash2, Upload } from "lucide-react";
+import { Bot, FileInput, FileText, FolderOpen, Maximize2, Mic, Paperclip, Plus, Square, Trash2, Upload } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import { AudioAnalysisModal } from "./AudioAnalysisModal";
 import { PresentationSummaryModal } from "./PresentationSummaryModal";
+import { TranscriptModal } from "./TranscriptModal";
 import { LiveWaveform } from "../LiveWaveform";
 import type {
   ActionItem,
@@ -25,13 +26,24 @@ import {
 } from "../../types/domain";
 import { generateMinutes } from "../../lib/llm";
 import type { OllamaConfig } from "../../lib/llm";
-import { importMeetingsRequest, inferImportFormat, openAttachment, transcribeAudioRequest, uploadAttachment } from "../../lib/api";
-import { pickFileWithNavigator, shouldUseBuiltinFilePicker } from "../../lib/filePicker";
+import {
+  fetchAttachmentAsFile,
+  importMeetingsRequest,
+  inferImportFormat,
+  openAttachment,
+  transcribeAudioRequest,
+  uploadAttachment
+} from "../../lib/api";
+import { pickFileWithConfiguredPicker } from "../../lib/filePicker";
 import { decodeAudioFile, encodeWav, mixDownToMono } from "../../lib/audio";
 import { isSystemAudioCaptureSupported, startSystemAudioRecording } from "../../lib/systemAudioCapture";
 import type { SystemAudioRecording } from "../../lib/systemAudioCapture";
+import { formatTranscriptText, transcriptFileNameFromAudio } from "../../lib/transcript";
+import type { DictionaryState } from "../../lib/dictionary";
 
 type MaterialTarget = { kind: "actionItem" | "agenda"; index: number };
+
+const AUDIO_FILE_EXTENSIONS = [".mp3", ".wav", ".m4a", ".aac", ".ogg", ".flac", ".webm", ".mp4"];
 
 interface MeetingFormModalProps {
   mode: "create" | "edit";
@@ -39,6 +51,11 @@ interface MeetingFormModalProps {
   llmProvider: LlmProviderId;
   ollamaConfig: OllamaConfig;
   sttProvider: SttProviderId;
+  // Threaded down to AudioAnalysisModal's word-correction popup so a newly registered 수정 사전
+  // entry updates this same shared cache instead of writing to the server behind its back (see
+  // App.tsx's `dictionary` state, loaded once per session and otherwise never refetched).
+  dictionary: DictionaryState;
+  onDictionaryChange: (next: DictionaryState) => void;
   onClose: () => void;
   // `presetId` is only passed when `mode === "create"` - see `folderId` below.
   onSubmit: (draft: MeetingDraft, presetId?: string) => Promise<void> | void;
@@ -81,6 +98,27 @@ function cloneDraft(initial?: Meeting): MeetingDraft {
   };
 }
 
+// Clamps an out-of-range day (e.g. typing "35", or a day that's fine for the previously-selected
+// month but not the newly-picked one, like Feb 30) to the nearest real day of that month, and the
+// month itself to 1-12 - same rule as normalizeMeeting's clampToNearestValidDate in server/db.mjs,
+// duplicated here for immediate feedback as the user edits rather than only after saving.
+// Anything not shaped like YYYY-MM-DD (empty string, a partially-typed value) passes through
+// untouched - HTML's <input type="date"> only ever fires onChange with either that exact shape or
+// an empty string, never a partial one, so this only ever needs to handle those two cases.
+function clampToNearestValidDate(value: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) {
+    return value;
+  }
+
+  const year = Number(match[1]);
+  const month = Math.min(12, Math.max(1, Number(match[2])));
+  const maxDay = new Date(year, month, 0).getDate();
+  const day = Math.min(maxDay, Math.max(1, Number(match[3])));
+
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
 function renumber<T extends { no: number }>(items: T[]): T[] {
   return items.map((item, index) => ({ ...item, no: index + 1 }));
 }
@@ -92,10 +130,23 @@ function attachmentFolderLabel(draft: MeetingDraft) {
   return `${date}-${title}`;
 }
 
-export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, sttProvider, onClose, onSubmit }: MeetingFormModalProps) {
+export function MeetingFormModal({
+  mode,
+  initial,
+  llmProvider,
+  ollamaConfig,
+  sttProvider,
+  dictionary,
+  onDictionaryChange,
+  onClose,
+  onSubmit
+}: MeetingFormModalProps) {
   const [draft, setDraft] = useState<MeetingDraft>(() => cloneDraft(initial));
   const [pendingAudioFile, setPendingAudioFile] = useState<File | null>(null);
   const [showAudioAnalysis, setShowAudioAnalysis] = useState(false);
+  const [isLoadingExistingAudio, setIsLoadingExistingAudio] = useState(false);
+  const [existingAudioLoadError, setExistingAudioLoadError] = useState("");
+  const [showTranscriptPopup, setShowTranscriptPopup] = useState(false);
   const [isGeneratingMinutes, setIsGeneratingMinutes] = useState(false);
   const [minutesError, setMinutesError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -186,10 +237,10 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
   };
 
   const triggerImportFilePick = async () => {
-    if (shouldUseBuiltinFilePicker()) {
-      const file = await pickFileWithNavigator([".pdf", ".docx", ".pptx", ".md", ".markdown", ".json"], "회의록 파일 선택");
-      if (file) {
-        await processImportFile(file);
+    const result = await pickFileWithConfiguredPicker([".pdf", ".docx", ".pptx", ".md", ".markdown", ".json"], "회의록 파일 선택");
+    if (result.handled) {
+      if (result.file) {
+        await processImportFile(result.file);
       }
       return;
     }
@@ -282,10 +333,10 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
   };
 
   const handleAttachMaterialClick = async (target: MaterialTarget) => {
-    if (shouldUseBuiltinFilePicker()) {
-      const file = await pickFileWithNavigator(undefined, "첨부할 자료 파일 선택");
-      if (file) {
-        await processMaterialFile(file, target);
+    const result = await pickFileWithConfiguredPicker(undefined, "첨부할 자료 파일 선택");
+    if (result.handled) {
+      if (result.file) {
+        await processMaterialFile(result.file, target);
       }
       return;
     }
@@ -323,10 +374,10 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
   };
 
   const triggerAudioFilePick = async () => {
-    if (shouldUseBuiltinFilePicker()) {
-      const file = await pickFileWithNavigator(undefined, "회의 음성 파일 선택");
-      if (file) {
-        setPendingAudioFile(file);
+    const result = await pickFileWithConfiguredPicker(AUDIO_FILE_EXTENSIONS, "회의 음성 파일 선택");
+    if (result.handled) {
+      if (result.file) {
+        setPendingAudioFile(result.file);
       }
       return;
     }
@@ -334,8 +385,34 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
     audioFileInputRef.current?.click();
   };
 
+  // "분석 시작" needs an in-memory File to decode - a freshly picked/recorded file already is one,
+  // but re-opening analysis on an already-saved meeting's audio (edit mode, nothing picked this
+  // session) has to re-fetch the stored attachment first (B5/B6).
+  const handleOpenAudioAnalysis = async () => {
+    if (pendingAudioFile) {
+      setShowAudioAnalysis(true);
+      return;
+    }
+
+    if (!draft.audio?.audioPath) {
+      return;
+    }
+
+    setIsLoadingExistingAudio(true);
+    setExistingAudioLoadError("");
+
+    try {
+      const file = await fetchAttachmentAsFile(draft.audio.audioPath, draft.audio.fileName);
+      setPendingAudioFile(file);
+      setShowAudioAnalysis(true);
+    } catch (error) {
+      setExistingAudioLoadError(error instanceof Error ? error.message : "원본 오디오 파일을 불러오지 못했습니다.");
+    } finally {
+      setIsLoadingExistingAudio(false);
+    }
+  };
+
   // 스피커로 나오는 소리(PC 시스템 오디오)를 실시간으로 녹음하는 것과, 지금까지의 파일 업로드는 서로
-  // 다른 입력 경로일 뿐 - 녹음이 끝나면 setPendingAudioFile로 합류시켜서, 그 뒤(다시 분석/분석 시작,
   // 첨부파일 업로드, 회의록 저장)는 파일을 직접 선택했을 때와 완전히 동일한 경로를 그대로 탄다.
   const LIVE_CAPTION_WINDOW_MS = 12000;
 
@@ -452,8 +529,8 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
   }, []);
 
   const handleAudioComplete = async (analysis: AudioAnalysis) => {
-    setDraft((current) => ({ ...current, audio: analysis }));
     setShowAudioAnalysis(false);
+    let nextAnalysis: AudioAnalysis = analysis;
 
     // B7 audio retention policy: keep the original recording alongside the meeting's materials
     // (this app never creates per-speaker sliced audio files, so there's nothing else to retain
@@ -463,11 +540,24 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
     if (pendingAudioFile) {
       try {
         const uploaded = await uploadAttachment(attachmentFolderLabel(draft), "audio", pendingAudioFile);
-        setDraft((current) => (current.audio ? { ...current, audio: { ...current.audio, audioPath: uploaded.path } } : current));
+        nextAnalysis = { ...nextAnalysis, audioPath: uploaded.path };
       } catch {
         // ignore - retention is best-effort
       }
     }
+
+    const transcriptText = formatTranscriptText(nextAnalysis);
+    if (transcriptText) {
+      try {
+        const transcriptFile = new File([transcriptText], transcriptFileNameFromAudio(nextAnalysis.fileName), { type: "text/plain;charset=utf-8" });
+        const uploaded = await uploadAttachment(attachmentFolderLabel(draft), "audio", transcriptFile);
+        nextAnalysis = { ...nextAnalysis, transcriptPath: uploaded.path };
+      } catch {
+        // ignore - transcript rows are still persisted in the meeting JSON
+      }
+    }
+
+    setDraft((current) => ({ ...current, audio: nextAnalysis }));
   };
 
   // Presenters first, then other key attendees, matching the diarization heuristic's
@@ -518,6 +608,8 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
   };
 
   const attendeeBadges = computeAttendeeBadges(draft.attendees);
+  const transcriptText = formatTranscriptText(draft.audio);
+  const currentAudioFileLabel = pendingAudioFile?.name ?? draft.audio?.fileName ?? "";
 
   // Also used by PresentationSummaryModal (B5) - same synthetic Meeting shape as
   // handleGenerateMinutes builds, computed once here so both share it instead of duplicating.
@@ -535,7 +627,7 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
       <ModalShell
         title={mode === "create" ? "새 회의록 등록" : "회의록 수정"}
         onClose={onClose}
-        width="wide"
+        width="large"
         footer={
           <>
             <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{saveError}</span>
@@ -589,7 +681,12 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
           </div>
           <div className="field">
             <label htmlFor="meeting-date">날짜</label>
-            <input id="meeting-date" onChange={(event) => updateField("date", event.target.value)} type="date" value={draft.date} />
+            <input
+              id="meeting-date"
+              onChange={(event) => updateField("date", clampToNearestValidDate(event.target.value))}
+              type="date"
+              value={draft.date}
+            />
           </div>
           <div className="field">
             <label>상태</label>
@@ -914,25 +1011,18 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
           <label>회의 음성 파일</label>
 
           {draft.audio && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ display: "grid", gap: 6 }}>
               <span className="field-hint">
                 {draft.audio.fileName} · {Math.round(draft.audio.durationSec)}초 · 화자 {Object.keys(draft.audio.speakerMap).length}명
               </span>
-              {draft.audio.audioPath && (
-                <button className="ghost-action" onClick={() => handleOpenMaterial(draft.audio!.audioPath!)} type="button">
-                  <FolderOpen size={14} />
-                  원본 오디오 열기
-                </button>
-              )}
-              <button className="ghost-action" onClick={() => void triggerAudioFilePick()} type="button">
-                다시 분석
-              </button>
+              {draft.audio.audioPath && <span className="field-hint">원본 오디오 파일: {draft.audio.audioPath}</span>}
+              {draft.audio.transcriptPath && <span className="field-hint">STT 대본 파일: {draft.audio.transcriptPath}</span>}
             </div>
           )}
 
           <div className="import-drop-zone" onClick={() => void triggerAudioFilePick()} role="button" tabIndex={0}>
             <Upload size={22} />
-            <strong>{pendingAudioFile ? pendingAudioFile.name : "회의 음성 파일을 선택하세요"}</strong>
+            <strong>{currentAudioFileLabel || "회의 음성 파일을 선택하세요"}</strong>
             <input
               accept="audio/*"
               hidden
@@ -983,14 +1073,34 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
           )}
 
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <button className="primary-action" disabled={!pendingAudioFile} onClick={() => setShowAudioAnalysis(true)} type="button">
-              분석 시작
+            <button
+              className="primary-action"
+              disabled={(!pendingAudioFile && !draft.audio?.audioPath) || isLoadingExistingAudio}
+              onClick={() => void handleOpenAudioAnalysis()}
+              type="button"
+            >
+              {isLoadingExistingAudio ? "불러오는 중..." : "분석 시작"}
             </button>
             <button className="primary-action" disabled={isGeneratingMinutes} onClick={handleGenerateMinutes} type="button">
               {isGeneratingMinutes ? "작성 중..." : "회의록 작성"}
             </button>
             {minutesError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{minutesError}</span>}
           </div>
+          {existingAudioLoadError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{existingAudioLoadError}</span>}
+          {transcriptText && (
+            <div className="audio-transcript-preview">
+              <button
+                className="audio-transcript-preview-title"
+                onClick={() => setShowTranscriptPopup(true)}
+                style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                type="button"
+              >
+                STT 분석 대본
+                <Maximize2 size={13} />
+              </button>
+              <pre>{transcriptText}</pre>
+            </div>
+          )}
         </div>
 
         <div className="field full">
@@ -1007,11 +1117,22 @@ export function MeetingFormModal({ mode, initial, llmProvider, ollamaConfig, stt
 
       {showAudioAnalysis && pendingAudioFile && (
         <AudioAnalysisModal
+          agenda={draft.agenda}
           attendeeNames={audioAttendeeNames()}
+          dictionary={dictionary}
           file={pendingAudioFile}
           onClose={() => setShowAudioAnalysis(false)}
           onComplete={handleAudioComplete}
+          onDictionaryChange={onDictionaryChange}
           sttProvider={sttProvider}
+        />
+      )}
+
+      {showTranscriptPopup && (
+        <TranscriptModal
+          content={transcriptText}
+          onClose={() => setShowTranscriptPopup(false)}
+          title={`STT 대본 - ${draft.title.trim() || "제목 없음"}`}
         />
       )}
 

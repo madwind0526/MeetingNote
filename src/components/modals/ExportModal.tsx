@@ -45,6 +45,7 @@ export function ExportModal({ allMeetings, visibleMeetings, defaultFormat, onClo
     <ModalShell
       title="DB저장"
       onClose={onClose}
+      width="medium"
       footer={
         <div className="modal-footer-actions" style={{ marginLeft: "auto" }}>
           <button className="ghost-action" onClick={onClose} type="button">

@@ -1,7 +1,13 @@
 import spawn from "cross-spawn";
 import { readEnvFile } from "./envFile.mjs";
 
-const CLAUDE_CLI_TIMEOUT_MS = 60000;
+// A full meeting-minutes prompt (whole transcript + agenda + materials) genuinely takes longer to
+// generate than a short query - measured a real presentation-summary call getting SIGTERM-killed
+// (child_process's `timeout` option, surfaced as "exited with code null") right at the old 60s
+// mark. Every other STT/diarization step in this app already budgets minutes, not seconds
+// (TRANSCRIBE_TIMEOUT_MS=600000, DIARIZE_TIMEOUT_MS=300000 in sttLocalWhisperCli.mjs) - 60s was an
+// outlier, not a deliberate choice.
+const CLAUDE_CLI_TIMEOUT_MS = 180000;
 const ANTHROPIC_MODEL = "claude-3-5-haiku-20241022";
 
 // cross-spawn resolves the real claude.cmd/.ps1 shim on Windows and passes arguments through
@@ -39,6 +45,19 @@ function runCommand(command, args, { timeoutMs, cwd, stdin } = {}) {
   });
 }
 
+// LLMs occasionally wrap an entire markdown response in a ```markdown ... ``` (or plain
+// ``` ... ```) code fence, especially when asked to "output markdown" - observed from claude-cli
+// on 2 of 11 real 회의록 generations in one batch run. Left untouched, remark-gfm (the in-app
+// renderer) and parseMinutesMarkdown.mjs (the exporters) both see one giant fenced code block
+// spanning the whole document, so headings/tables/bold all render as literal text instead of
+// being parsed. Only strips the wrapper when it encloses the *entire* trimmed response - a
+// response that legitimately contains a fenced code sample alongside other content is left alone.
+function stripWrappingCodeFence(text) {
+  const trimmed = text.trim();
+  const match = /^```[a-zA-Z]*\n([\s\S]*)\n```$/.exec(trimmed);
+  return match ? match[1].trim() : trimmed;
+}
+
 export async function checkClaudeCliAvailable() {
   try {
     const version = await runCommand("claude", ["--version"], { timeoutMs: 10000 });
@@ -59,10 +78,11 @@ export async function askClaudeCli(systemPrompt, userPrompt) {
     // The user prompt (question + meeting data) goes over stdin rather than as a CLI argument:
     // a multi-line, multi-KB argument routed through cmd.exe (required to launch the .cmd shim
     // on Windows) gets mangled/truncated, so the CLI would see an empty or corrupted prompt.
-    return await runCommand("claude", ["-p", "--system-prompt", systemPrompt], {
+    const result = await runCommand("claude", ["-p", "--system-prompt", systemPrompt], {
       timeoutMs: CLAUDE_CLI_TIMEOUT_MS,
       stdin: userPrompt
     });
+    return stripWrappingCodeFence(result);
   } catch (error) {
     throw new Error(`Claude CLI 실행에 실패했습니다: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -104,7 +124,7 @@ export async function askAnthropicApi(systemPrompt, userPrompt) {
   const payload = await response.json();
   const text = (payload.content ?? []).map((block) => block.text ?? "").join("");
 
-  return text.trim();
+  return stripWrappingCodeFence(text);
 }
 
 export async function checkOllamaAvailable(baseUrl) {
@@ -151,7 +171,7 @@ export async function askOllama(systemPrompt, userPrompt, baseUrl, model) {
   }
 
   const payload = await response.json();
-  return String(payload.message?.content ?? "").trim();
+  return stripWrappingCodeFence(String(payload.message?.content ?? ""));
 }
 
 // Builds the user-message prompt for /api/llm/query. `rows` are already-formatted, one-line-per-

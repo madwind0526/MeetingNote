@@ -1,0 +1,203 @@
+{
+  "exportedAt": "2026-08-21T15:15:19.448Z",
+  "count": 1,
+  "meetings": [
+    {
+      "id": "b5bc2169-4bca-4adc-b92b-c093a43eaa9f",
+      "title": "배치테스트 6회차 - 보안 점검 결과/마케팅 캠페인 성과",
+      "date": "2026-08-28",
+      "startTime": "10:00",
+      "endTime": "10:30",
+      "organizer": "남궁민",
+      "secretary": "",
+      "attendees": [
+        {
+          "id": "배수지",
+          "name": "배수지",
+          "role": "",
+          "isKeyAttendee": true,
+          "isPresenter": true
+        },
+        {
+          "id": "홍지호",
+          "name": "홍지호",
+          "role": "",
+          "isKeyAttendee": true,
+          "isPresenter": true
+        },
+        {
+          "id": "임하늘",
+          "name": "임하늘",
+          "role": "",
+          "isKeyAttendee": true,
+          "isPresenter": false
+        }
+      ],
+      "actionItems": [],
+      "agenda": [
+        {
+          "no": 1,
+          "title": "보안 점검 결과",
+          "durationMinutes": 1,
+          "material": "보안-점검-결과.xlsx",
+          "materialPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/보안-점검-결과.xlsx",
+          "materialMdPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/보안-점검-결과.md",
+          "presenter": "배수지"
+        },
+        {
+          "no": 2,
+          "title": "마케팅 캠페인 성과",
+          "durationMinutes": 1,
+          "material": "마케팅-캠페인-성과.pptx",
+          "materialPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/마케팅-캠페인-성과.pptx",
+          "materialMdPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/마케팅-캠페인-성과.md",
+          "presenter": "홍지호"
+        }
+      ],
+      "audio": {
+        "fileName": "배치테스트-6회차-보안-점검-결과-마케팅-캠페인-성과.wav",
+        "durationSec": 91.32000000000001,
+        "preprocessing": {
+          "vocalIsolation": false,
+          "noiseRemoval": false,
+          "normalize": false
+        },
+        "transcriptSegments": [
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 0,
+            "endSec": 3.34,
+            "text": "안녕하세요. 배치 테스트 6회차 회의를 시작하겠습니다."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 4.8,
+            "endSec": 9.06,
+            "text": "오늘은 보안 점검 결과, 마케팅 캠페인 성과 순서로 진행하겠습니다."
+          },
+          {
+            "speaker": "SPEAKER_00",
+            "startSec": 11.06,
+            "endSec": 13.18,
+            "text": "안녕하세요. 배수지입니다."
+          },
+          {
+            "speaker": "SPEAKER_00",
+            "startSec": 14.08,
+            "endSec": 22.04,
+            "text": "보안 점검 결과 관련해서 말씀드리면 취약점 총 42건 발견, 심각 3건 즉시 패치 완료."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 23.36,
+            "endSec": 28.240000000000002,
+            "text": "중간 15건은 2주 내 조치 예정 부분은 좀 더 자세히 설명해 주실 수 있나요?"
+          },
+          {
+            "speaker": "SPEAKER_00",
+            "startSec": 28.24,
+            "endSec": 36.06,
+            "text": "네. 중간 15건은 2주 내 조치 예정 부분이고, 외부 침투 테스트 통과."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 37.12,
+            "endSec": 37.839999999999996,
+            "text": "감사합니다."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 39.339999999999996,
+            "endSec": 43.04,
+            "text": "다음은 홍지호님. 마케팅 캠페인 성과 발표 부탁드립니다."
+          },
+          {
+            "speaker": "SPEAKER_01",
+            "startSec": 44.980000000000004,
+            "endSec": 47.4,
+            "text": "안녕하세요. 홍지호입니다."
+          },
+          {
+            "speaker": "SPEAKER_01",
+            "startSec": 48.480000000000004,
+            "endSec": 51.4,
+            "text": "마케팅 캠페인 성과 관련해서 말씀드리면"
+          },
+          {
+            "speaker": "SPEAKER_01",
+            "startSec": 51.4,
+            "endSec": 60.519999999999996,
+            "text": "노출 120만에 클릭률 3.4%, 전환 850건, 아르스 4.2배."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 61.8,
+            "endSec": 66.22,
+            "text": "20대 타겟층 반응이 가장 높은 부분은 좀 더 자세히 설명해 주실 수 있나요?"
+          },
+          {
+            "speaker": "SPEAKER_01",
+            "startSec": 67.88,
+            "endSec": 74.6,
+            "text": "네. 20대 타겟층 반응이 가장 높은 부분이고, 다음 캠페인은 리타겟팅 강화."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 74.6,
+            "endSec": 77.14,
+            "text": "모두 수고하셨습니다."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 78.46,
+            "endSec": 81.33999999999999,
+            "text": "오늘 논의된 내용은 회의록으로 정리해서 공유 드리겠습니다."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 82.78,
+            "endSec": 84.25999999999999,
+            "text": "이상으로 회의를 마치겠습니다."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 84.26,
+            "endSec": 85.98,
+            "text": "자세히 설명해 주실 수 있습니다."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 86.04,
+            "endSec": 86.48,
+            "text": "감사합니다."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 86.60000000000001,
+            "endSec": 89.9,
+            "text": "오늘 논의된 내용은 hmmm3.2배."
+          },
+          {
+            "speaker": "SPEAKER_02",
+            "startSec": 90.32000000000001,
+            "endSec": 91.32000000000001,
+            "text": "어디까지는?"
+          }
+        ],
+        "speakerMap": {
+          "SPEAKER_02": "남궁민",
+          "SPEAKER_00": "배수지",
+          "SPEAKER_01": "홍지호"
+        },
+        "analyzedAt": "2026-08-21T14:01:52.809Z",
+        "audioPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/배치테스트-6회차-보안-점검-결과-마케팅-캠페인-성과.wav",
+        "transcriptPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/배치테스트-6회차-보안-점검-결과-마케팅-캠페인-성과-stt-transcript.txt"
+      },
+      "minutes": "# 배치테스트 6회차 - 보안 점검 결과/마케팅 캠페인 성과\n\n## 회의 기본정보\n- **제목**: 배치테스트 6회차 - 보안 점검 결과/마케팅 캠페인 성과\n- **일시**: 2026-08-28 10:00-10:30\n- **주관자**: 남궁민\n- **참석자**: 배수지(발표자), 홍지호(발표자), 임하늘\n\n## A/I List (사전 액션 아이템)\n사전에 계획된 A/I List 없음.\n\n## Agenda 논의 내용\n\n### 1. 보안 점검 결과 (발표자: 배수지)\n- 취약점 총 42건 발견\n- 심각도 '심각' 등급 3건은 즉시 패치 완료\n- 중간 위험도 15건은 2주 내 조치 예정\n- 외부 침투 테스트 통과\n- (질의) 주관자가 \"중간 15건 2주 내 조치 예정\" 항목에 대해 추가 설명 요청 → 배수지가 조치 일정과 외부 침투 테스트 통과 결과로 답변\n\n### 2. 마케팅 캠페인 성과 (발표자: 홍지호)\n- 노출 120만 건, 클릭률 3.4%, 전환 850건, ROAS(광고 수익률) 4.2배\n- 20대 타겟층 반응이 가장 높게 나타남\n- 다음 캠페인은 리타겟팅 강화 방향으로 진행 예정\n- (질의) 주관자가 \"20대 타겟층 반응이 가장 높은 부분\"에 대해 추가 설명 요청 → 홍지호가 반응 결과 및 향후 방향(리타겟팅 강화)으로 답변\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 중간 위험도 취약점 15건 조치 | 배수지 | 2주 내 |\n| 리타겟팅 강화 캠페인 기획 | 홍지호 | - |\n| 회의록 정리 및 공유 | 남궁민 | - |\n\n## 태그\n#보안점검 #취약점조치 #침투테스트 #마케팅캠페인 #전환율 #리타겟팅 #배치테스트",
+      "authorId": "",
+      "comments": [],
+      "createdAt": "2026-08-21T14:00:27.005Z",
+      "updatedAt": "2026-08-21T14:18:57.943Z"
+    }
+  ]
+}

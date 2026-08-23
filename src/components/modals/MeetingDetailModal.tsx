@@ -1,9 +1,13 @@
-import { useState } from "react";
-import { Calendar, Clock, Download, FileText, FolderOpen, MessageSquare, Mic, Pencil, Send, Trash2, User, Users, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { Calendar, Clock, Download, FileText, FolderOpen, MessageSquare, Pause, Pencil, Play, Send, Trash2, User, Users, X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ModalShell } from "./ModalShell";
+import { TranscriptModal } from "./TranscriptModal";
 import type { Meeting, PublicMember } from "../../types/domain";
 import { canDeleteMeeting, computeAttendeeBadges, computeMeetingStatus, meetingStatusLabels } from "../../types/domain";
-import { openAttachment } from "../../lib/api";
+import { attachmentUrl, openAttachment } from "../../lib/api";
+import { formatTranscriptText } from "../../lib/transcript";
 
 function formatDateTime(iso: string) {
   const date = new Date(iso);
@@ -66,6 +70,43 @@ function MaterialCell({
   );
 }
 
+// Plays a stored audio attachment inline (via the /attachments/ streaming route) instead of
+// opening/downloading it - shows the file path itself as the clickable label (B2).
+function AudioPathPlayer({ path }: { path: string }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const toggle = () => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+
+    if (audio.paused) {
+      void audio.play();
+    } else {
+      audio.pause();
+    }
+  };
+
+  return (
+    <div>
+      <button className="ghost-action" onClick={toggle} style={{ justifyContent: "flex-start", textAlign: "left" }} type="button">
+        {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+        {path}
+      </button>
+      <audio
+        hidden
+        onEnded={() => setIsPlaying(false)}
+        onPause={() => setIsPlaying(false)}
+        onPlay={() => setIsPlaying(true)}
+        ref={audioRef}
+        src={attachmentUrl(path)}
+      />
+    </div>
+  );
+}
+
 interface MeetingDetailModalProps {
   meeting: Meeting;
   currentMember: PublicMember;
@@ -101,6 +142,8 @@ export function MeetingDetailModal({
   const attendeeBadges = computeAttendeeBadges(meeting.attendees);
   const [materialError, setMaterialError] = useState("");
   const [commentDraft, setCommentDraft] = useState("");
+  const [showTranscript, setShowTranscript] = useState(false);
+  const transcriptText = formatTranscriptText(meeting.audio);
 
   const handleSubmitComment = () => {
     if (!commentDraft.trim()) {
@@ -112,6 +155,7 @@ export function MeetingDetailModal({
   };
 
   return (
+    <>
     <ModalShell
       title="회의 상세"
       onClose={onClose}
@@ -186,34 +230,33 @@ export function MeetingDetailModal({
             )}
           </dd>
         </div>
-        {meeting.audio && (
-          <div className="meeting-detail-row">
-            <dt>
-              <Mic size={14} /> 음성 파일
-            </dt>
-            <dd>
-              {meeting.audio.fileName || "-"} · {Math.round(meeting.audio.durationSec)}초
-              {meeting.audio.audioPath && (
-                <button
-                  className="row-icon-button"
-                  onClick={async () => {
-                    try {
-                      await openAttachment(meeting.audio!.audioPath!);
-                    } catch (error) {
-                      setMaterialError(error instanceof Error ? error.message : "원본 오디오를 여는 데 실패했습니다.");
-                    }
-                  }}
-                  style={{ marginLeft: 6 }}
-                  title="원본 오디오 열기"
-                  type="button"
-                >
-                  <FolderOpen size={13} />
-                </button>
-              )}
-            </dd>
-          </div>
-        )}
       </dl>
+
+      {meeting.audio && (
+        <div className="field full">
+          <label>회의 오디오 / STT 대본</label>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {meeting.audio.audioPath ? (
+              <AudioPathPlayer path={meeting.audio.audioPath} />
+            ) : (
+              <span className="field-hint">연결된 원본 오디오 파일이 없습니다.</span>
+            )}
+            {meeting.audio.transcriptPath ? (
+              <button
+                className="ghost-action"
+                onClick={() => setShowTranscript(true)}
+                style={{ justifyContent: "flex-start", textAlign: "left" }}
+                type="button"
+              >
+                <FileText size={14} />
+                {meeting.audio.transcriptPath}
+              </button>
+            ) : (
+              <span className="field-hint">연결된 STT 대본 파일이 없습니다.</span>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="field full">
         <label>A/I List</label>
@@ -263,19 +306,19 @@ export function MeetingDetailModal({
             <table className="editable-table">
               <thead>
                 <tr>
-                  <th style={{ width: "6%" }}>No</th>
-                  <th style={{ width: "40%" }}>제목</th>
-                  <th style={{ width: "14%" }}>발표시간</th>
-                  <th style={{ width: "26%" }}>발표자료</th>
-                  <th style={{ width: "14%" }}>발표자</th>
+                  <th style={{ width: "6%", textAlign: "center" }}>No</th>
+                  <th style={{ width: "30%" }}>제목</th>
+                  <th style={{ width: "12%", textAlign: "center" }}>발표시간</th>
+                  <th style={{ width: "38%" }}>발표자료</th>
+                  <th style={{ width: "14%", textAlign: "center" }}>발표자</th>
                 </tr>
               </thead>
               <tbody>
                 {meeting.agenda.map((item) => (
                   <tr key={item.no}>
-                    <td>{item.no}</td>
+                    <td style={{ textAlign: "center" }}>{item.no}</td>
                     <td>{item.title || "-"}</td>
-                    <td>{item.durationMinutes}분</td>
+                    <td style={{ textAlign: "center" }}>{item.durationMinutes}분</td>
                     <td>
                       <MaterialCell
                         material={item.material}
@@ -284,7 +327,7 @@ export function MeetingDetailModal({
                         onError={setMaterialError}
                       />
                     </td>
-                    <td>{item.presenter || "-"}</td>
+                    <td style={{ textAlign: "center" }}>{item.presenter || "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -295,7 +338,13 @@ export function MeetingDetailModal({
 
       <div className="field full">
         <label>회의록</label>
-        <div className="meeting-minutes-body">{meeting.minutes.trim() || "회의록이 아직 작성되지 않았습니다."}</div>
+        {meeting.minutes.trim() ? (
+          <div className="meeting-minutes-body markdown-body">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{meeting.minutes}</ReactMarkdown>
+          </div>
+        ) : (
+          <div className="meeting-minutes-body">회의록이 아직 작성되지 않았습니다.</div>
+        )}
       </div>
 
       <div className="field full">
@@ -342,6 +391,19 @@ export function MeetingDetailModal({
           </button>
         </div>
       </div>
+
+      {transcriptText && (
+        <div className="field full">
+          <label>STT 분석 대본</label>
+          <div className="audio-transcript-preview compact">
+            <pre>{transcriptText}</pre>
+          </div>
+        </div>
+      )}
     </ModalShell>
+    {showTranscript && (
+      <TranscriptModal content={transcriptText} onClose={() => setShowTranscript(false)} title={`STT 대본 - ${meeting.title || "제목 없음"}`} />
+    )}
+    </>
   );
 }

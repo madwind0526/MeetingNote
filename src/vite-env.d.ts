@@ -12,7 +12,7 @@ interface MeetingNoteBridge {
   getBuildInfo: () => Promise<unknown>;
   loadSettings: () => Promise<unknown>;
   saveSettings: (settings: unknown) => Promise<boolean>;
-  openFileDialog: (options: { filters?: { name: string; extensions: string[] }[] }) => Promise<string | null>;
+  openFileDialog: (options: { title?: string; filters?: { name: string; extensions: string[] }[] }) => Promise<string | null>;
   openFolderDialog: () => Promise<{ path: string | null; error?: string }>;
   saveFileDialog: (options: { defaultPath?: string; filters?: { name: string; extensions: string[] }[] }) => Promise<string | null>;
   writeFile: (filePath: string, base64: string) => Promise<boolean>;

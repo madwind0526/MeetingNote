@@ -1,4 +1,14 @@
-import { Document, Packer, Paragraph, HeadingLevel, Table, TableRow, TableCell, TextRun } from "docx";
+import { Document, Packer, Paragraph, HeadingLevel, Table, TableRow, TableCell, TextRun, BorderStyle } from "docx";
+import { parseMinutesMarkdown, parseInlineRuns } from "./parseMinutesMarkdown.mjs";
+
+const MINUTES_HEADING_LEVELS = [
+  HeadingLevel.HEADING_3,
+  HeadingLevel.HEADING_4,
+  HeadingLevel.HEADING_5,
+  HeadingLevel.HEADING_6,
+  HeadingLevel.HEADING_6,
+  HeadingLevel.HEADING_6
+];
 
 function headerCell(text) {
   return new TableCell({
@@ -50,6 +60,31 @@ function buildActionItemTable(actionItems) {
   return new Table({ rows: [headerRow, ...rows] });
 }
 
+function inlineTextRuns(text) {
+  return parseInlineRuns(text).map((run) => new TextRun({ text: run.text, bold: run.bold }));
+}
+
+function buildMinutesTable(block) {
+  const headerRow = new TableRow({
+    children: block.header.map(
+      (text) => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text, bold: true })] })] })
+    )
+  });
+
+  const bodyRows = block.rows.map(
+    (row) =>
+      new TableRow({
+        children: block.header.map(
+          (_, columnIndex) => new TableCell({ children: [new Paragraph({ children: inlineTextRuns(row[columnIndex] ?? "") })] })
+        )
+      })
+  );
+
+  return new Table({ rows: [headerRow, ...bodyRows] });
+}
+
+// Renders the LLM-generated 회의록 markdown as real DOCX elements (headings/tables/lists) instead
+// of dumping raw markdown text line-by-line - see parseMinutesMarkdown.mjs.
 function buildMinutesParagraphs(minutes) {
   const trimmed = (minutes || "").trim();
 
@@ -57,7 +92,30 @@ function buildMinutesParagraphs(minutes) {
     return [new Paragraph("(작성되지 않음)")];
   }
 
-  return trimmed.split("\n").map((line) => new Paragraph(line));
+  const blocks = parseMinutesMarkdown(trimmed);
+  const elements = [];
+
+  for (const block of blocks) {
+    if (block.type === "heading") {
+      const level = MINUTES_HEADING_LEVELS[Math.min(block.level, MINUTES_HEADING_LEVELS.length) - 1];
+      elements.push(new Paragraph({ children: inlineTextRuns(block.text), heading: level }));
+    } else if (block.type === "table") {
+      elements.push(buildMinutesTable(block));
+      elements.push(new Paragraph(""));
+    } else if (block.type === "list") {
+      for (const item of block.items) {
+        elements.push(new Paragraph({ children: [new TextRun("• "), ...inlineTextRuns(item)] }));
+      }
+    } else if (block.type === "hr") {
+      elements.push(
+        new Paragraph({ border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "AAAAAA" } } })
+      );
+    } else {
+      elements.push(new Paragraph({ children: inlineTextRuns(block.text) }));
+    }
+  }
+
+  return elements;
 }
 
 function buildMeetingChildren(meeting) {

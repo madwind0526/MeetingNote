@@ -5,6 +5,8 @@ import type { AudioAnalysis, SttProviderId } from "../../types/domain";
 import { computeEnvelope, decodeAudioFile, encodeWav, mixDownToMono } from "../../lib/audio";
 import { base64ToBlob, registerVoiceProfileRequest, transcribeAudioRequest } from "../../lib/api";
 import type { TranscribeResult } from "../../lib/api";
+import { saveDictionary } from "../../lib/dictionary";
+import type { DictionaryState } from "../../lib/dictionary";
 
 // Must match server/audio/diarize.mjs's UNREGISTERED_SPEAKER_PREFIX exactly - marks a speaker
 // label whose auto-assigned name means "no voice profile matched yet", so renaming it here is
@@ -14,9 +16,19 @@ const UNREGISTERED_SPEAKER_PREFIX = "미등록 화자 ";
 interface AudioAnalysisModalProps {
   file: File;
   attendeeNames: string[];
+  // Agenda order + 발표 시간(분) - passed straight through to transcribeAudioRequest as a soft
+  // voice-matching hint (see server/audio/diarize.mjs). Optional since a brand-new meeting can
+  // have no agenda rows yet.
+  agenda?: { no: number; durationMinutes: number; presenter: string }[];
   sttProvider: SttProviderId;
+  // The word-correction popup (수정 사전 등록) reads/writes through this shared cache - see
+  // MeetingFormModal/App.tsx - instead of fetching its own copy, which would silently diverge
+  // from whatever the Dictionary modal has open in the same session and risk one clobbering the
+  // other's write.
+  dictionary: DictionaryState;
+  onDictionaryChange: (next: DictionaryState) => void;
   onClose: () => void;
-  onComplete: (analysis: AudioAnalysis) => void;
+  onComplete: (analysis: AudioAnalysis) => void | Promise<void>;
 }
 
 // Number of waveform buckets sampled across the whole clip - fine enough resolution for a
@@ -35,6 +47,7 @@ const PROGRESSED_WAVE_COLOR = "rgba(150, 150, 150, 0.55)";
 const SEEK_STEP_SECONDS = 5;
 const SEGMENT_EDGE_SECONDS = 0.06;
 const SPEAKER_SEGMENT_PADDING_SECONDS = 0.35;
+const PLAYBACK_VISUAL_LATENCY_SECONDS = 0.12;
 
 type PlaybackSource = "original" | "processed";
 
@@ -173,8 +186,37 @@ function WaveformCanvas({ envelope, height, activeMask, currentTime = 0, duratio
   );
 }
 
-export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, onComplete }: AudioAnalysisModalProps) {
+// Splits transcript text into whitespace-separated tokens so each word can carry its own
+// right-click handler - the corrected-word popup this opens registers a 수정 사전 entry (see
+// AudioAnalysisModal's handleWordContextMenu/handleSaveCorrection below).
+function EditableTranscriptText({ text, onWordContextMenu }: { text: string; onWordContextMenu: (event: React.MouseEvent, word: string) => void }) {
+  return (
+    <p className="audio-analysis-transcript-text">
+      {text.split(/(\s+)/).map((token, index) =>
+        token.trim() ? (
+          <span className="transcript-editable-word" key={index} onContextMenu={(event) => onWordContextMenu(event, token)}>
+            {token}
+          </span>
+        ) : (
+          token
+        )
+      )}
+    </p>
+  );
+}
+
+export function AudioAnalysisModal({
+  file,
+  attendeeNames,
+  agenda,
+  sttProvider,
+  dictionary,
+  onDictionaryChange,
+  onClose,
+  onComplete
+}: AudioAnalysisModalProps) {
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const activeTranscriptRowRef = useRef<HTMLLIElement | null>(null);
   const sourceAudioBufferRef = useRef<AudioBuffer | null>(null);
   const analyzeAbortControllerRef = useRef<AbortController | null>(null);
   const sourceAudioUrlRef = useRef("");
@@ -212,6 +254,12 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
   // panel shows them plainly until `result` replaces them with the final, speaker-tagged list.
   const [liveSegments, setLiveSegments] = useState<{ startSec: number; endSec: number; text: string }[]>([]);
   const [editedSpeakerMap, setEditedSpeakerMap] = useState<Record<string, string>>({});
+
+  // 발언 대본 word right-click -> "수정하기" 메뉴 -> 수정 사전 등록 (see EditableTranscriptText above).
+  const [wordContextMenu, setWordContextMenu] = useState<{ x: number; y: number; word: string } | null>(null);
+  const [correctionDraft, setCorrectionDraft] = useState<{ from: string; to: string } | null>(null);
+  const [isSavingCorrection, setIsSavingCorrection] = useState(false);
+  const [correctionError, setCorrectionError] = useState("");
 
   function replaceProcessedAudioUrl(blob: Blob) {
     if (processedAudioUrlRef.current) {
@@ -325,6 +373,19 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
   // duration before metadata has loaded (e.g. right after switching source).
   const playbackDurationSec = audioElementDurationSec || (playbackSource === "original" ? sourceDurationSec : durationSec);
   const sttModelOptions = STT_MODEL_OPTIONS_BY_PROVIDER[selectedProvider];
+  const playbackVisualTime = Math.min(
+    Math.max(currentTime - (isPlaying ? PLAYBACK_VISUAL_LATENCY_SECONDS : 0), 0),
+    playbackDurationSec || currentTime
+  );
+  const activeTranscriptIndex = useMemo(() => {
+    if (!result) {
+      return -1;
+    }
+
+    return result.transcriptSegments.findIndex(
+      (segment) => playbackVisualTime >= segment.startSec && playbackVisualTime < segment.endSec
+    );
+  }, [playbackVisualTime, result]);
 
   function segmentsForSpeaker(label: string) {
     if (speakerLabels.length <= 1 && durationSec > 0) {
@@ -403,6 +464,12 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
     };
   }, [activeSpeaker, sourceAudioUrl, processedAudioUrl, playbackSource, result]);
 
+  useEffect(() => {
+    if (isPlaying && activeTranscriptIndex >= 0) {
+      activeTranscriptRowRef.current?.scrollIntoView({ block: "nearest" });
+    }
+  }, [activeTranscriptIndex, isPlaying]);
+
   // The waveform playhead and the play/pause button both have to track the <audio> element's real
   // state as tightly as possible. The 'timeupdate'/'play'/'pause' events above are what the rest of
   // this component's logic (segment auto-advance, etc.) reacts to, but they're not a reliable
@@ -428,6 +495,90 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
 
     return () => cancelAnimationFrame(frameId);
   }, []);
+
+  // Closes the word right-click menu on any subsequent click/scroll/Escape elsewhere - a plain
+  // right-click menu is expected to dismiss itself as soon as the user looks away from it.
+  useEffect(() => {
+    if (!wordContextMenu) {
+      return;
+    }
+
+    const closeMenu = () => setWordContextMenu(null);
+    // Right-clicking a *different* word already moves the menu itself (its own onContextMenu
+    // handler calls setWordContextMenu with the new position) - this listener firing right after
+    // on the same event would otherwise immediately clobber that back to null, so it only closes
+    // for a right-click that lands outside any editable word.
+    const closeOnOutsideContextMenu = (event: MouseEvent) => {
+      if (!(event.target as HTMLElement | null)?.closest(".transcript-editable-word")) {
+        closeMenu();
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeMenu();
+      }
+    };
+
+    window.addEventListener("click", closeMenu);
+    window.addEventListener("contextmenu", closeOnOutsideContextMenu);
+    window.addEventListener("scroll", closeMenu, true);
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      window.removeEventListener("click", closeMenu);
+      window.removeEventListener("contextmenu", closeOnOutsideContextMenu);
+      window.removeEventListener("scroll", closeMenu, true);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [wordContextMenu]);
+
+  function handleWordContextMenu(event: React.MouseEvent, word: string) {
+    event.preventDefault();
+    setWordContextMenu({ x: event.clientX, y: event.clientY, word });
+  }
+
+  function openCorrectionDraftForMenu() {
+    if (!wordContextMenu) {
+      return;
+    }
+
+    setCorrectionError("");
+    setCorrectionDraft({ from: wordContextMenu.word, to: wordContextMenu.word });
+    setWordContextMenu(null);
+  }
+
+  // Registers the correction into the shared 수정 사전 (merges into whatever's already saved there
+  // - never overwrites it) and immediately re-applies it to the transcript already on screen, so
+  // the fix is visible without waiting for a future re-analysis or the Dictionary modal's own
+  // "적용하기" button.
+  async function handleSaveCorrection() {
+    if (!correctionDraft || !correctionDraft.from.trim()) {
+      return;
+    }
+
+    setIsSavingCorrection(true);
+    setCorrectionError("");
+
+    try {
+      const saved = await saveDictionary({
+        ...dictionary,
+        corrections: [...dictionary.corrections, { id: crypto.randomUUID(), from: correctionDraft.from, to: correctionDraft.to, description: "" }]
+      });
+      onDictionaryChange(saved);
+
+      const applyCorrection = (text: string) => text.split(correctionDraft.from).join(correctionDraft.to);
+      setResult((current) =>
+        current ? { ...current, transcriptSegments: current.transcriptSegments.map((segment) => ({ ...segment, text: applyCorrection(segment.text) })) } : current
+      );
+      setLiveSegments((current) => current.map((segment) => ({ ...segment, text: applyCorrection(segment.text) })));
+
+      setCorrectionDraft(null);
+    } catch (error) {
+      setCorrectionError(error instanceof Error ? error.message : "수정 사전 등록에 실패했습니다.");
+    } finally {
+      setIsSavingCorrection(false);
+    }
+  }
 
   function clearAnalysisResult() {
     setResult(null);
@@ -610,6 +761,7 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
         durationSec: sourceAudioBuffer.duration,
         preprocessing: { vocalIsolation, noiseRemoval, normalize },
         attendeeNames,
+        agenda,
         onProgress: setAnalyzeProgress,
         onPartialSegments: setLiveSegments,
         signal: abortController.signal
@@ -686,11 +838,12 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
       }
     }
 
-    onComplete({ ...(persistableResult as AudioAnalysis), speakerMap: editedSpeakerMap });
+    await onComplete({ ...(persistableResult as AudioAnalysis), speakerMap: editedSpeakerMap });
     onClose();
   }
 
   return (
+    <>
     <ModalShell
       title="회의 음성 분석"
       onClose={onClose}
@@ -716,6 +869,7 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
               <FileText size={16} />
               발언 대본
             </div>
+            {!!result && <span className="field-hint">단어를 마우스 오른쪽 버튼으로 클릭하면 수정 사전에 등록할 수 있습니다.</span>}
 
             {!result && liveSegments.length === 0 && (
               <p className="audio-analysis-placeholder">분석 시작 버튼을 누르면 시간과 발언 내용이 여기에 표시됩니다.</p>
@@ -724,14 +878,19 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
             {result && (
               <ul className="audio-analysis-transcript-list">
                 {result.transcriptSegments.map((segment, index) => (
-                  <li className="audio-analysis-transcript-row" key={`${segment.speaker}-${index}`}>
+                  <li
+                    aria-current={index === activeTranscriptIndex ? "true" : undefined}
+                    className={`audio-analysis-transcript-row ${index === activeTranscriptIndex ? "active" : ""}`}
+                    key={`${segment.speaker}-${index}`}
+                    ref={index === activeTranscriptIndex ? activeTranscriptRowRef : undefined}
+                  >
                     <div className="audio-analysis-transcript-meta">
                       <span className="audio-analysis-transcript-time">
                         {formatMmSs(segment.startSec)}-{formatMmSs(segment.endSec)}
                       </span>
                       <span className="audio-analysis-transcript-speaker">{editedSpeakerMap[segment.speaker] ?? segment.speaker}</span>
                     </div>
-                    <p className="audio-analysis-transcript-text">{segment.text}</p>
+                    <EditableTranscriptText onWordContextMenu={handleWordContextMenu} text={segment.text} />
                   </li>
                 ))}
               </ul>
@@ -843,7 +1002,7 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                   <span className="audio-waveform-choice-label">원본</span>
                   <WaveformCanvas
                     analysisProgressPercent={isAnalyzing ? analyzeProgress : undefined}
-                    currentTime={currentTime}
+                    currentTime={playbackVisualTime}
                     durationSec={playbackSource === "original" ? playbackDurationSec : sourceDurationSec}
                     envelope={sourceEnvelope}
                     height={FULL_WAVE_HEIGHT}
@@ -859,7 +1018,7 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                     />
                     <span className="audio-waveform-choice-label">전처리</span>
                     <WaveformCanvas
-                      currentTime={currentTime}
+                      currentTime={playbackVisualTime}
                       durationSec={playbackSource === "processed" ? playbackDurationSec : durationSec}
                       envelope={envelope}
                       height={FULL_WAVE_HEIGHT}
@@ -953,7 +1112,7 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
                       </button>
                       <WaveformCanvas
                         activeMask={speakerMasks[label]}
-                        currentTime={currentTime}
+                        currentTime={playbackVisualTime}
                         durationSec={playbackSource === "processed" ? playbackDurationSec : durationSec}
                         envelope={envelope}
                         height={LANE_WAVE_HEIGHT}
@@ -967,5 +1126,60 @@ export function AudioAnalysisModal({ file, attendeeNames, sttProvider, onClose, 
         </div>
       )}
     </ModalShell>
+
+    {wordContextMenu && (
+      <div
+        className="transcript-word-context-menu"
+        onClick={(event) => event.stopPropagation()}
+        style={{ position: "fixed", top: wordContextMenu.y, left: wordContextMenu.x }}
+      >
+        <button onClick={openCorrectionDraftForMenu} type="button">
+          수정하기
+        </button>
+      </div>
+    )}
+
+    {correctionDraft && (
+      <ModalShell
+        footer={
+          <div className="modal-footer-actions" style={{ marginLeft: "auto" }}>
+            <button className="ghost-action" onClick={() => setCorrectionDraft(null)} type="button">
+              취소
+            </button>
+            <button
+              className="primary-action"
+              disabled={isSavingCorrection || !correctionDraft.from.trim()}
+              onClick={() => void handleSaveCorrection()}
+              type="button"
+            >
+              {isSavingCorrection ? "저장 중..." : "저장"}
+            </button>
+          </div>
+        }
+        onClose={() => setCorrectionDraft(null)}
+        overlayZIndex={1000}
+        title="수정 사전 등록"
+        width="narrow"
+      >
+        <div className="field full">
+          <label>수정 전</label>
+          <input
+            onChange={(event) => setCorrectionDraft((current) => current && { ...current, from: event.target.value })}
+            value={correctionDraft.from}
+          />
+        </div>
+        <div className="field full">
+          <label>수정 후</label>
+          <input
+            autoFocus
+            onChange={(event) => setCorrectionDraft((current) => current && { ...current, to: event.target.value })}
+            value={correctionDraft.to}
+          />
+          <span className="field-hint">저장 즉시 이 대본에 반영되고, 이후 새로 분석되는 회의록에도 자동으로 적용됩니다.</span>
+        </div>
+        {correctionError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{correctionError}</span>}
+      </ModalShell>
+    )}
+    </>
   );
 }

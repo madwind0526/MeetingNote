@@ -1,0 +1,117 @@
+{
+  "speakers": {
+    "organizer": "김도현(주관자)",
+    "presenter1": "박서연(발표자1)",
+    "presenter2": "이준호(발표자2)",
+    "presenter3": "최유나(발표자3)",
+    "attendee1": "정하은(참석자1)",
+    "attendee2": "강민재(참석자2)"
+  },
+  "segments": [
+    {
+      "speakerRole": "organizer",
+      "speakerName": "김도현(주관자)",
+      "startSec": 0,
+      "endSec": 16.13,
+      "text": "안녕하세요, 오늘 3분기 실행 현황 점검 회의를 시작하겠습니다. AI 코드리뷰 파일럿, 고객 지원 프로세스 개선, 인프라 비용 집행 순서로 진행하겠습니다. 먼저 박서연 님 발표 부탁드립니다."
+    },
+    {
+      "speakerRole": "presenter1",
+      "speakerName": "박서연(발표자1)",
+      "startSec": 16.73,
+      "endSec": 41.35,
+      "text": "안녕하세요, 백엔드팀 박서연입니다. 이번 분기에 AI 코드리뷰 어시스턴트 파일럿을 진행했습니다. 8월 한 달간 백엔드팀 12명을 대상으로 PR 340건에 적용했고, 리뷰 대기시간이 18시간에서 6시간으로 줄었습니다. 스타일 지적의 72퍼센트는 자동으로 처리됐습니다."
+    },
+    {
+      "speakerRole": "attendee1",
+      "speakerName": "정하은(참석자1)",
+      "startSec": 41.95,
+      "endSec": 45.26,
+      "text": "혹시 오탐율은 어느 정도인가요?"
+    },
+    {
+      "speakerRole": "presenter1",
+      "speakerName": "박서연(발표자1)",
+      "startSec": 45.86,
+      "endSec": 55.03,
+      "text": "현재 오탐율은 9퍼센트 정도이고, 특히 보안 관련 오탐이 민감해서 9월부터는 룰을 좀 더 튜닝할 계획입니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "김도현(주관자)",
+      "startSec": 55.63,
+      "endSec": 62.88,
+      "text": "네 감사합니다. 다음은 이준호 님, 고객 지원 프로세스 개선안 발표해 주세요."
+    },
+    {
+      "speakerRole": "presenter2",
+      "speakerName": "이준호(발표자2)",
+      "startSec": 63.48,
+      "endSec": 83.66,
+      "text": "안녕하세요, CS팀 이준호입니다. 현재 평균 최초 응답시간이 4.2시간인데, 반복 문의가 전체 티켓의 41퍼센트를 차지하고 있습니다. 자동 응답 챗봇과 티켓 자동 라우팅을 도입해서 응답시간을 1.5시간까지 줄이는 게 목표입니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "김도현(주관자)",
+      "startSec": 84.26,
+      "endSec": 87.26,
+      "text": "챗봇은 언제쯤 배포되나요?"
+    },
+    {
+      "speakerRole": "presenter2",
+      "speakerName": "이준호(발표자2)",
+      "startSec": 87.86,
+      "endSec": 91.7,
+      "text": "10월 중에 1차 배포를 목표로 하고 있습니다."
+    },
+    {
+      "speakerRole": "attendee2",
+      "speakerName": "강민재(참석자2)",
+      "startSec": 92.3,
+      "endSec": 101.21,
+      "text": "반복 문의 비중이 생각보다 높네요. 챗봇 도입되면 저희 쪽 문의도 좀 줄어들 것 같아 기대됩니다."
+    },
+    {
+      "speakerRole": "presenter2",
+      "speakerName": "이준호(발표자2)",
+      "startSec": 101.81,
+      "endSec": 106.46,
+      "text": "네, 배포 이후에 효과를 다시 공유드리겠습니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "김도현(주관자)",
+      "startSec": 107.06,
+      "endSec": 113.93,
+      "text": "좋습니다. 마지막으로 최유나 님, 인프라 비용 현황 발표 부탁드립니다."
+    },
+    {
+      "speakerRole": "presenter3",
+      "speakerName": "최유나(발표자3)",
+      "startSec": 114.53,
+      "endSec": 135.1,
+      "text": "인프라팀 최유나입니다. 3분기 인프라 예산은 6900만원이고, 현재까지 6550만원을 집행해서 집행률은 95퍼센트입니다. 클라우드 서버는 94퍼센트, CDN 트래픽은 121퍼센트로 예산을 초과했습니다."
+    },
+    {
+      "speakerRole": "attendee2",
+      "speakerName": "강민재(참석자2)",
+      "startSec": 135.7,
+      "endSec": 138.91,
+      "text": "CDN 비용이 왜 초과됐나요?"
+    },
+    {
+      "speakerRole": "presenter3",
+      "speakerName": "최유나(발표자3)",
+      "startSec": 139.51,
+      "endSec": 153.6,
+      "text": "8월에 프로모션 트래픽이 급증해서 CDN 비용이 예산보다 많이 나갔습니다. 백업/DR 쪽은 리전 이전이 지연되면서 집행률이 68퍼센트로 낮게 나온 상황입니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "김도현(주관자)",
+      "startSec": 154.2,
+      "endSec": 164.59,
+      "text": "네 모두 수고하셨습니다. 오늘 논의된 내용은 회의록으로 정리해서 공유드리겠습니다. 이상으로 회의를 마치겠습니다."
+    }
+  ]
+}

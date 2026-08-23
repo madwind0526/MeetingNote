@@ -10,17 +10,78 @@ const DEFAULT_SPEAKER_LABEL = "A";
 export const UNREGISTERED_SPEAKER_PREFIX = "미등록 화자 ";
 
 function buildTranscriptSegments(segments) {
-  return segments.map((segment) => ({
-    speaker: typeof segment.speaker === "string" && segment.speaker ? segment.speaker : DEFAULT_SPEAKER_LABEL,
-    startSec: segment.startSec,
-    endSec: segment.endSec,
-    text: segment.text
-  }));
+  const firstExplicitLabel =
+    segments.find((segment) => typeof segment.speaker === "string" && segment.speaker)?.speaker ?? DEFAULT_SPEAKER_LABEL;
+  let lastSpeaker = firstExplicitLabel;
+
+  return segments.map((segment) => {
+    if (typeof segment.speaker === "string" && segment.speaker) {
+      lastSpeaker = segment.speaker;
+    }
+
+    return {
+      speaker: lastSpeaker,
+      startSec: segment.startSec,
+      endSec: segment.endSec,
+      text: segment.text
+    };
+  });
 }
 
 function uniqueLabels(segments) {
   const explicitLabels = Array.from(new Set(segments.map((segment) => segment.speaker).filter((speaker) => typeof speaker === "string" && speaker)));
   return explicitLabels.length ? explicitLabels : [DEFAULT_SPEAKER_LABEL];
+}
+
+// Turns the Agenda table's planned order + `발표 시간(분)` into rough cumulative [start, end]
+// windows - an estimate made before the meeting, not real timestamps from the recording. Items
+// with no presenter or zero duration contribute no window (nothing to hint from).
+function computeAgendaWindows(agenda) {
+  if (!Array.isArray(agenda)) {
+    return [];
+  }
+
+  let cursor = 0;
+  const windows = [];
+
+  for (const item of agenda) {
+    const durationSec = Math.max(0, Number(item?.durationMinutes) || 0) * 60;
+    const startSec = cursor;
+    cursor += durationSec;
+    const presenter = typeof item?.presenter === "string" ? item.presenter.trim() : "";
+
+    if (presenter && durationSec > 0) {
+      windows.push({ startSec, endSec: cursor, presenter });
+    }
+  }
+
+  return windows;
+}
+
+// Picks the presenter whose agenda window overlaps this speaker's segments the most, by total
+// overlapping seconds - a soft hint only (see matchSpeakerProfile's `hintedName` param), since the
+// agenda is a plan and real meetings drift from it.
+function hintedPresenterForLabel(labelSegments, agendaWindows) {
+  if (agendaWindows.length === 0 || labelSegments.length === 0) {
+    return null;
+  }
+
+  const overlapByPresenter = new Map();
+
+  for (const segment of labelSegments) {
+    for (const window of agendaWindows) {
+      const overlap = Math.min(segment.endSec, window.endSec) - Math.max(segment.startSec, window.startSec);
+      if (overlap > 0) {
+        overlapByPresenter.set(window.presenter, (overlapByPresenter.get(window.presenter) ?? 0) + overlap);
+      }
+    }
+  }
+
+  if (overlapByPresenter.size === 0) {
+    return null;
+  }
+
+  return Array.from(overlapByPresenter.entries()).sort((a, b) => b[1] - a[1])[0][0];
 }
 
 // No-embedding fallback (Mock/Naver Clova/OpenAI Whisper API, or a local run without an HF
@@ -40,21 +101,29 @@ export function diarizeSegments(segments, attendeeNames) {
 }
 
 // Embedding-based matching (B3, local WhisperX/Whisper CLI with an HF token). Matching priority:
-// (1) this meeting's own registered attendees, (2) any other stored profile, (3) "미등록 화자 N" -
-// see memory-bank/roadmap.md's confirmed design. A confirmed match is immediately reinforced with
-// this fresh embedding sample; an unmatched speaker is left unregistered until the user manually
+// (1) agenda-hinted presenter at a relaxed bar, (2) this meeting's own registered attendees at the
+// full bar, (3) any other stored profile at the full bar, (4) "미등록 화자 N" - see
+// memory-bank/roadmap.md's confirmed design. A confirmed match is immediately reinforced with this
+// fresh embedding sample; an unmatched speaker is left unregistered until the user manually
 // renames it in the UI (see UNREGISTERED_SPEAKER_PREFIX above).
-export async function assignSpeakersWithProfiles(segments, attendeeNames, embeddings) {
+export async function assignSpeakersWithProfiles(segments, attendeeNames, embeddings, agenda) {
   const names = Array.isArray(attendeeNames) ? attendeeNames : [];
   const labels = uniqueLabels(segments);
   const transcriptSegments = buildTranscriptSegments(segments);
+  const agendaWindows = computeAgendaWindows(agenda);
 
   const speakerMap = {};
   let unregisteredCount = 0;
 
   for (const label of labels) {
     const embedding = embeddings ? embeddings[label] : null;
-    const matchedName = embedding ? await matchSpeakerProfile(embedding, names) : null;
+    const hintedName = agendaWindows.length
+      ? hintedPresenterForLabel(
+          segments.filter((segment) => segment.speaker === label),
+          agendaWindows
+        )
+      : null;
+    const matchedName = embedding ? await matchSpeakerProfile(embedding, names, hintedName) : null;
 
     if (matchedName) {
       speakerMap[label] = matchedName;

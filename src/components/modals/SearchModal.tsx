@@ -15,7 +15,7 @@ export function SearchModal({ query, onApply, onClear, onClose }: SearchModalPro
     <ModalShell
       title="검색"
       onClose={onClose}
-      width="narrow"
+      width="medium"
       footer={
         <div className="modal-footer-actions" style={{ marginLeft: "auto" }}>
           <button

@@ -1,0 +1,203 @@
+{
+  "speakers": {
+    "organizer": "박지훈(주관자)",
+    "presenter1": "김민서(발표자1)",
+    "presenter2": "이수아(발표자2)",
+    "presenter3": "정도윤(발표자3)",
+    "presenter4": "최하은(발표자4)",
+    "attendee1": "강태양(참석자1)",
+    "attendee2": "오유진(참석자2)",
+    "attendee3": "배시온(참석자3)"
+  },
+  "segments": [
+    {
+      "speakerRole": "organizer",
+      "speakerName": "박지훈(주관자)",
+      "startSec": 0.0,
+      "endSec": 20.3,
+      "text": "안녕하세요, 오늘 3분기 프로젝트 진행 현황 공유 회의를 시작하겠습니다. 오늘은 신제품 개발팀, 마케팅팀, 인프라팀, 고객지원팀 순서로 발표를 듣고 질의응답 시간을 갖겠습니다. 먼저 신제품 개발팀 김민서 님, 발표 부탁드립니다."
+    },
+    {
+      "speakerRole": "presenter1",
+      "speakerName": "김민서(발표자1)",
+      "startSec": 20.9,
+      "endSec": 47.42,
+      "text": "안녕하세요, 신제품 개발팀 김민서입니다. 이번 분기에는 앱 유아이 리뉴얼 프로젝트를 진행했습니다. 기존 사용자 피드백을 반영해서 메인 화면의 메뉴 구조를 단순화했고, 다크 모드를 새로 추가했습니다. 베타 테스트 결과 사용자 만족도가 15퍼센트 상승했고, 4분기 초에 정식 배포를 목표로 하고 있습니다."
+    },
+    {
+      "speakerRole": "attendee1",
+      "speakerName": "강태양(참석자1)",
+      "startSec": 48.02,
+      "endSec": 51.67,
+      "text": "베타 테스트는 몇 명을 대상으로 진행하셨나요?"
+    },
+    {
+      "speakerRole": "presenter1",
+      "speakerName": "김민서(발표자1)",
+      "startSec": 52.27,
+      "endSec": 60.07,
+      "text": "베타 테스트는 사내 직원과 일부 파워 유저를 포함해서 총 200명을 대상으로 진행했습니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "박지훈(주관자)",
+      "startSec": 60.67,
+      "endSec": 63.98,
+      "text": "정식 배포 일정에 리스크는 없나요?"
+    },
+    {
+      "speakerRole": "presenter1",
+      "speakerName": "김민서(발표자1)",
+      "startSec": 64.58,
+      "endSec": 72.91,
+      "text": "현재까지는 큰 리스크는 없지만, 안드로이드 저사양 기기 대응 테스트가 조금 더 필요한 상황입니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "박지훈(주관자)",
+      "startSec": 73.51,
+      "endSec": 80.66,
+      "text": "네 감사합니다. 다음은 마케팅팀 이수아 님, 캠페인 성과 발표해 주시죠."
+    },
+    {
+      "speakerRole": "presenter2",
+      "speakerName": "이수아(발표자2)",
+      "startSec": 81.26,
+      "endSec": 105.46,
+      "text": "안녕하세요, 마케팅팀 이수아입니다. 이번 분기 신규 캠페인은 에스엔에스 광고와 인플루언서 협업을 중심으로 진행했습니다. 캠페인 기간 동안 앱 다운로드 수가 전분기 대비 30퍼센트 증가했고, 광고비 대비 전환율도 목표치를 상회했습니다. 다음 분기에는 예산을 조금 더 확대해서 진행할 계획입니다."
+    },
+    {
+      "speakerRole": "attendee2",
+      "speakerName": "오유진(참석자2)",
+      "startSec": 106.06,
+      "endSec": 111.0,
+      "text": "인플루언서 협업은 어떤 기준으로 선정하셨나요?"
+    },
+    {
+      "speakerRole": "presenter2",
+      "speakerName": "이수아(발표자2)",
+      "startSec": 111.6,
+      "endSec": 118.49,
+      "text": "팔로워 수보다는 실제 참여율과 우리 타겟 연령대와의 적합성을 우선적으로 고려했습니다."
+    },
+    {
+      "speakerRole": "attendee3",
+      "speakerName": "배시온(참석자3)",
+      "startSec": 119.09,
+      "endSec": 122.86,
+      "text": "다음 분기 예산 확대 규모는 어느 정도인가요?"
+    },
+    {
+      "speakerRole": "presenter2",
+      "speakerName": "이수아(발표자2)",
+      "startSec": 123.46,
+      "endSec": 128.98,
+      "text": "현재 검토 중이지만 약 20퍼센트 정도 증액을 계획하고 있습니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "박지훈(주관자)",
+      "startSec": 129.58,
+      "endSec": 135.7,
+      "text": "좋은 성과네요. 이어서 인프라팀 정도윤 님 발표 부탁드립니다."
+    },
+    {
+      "speakerRole": "presenter3",
+      "speakerName": "정도윤(발표자3)",
+      "startSec": 136.3,
+      "endSec": 162.98,
+      "text": "안녕하세요, 인프라팀 정도윤입니다. 이번 분기에는 온프레미스 서버를 클라우드로 이전하는 작업을 진행했습니다. 이전 작업은 무중단으로 완료했고, 평균 응답 속도가 기존 대비 40퍼센트 개선됐습니다. 다만 이전 과정에서 일부 로그 수집 파이프라인에 지연이 있었고, 현재는 모두 정상화된 상태입니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "박지훈(주관자)",
+      "startSec": 163.58,
+      "endSec": 166.75,
+      "text": "이전 과정에서 장애는 없었나요?"
+    },
+    {
+      "speakerRole": "presenter3",
+      "speakerName": "정도윤(발표자3)",
+      "startSec": 167.35,
+      "endSec": 172.54,
+      "text": "짧은 점검 시간 외에는 서비스 중단 없이 완료했습니다."
+    },
+    {
+      "speakerRole": "attendee1",
+      "speakerName": "강태양(참석자1)",
+      "startSec": 173.14,
+      "endSec": 176.98,
+      "text": "클라우드 전환 이후 비용 변화는 어떻게 되나요?"
+    },
+    {
+      "speakerRole": "presenter3",
+      "speakerName": "정도윤(발표자3)",
+      "startSec": 177.58,
+      "endSec": 186.31,
+      "text": "초기에는 이중 운영 비용이 있었지만, 다음 달부터는 기존 대비 약 15퍼센트 절감될 것으로 예상됩니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "박지훈(주관자)",
+      "startSec": 186.91,
+      "endSec": 193.2,
+      "text": "감사합니다. 마지막으로 고객지원팀 최하은 님 발표해 주시죠."
+    },
+    {
+      "speakerRole": "presenter4",
+      "speakerName": "최하은(발표자4)",
+      "startSec": 193.8,
+      "endSec": 216.84,
+      "text": "안녕하세요, 고객지원팀 최하은입니다. 이번 분기에는 고객 문의 대응 프로세스를 개선했습니다. 챗봇 1차 응대 비중을 늘리고, 상담사 배정 로직을 개편해서 평균 응답 시간이 40퍼센트 단축됐습니다. 고객 만족도 조사에서도 전분기 대비 점수가 상승했습니다."
+    },
+    {
+      "speakerRole": "attendee2",
+      "speakerName": "오유진(참석자2)",
+      "startSec": 217.44,
+      "endSec": 222.6,
+      "text": "챗봇 응대 비중이 늘면서 고객 불만은 없었나요?"
+    },
+    {
+      "speakerRole": "presenter4",
+      "speakerName": "최하은(발표자4)",
+      "startSec": 223.2,
+      "endSec": 230.57,
+      "text": "초반에는 일부 불만이 있었지만, 단순 문의 위주로 챗봇을 활용하도록 조정한 뒤 개선됐습니다."
+    },
+    {
+      "speakerRole": "attendee3",
+      "speakerName": "배시온(참석자3)",
+      "startSec": 231.17,
+      "endSec": 235.61,
+      "text": "상담사 배정 로직은 구체적으로 어떻게 바뀌었나요?"
+    },
+    {
+      "speakerRole": "presenter4",
+      "speakerName": "최하은(발표자4)",
+      "startSec": 236.21,
+      "endSec": 241.7,
+      "text": "문의 유형별로 전문 상담사를 자동으로 매칭하도록 변경했습니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "박지훈(주관자)",
+      "startSec": 242.3,
+      "endSec": 246.22,
+      "text": "다음 분기 목표 응답 시간은 어느 정도인가요?"
+    },
+    {
+      "speakerRole": "presenter4",
+      "speakerName": "최하은(발표자4)",
+      "startSec": 246.82,
+      "endSec": 252.48,
+      "text": "현재보다 추가로 10퍼센트 더 단축하는 것을 목표로 하고 있습니다."
+    },
+    {
+      "speakerRole": "organizer",
+      "speakerName": "박지훈(주관자)",
+      "startSec": 253.08,
+      "endSec": 266.52,
+      "text": "네 모든 팀 발표 잘 들었습니다. 오늘 나온 의견들은 회의록에 정리해서 공유하겠습니다. 다들 수고 많으셨습니다. 이상으로 회의를 마치겠습니다."
+    }
+  ]
+}

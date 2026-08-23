@@ -63,6 +63,18 @@ export interface MemberDraft {
   disabled?: boolean;
 }
 
+// Solo-use shortcut: logs in as the first available (non-disabled) member without a password, so
+// a single local user doesn't have to type credentials every launch. Does not touch verifyLogin or
+// any server-side auth check - it only picks an existing member and treats it as the session, the
+// same way a normal login would after the server already validated that member's password.
+export async function skipLogin(): Promise<PublicMember | null> {
+  const members = await fetchMembers();
+  const active = members.filter((member) => !member.disabled);
+  const preferred = active.find((member) => member.role === "admin") ?? active[0];
+
+  return preferred ?? null;
+}
+
 export async function fetchMembers(): Promise<PublicMember[]> {
   if (window.meetingNote?.listMembers) {
     return window.meetingNote.listMembers();

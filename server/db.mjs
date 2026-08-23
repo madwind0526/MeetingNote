@@ -133,8 +133,27 @@ function normalizeAudio(draft) {
     transcriptSegments: Array.isArray(draft.transcriptSegments) ? draft.transcriptSegments.map((segment) => normalizeTranscriptSegment(segment)) : [],
     speakerMap: draft.speakerMap && typeof draft.speakerMap === "object" ? draft.speakerMap : {},
     analyzedAt: draft.analyzedAt ?? "",
-    audioPath: typeof draft.audioPath === "string" && draft.audioPath.trim() ? draft.audioPath : undefined
+    audioPath: typeof draft.audioPath === "string" && draft.audioPath.trim() ? draft.audioPath : undefined,
+    transcriptPath: typeof draft.transcriptPath === "string" && draft.transcriptPath.trim() ? draft.transcriptPath : undefined
   };
+}
+
+// Clamps an out-of-range day (e.g. "2026-08-35", or "2026-02-30" after switching month on an
+// already-set day) to the nearest real day of that month instead of persisting a calendar date
+// that doesn't exist - month is clamped the same way. Anything not shaped like YYYY-MM-DD (empty
+// string, partially-typed value, ...) passes through untouched.
+function clampToNearestValidDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value ?? ""));
+  if (!match) {
+    return value ?? "";
+  }
+
+  const year = Number(match[1]);
+  const month = Math.min(12, Math.max(1, Number(match[2])));
+  const maxDay = new Date(year, month, 0).getDate();
+  const day = Math.min(maxDay, Math.max(1, Number(match[3])));
+
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 export function normalizeMeeting(draft) {
@@ -142,7 +161,7 @@ export function normalizeMeeting(draft) {
 
   return {
     title: source.title ?? "",
-    date: source.date ?? "",
+    date: clampToNearestValidDate(source.date ?? ""),
     startTime: source.startTime ?? "",
     endTime: source.endTime ?? "",
     organizer: source.organizer ?? "",

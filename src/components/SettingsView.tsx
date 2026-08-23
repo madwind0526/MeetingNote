@@ -19,7 +19,7 @@ import type { AppSettings, ExportFormat, ImportDuplicateMode, LlmProviderId, Stt
 import { llmProviders, sttProviders } from "../types/domain";
 import type { LlmStatus, SttStatus } from "../lib/llm";
 import { pickAttachmentsFolder, readFileAsDataUrl } from "../lib/api";
-import { isBuiltinFilePickerAvailable, pickFileWithNavigator, shouldUseBuiltinFilePicker } from "../lib/filePicker";
+import { isBuiltinFilePickerAvailable, pickFileWithConfiguredPicker } from "../lib/filePicker";
 
 interface SettingsViewProps {
   settings: AppSettings;
@@ -157,10 +157,10 @@ export function SettingsView({
   };
 
   const triggerLogoPick = async () => {
-    if (shouldUseBuiltinFilePicker()) {
-      const file = await pickFileWithNavigator([".png", ".jpg", ".jpeg", ".gif", ".webp"], "로고 이미지 선택");
-      if (file) {
-        await processLogoFile(file);
+    const result = await pickFileWithConfiguredPicker([".png", ".jpg", ".jpeg", ".gif", ".webp"], "로고 이미지 선택");
+    if (result.handled) {
+      if (result.file) {
+        await processLogoFile(result.file);
       }
       return;
     }

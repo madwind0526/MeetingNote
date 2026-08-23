@@ -90,6 +90,7 @@ export function FilterModal({ connectionMax, filters, onApply, onClear, onClose 
     <ModalShell
       title="필터"
       onClose={onClose}
+      width="medium"
       footer={
         <div className="modal-footer-actions" style={{ marginLeft: "auto" }}>
           <button className="ghost-action" onClick={onClear} type="button">

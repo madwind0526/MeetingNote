@@ -5,7 +5,7 @@ import type { ImportDuplicateMode, ImportFormat, MeetingDraft } from "../../type
 import { attendeeSummary } from "../../types/domain";
 import type { ImportSummary } from "../../lib/api";
 import { bulkUpsertMeetingsRequest, importMeetingsRequest } from "../../lib/api";
-import { pickFileWithNavigator, shouldUseBuiltinFilePicker } from "../../lib/filePicker";
+import { pickFileWithConfiguredPicker } from "../../lib/filePicker";
 
 interface ImportModalProps {
   duplicateMode: ImportDuplicateMode;
@@ -40,10 +40,10 @@ export function ImportModal({ duplicateMode, onClose, onImported }: ImportModalP
   const activeOption = FORMAT_OPTIONS.find((option) => option.format === format)!;
 
   const triggerFilePick = async () => {
-    if (shouldUseBuiltinFilePicker()) {
-      const picked = await pickFileWithNavigator([activeOption.accept], `${activeOption.label} 파일 선택`);
-      if (picked) {
-        setFile(picked);
+    const result = await pickFileWithConfiguredPicker([activeOption.accept], `${activeOption.label} 파일 선택`);
+    if (result.handled) {
+      if (result.file) {
+        setFile(result.file);
         setPreview(null);
         setError("");
       }
@@ -97,7 +97,7 @@ export function ImportModal({ duplicateMode, onClose, onImported }: ImportModalP
     <ModalShell
       title="DB복원"
       onClose={onClose}
-      width="wide"
+      width="medium"
       footer={
         <div className="modal-footer-actions" style={{ marginLeft: "auto" }}>
           <button className="ghost-action" onClick={onClose} type="button">

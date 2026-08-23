@@ -3,7 +3,7 @@ import { CheckCheck, Download, FileUp, Plus, Trash2, Upload } from "lucide-react
 import { ModalShell } from "./ModalShell";
 import type { DictionaryEntry } from "../../types/domain";
 import { saveExportedFile } from "../../lib/api";
-import { pickFileWithNavigator, shouldUseBuiltinFilePicker } from "../../lib/filePicker";
+import { pickFileWithConfiguredPicker } from "../../lib/filePicker";
 
 interface DictionaryModalProps {
   kind: "abbreviation" | "correction";
@@ -194,10 +194,10 @@ export function DictionaryModal({ kind, entries, onApply, onClose, onSave }: Dic
   const startImport = async (mode: "append" | "replace") => {
     importModeRef.current = mode;
 
-    if (shouldUseBuiltinFilePicker()) {
-      const file = await pickFileWithNavigator([".json"], "약어/수정 사전 JSON 선택");
-      if (file) {
-        await processImportFile(file);
+    const result = await pickFileWithConfiguredPicker([".json"], "약어/수정 사전 JSON 선택");
+    if (result.handled) {
+      if (result.file) {
+        await processImportFile(result.file);
       }
       return;
     }
@@ -212,7 +212,7 @@ export function DictionaryModal({ kind, entries, onApply, onClose, onSave }: Dic
     <ModalShell
       title={`${labels.title} (총 ${draft.length}개)`}
       onClose={onClose}
-      width="wide"
+      width="large"
       footer={
         <>
           <div className="modal-footer-actions">
@@ -258,8 +258,8 @@ export function DictionaryModal({ kind, entries, onApply, onClose, onSave }: Dic
         <div className="editable-table-wrap">
           <table className="editable-table">
             <colgroup>
-              <col style={{ width: "calc(10ch + 32px)" }} />
-              <col />
+              <col style={{ width: "26%" }} />
+              <col style={{ width: "26%" }} />
               <col />
               <col style={{ width: 48 }} />
             </colgroup>

@@ -197,6 +197,26 @@ export async function openAttachment(relativePath: string): Promise<void> {
   window.open(`/attachments/${relativePath.split("/").map(encodeURIComponent).join("/")}`, "_blank");
 }
 
+// Streaming URL for a stored attachment (served by the /attachments/ static route - see
+// vite.config.mts) - used as an <audio>/<video> `src` so the file plays inline instead of going
+// through openAttachment()'s "open with OS app / download" path.
+export function attachmentUrl(relativePath: string): string {
+  return `/attachments/${relativePath.split("/").map(encodeURIComponent).join("/")}`;
+}
+
+// Re-fetches a previously saved attachment as a File - used to re-open AudioAnalysisModal for a
+// meeting's already-uploaded recording (no `pendingAudioFile` in memory since it wasn't picked
+// again this session).
+export async function fetchAttachmentAsFile(relativePath: string, fileName: string): Promise<File> {
+  const response = await fetch(attachmentUrl(relativePath));
+  if (!response.ok) {
+    throw new Error(`원본 오디오 파일을 불러오지 못했습니다 (${response.status}).`);
+  }
+
+  const blob = await response.blob();
+  return new File([blob], fileName, { type: blob.type });
+}
+
 // Opens the native "select a folder" dialog (Electron only) for Settings' storage-folder picker. The
 // returned path is always relative to the project root (C:\Claude\MeetingNote) - the main process
 // rejects any folder outside that tree and this throws with its Korean error message in that
@@ -214,7 +234,20 @@ export async function pickAttachmentsFolder(): Promise<string | null> {
     return null;
   }
 
-  const result = await window.meetingNote.openFolderDialog();
+  let result: { path: string | null; error?: string };
+
+  try {
+    result = await window.meetingNote.openFolderDialog();
+  } catch (error) {
+    if (isBuiltinFilePickerAvailable()) {
+      const fallback = await pickFolderWithNavigator("저장 폴더 선택");
+      if (fallback.error) {
+        throw new Error(fallback.error);
+      }
+      return fallback.path;
+    }
+    throw error;
+  }
 
   if (result.error) {
     throw new Error(result.error);
@@ -277,7 +310,16 @@ export function base64ToBlob(base64: string, mimeType: string): Blob {
 }
 
 export async function saveExportedFile(result: ExportResult): Promise<string> {
-  if (shouldUseBuiltinFilePicker()) {
+  // The "native" filePickerMode setting means "prefer Electron's OS save dialog when available" -
+  // but running as a plain browser tab (no window.meetingNote at all) has no native dialog to
+  // prefer, so that setting has nothing to fall back to and this used to silently drop straight
+  // to the browser's default-Downloads-folder anchor download below with no folder picker at all.
+  // Falling back to this app's own built-in file navigator here (the same one "builtin" mode uses
+  // deliberately) closes that gap without changing behavior for anyone who actually has the
+  // Electron dialog available.
+  const useBuiltinPicker = shouldUseBuiltinFilePicker() || (!window.meetingNote?.saveFileDialog && isBuiltinFilePickerAvailable());
+
+  if (useBuiltinPicker) {
     const filePath = await pickSaveTargetWithNavigator(result.fileName);
 
     if (!filePath) {
@@ -290,14 +332,20 @@ export async function saveExportedFile(result: ExportResult): Promise<string> {
   }
 
   if (window.meetingNote?.saveFileDialog) {
-    const filePath = await window.meetingNote.saveFileDialog({ defaultPath: result.fileName });
+    let filePath: string | null = null;
 
-    if (!filePath) {
-      return "";
+    try {
+      filePath = await window.meetingNote.saveFileDialog({ defaultPath: result.fileName });
+
+      if (!filePath) {
+        return "";
+      }
+
+      await window.meetingNote.writeFile(filePath, result.contentBase64);
+      return filePath;
+    } catch (error) {
+      console.error("Native save dialog failed.", error);
     }
-
-    await window.meetingNote.writeFile(filePath, result.contentBase64);
-    return filePath;
   }
 
   const blob = base64ToBlob(result.contentBase64, result.mimeType);
@@ -323,6 +371,10 @@ export interface TranscribeRequest {
   // returns real per-segment speaker labels (currently none do by default) - see
   // server/audio/diarize.mjs; otherwise every segment is treated as a single speaker.
   attendeeNames: string[];
+  // Agenda order + 발표 시간(분) - used only as a soft tie-breaker hint for embedding-based voice
+  // matching (see server/audio/diarize.mjs's computeAgendaWindows/hintedPresenterForLabel). A plan
+  // made before the meeting, not real timestamps, so it never overrides a clear acoustic mismatch.
+  agenda?: { no: number; durationMinutes: number; presenter: string }[];
   // Polled roughly every 700ms with a 0-100 percentage while the job is running - see
   // /api/stt/transcribe/status. Local providers report real progress parsed from their own
   // process output; cloud/mock providers get a smooth time-based estimate instead, since a single
@@ -383,7 +435,8 @@ export async function transcribeAudioRequest(request: TranscribeRequest): Promis
       fileName: request.fileName,
       durationSec: request.durationSec,
       preprocessing: request.preprocessing,
-      attendeeNames: request.attendeeNames
+      attendeeNames: request.attendeeNames,
+      agenda: request.agenda
     })
   });
   const { jobId } = await parseJsonResponse<{ jobId: string }>(startResponse);

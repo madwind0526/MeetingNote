@@ -2,6 +2,16 @@
 
 ## Current Focus
 
+- **Configured file-picker regression follow-up**: All file-open entry points now share `pickFileWithConfiguredPicker`
+  (built-in navigator, Electron native dialog, then browser input fallback). Electron open/save/folder dialogs attach to
+  the current BrowserWindow. `npm run build` passes.
+- **Audio playback transcript sync follow-up**: Waveform playhead now uses a small visual latency compensation, the
+  active transcript row is highlighted and scrolled into view during playback, and unlabeled STT segments inherit the
+  previous explicit speaker instead of falling back to `A`. `npm run build` passes.
+- **Audio transcript attachment follow-up**: Completed STT analysis now saves a transcript `.txt` next to the original
+  audio attachment, persists `audio.transcriptPath`, shows the saved original audio/transcript paths and transcript text
+  in edit mode, and links both files from the detail modal. `npm run build` passes.
+
 - **브라우저/Playwright 파일 탐색기 경로 수정 완료**: `127.0.0.1:5185` 접속에서도 설정의 `탐색기 방식` 섹션을 표시하고, 내장 파일 탐색기는 Vite `/api/file-navigator/*` fallback으로 동작. 기본 모드는 브라우저 `input[type=file]` chooser 이벤트 확인, 내장 모드는 새 회의록 `회의 음성 파일`에서 모달/파일 선택 확인. `npm run build` 통과.
 
 - **다음 작업 대기 (사용자 등록, 미착수)**:

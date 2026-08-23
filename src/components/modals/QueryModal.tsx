@@ -82,7 +82,7 @@ export function QueryModal({ meetings, ollamaConfig, provider, onClose, onOpenMe
     <ModalShell
       title="질문하기"
       onClose={onClose}
-      width="wide"
+      width="medium"
       footer={
         <div className="modal-footer-actions" style={{ marginLeft: "auto" }}>
           <button

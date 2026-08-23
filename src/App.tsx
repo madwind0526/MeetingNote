@@ -150,19 +150,24 @@ export function App() {
     let mounted = true;
 
     (async () => {
-      try {
-        const loaded = await fetchMeetings();
-        if (mounted) {
-          setMeetings(loaded);
-          setSystemMessage(`회의록 ${loaded.length}건을 불러왔습니다.`);
-        }
-      } catch (error) {
-        if (mounted) {
-          setSystemMessage(error instanceof Error ? error.message : "회의록을 불러오지 못했습니다.");
-        }
+      // fetchMeetings (HTTP) and loadSettingsFile (Electron IPC) don't depend on each other -
+      // only applying their results below does - so run them concurrently instead of waiting for
+      // the meetings list before even starting the settings load.
+      const [loaded, fileSettings] = await Promise.all([
+        fetchMeetings().catch((error: unknown) => {
+          if (mounted) {
+            setSystemMessage(error instanceof Error ? error.message : "회의록을 불러오지 못했습니다.");
+          }
+          return null;
+        }),
+        loadSettingsFile()
+      ]);
+
+      if (mounted && loaded) {
+        setMeetings(loaded);
+        setSystemMessage(`회의록 ${loaded.length}건을 불러왔습니다.`);
       }
 
-      const fileSettings = await loadSettingsFile();
       if (mounted && fileSettings) {
         setSettings(fileSettings);
         setView(fileSettings.defaultView);
@@ -743,10 +748,12 @@ export function App() {
 
       {formModal?.mode === "create" && (
         <MeetingFormModal
+          dictionary={dictionary}
           llmProvider={activeLlmProvider}
           mode="create"
           ollamaConfig={ollamaConfig}
           onClose={() => setFormModal(null)}
+          onDictionaryChange={setDictionary}
           onSubmit={handleCreateSubmit}
           sttProvider={activeSttProvider}
         />
@@ -754,11 +761,13 @@ export function App() {
 
       {formModal?.mode === "edit" && (
         <MeetingFormModal
+          dictionary={dictionary}
           initial={formModal.meeting}
           llmProvider={activeLlmProvider}
           mode="edit"
           ollamaConfig={ollamaConfig}
           onClose={() => setFormModal(null)}
+          onDictionaryChange={setDictionary}
           onSubmit={(draft) => handleEditSubmit(formModal.meeting.id, draft)}
           sttProvider={activeSttProvider}
         />
