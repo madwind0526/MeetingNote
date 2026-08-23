@@ -7,7 +7,7 @@ interface ModalShellProps {
   children: ReactNode;
   footer?: ReactNode;
   placement?: "center" | "bottom-right";
-  width?: "default" | "medium" | "large" | "wide" | "xwide" | "narrow";
+  width?: "default" | "medium" | "large" | "wide" | "xwide" | "narrow" | "full";
   // Overrides the backdrop's stacking order (default z-index: 50, shared by every ModalShell).
   // Only needed for a modal that must always stay above other already-open modals - e.g.
   // FileNavigatorModal, which can be triggered from inside any other modal and must not end up

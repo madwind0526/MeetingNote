@@ -1491,6 +1491,14 @@ p {
   max-height: min(880px, calc(100vh - 48px));
 }
 
+/* Fills the app window instead of sitting at a fixed max size - used by AudioAnalysisModal so the
+   transcript/waveform/speaker-lane layout gets the full window to work with rather than a capped
+   popup size. 100% fills the backdrop's own padded content box (see .modal-backdrop's padding). */
+.modal-shell.full {
+  width: 100%;
+  max-height: 100%;
+}
+
 .modal-shell.narrow {
   width: min(440px, 100%);
 }

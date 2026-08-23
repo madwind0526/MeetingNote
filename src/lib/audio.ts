@@ -46,8 +46,7 @@ export function mixDownToMono(audioBuffer: AudioBuffer): Float32Array {
   return mono;
 }
 
-export function computeEnvelope(audioBuffer: AudioBuffer, bucketCount: number): Float32Array {
-  const mono = mixDownToMono(audioBuffer);
+export function computeEnvelopeFromMono(mono: Float32Array, bucketCount: number): Float32Array {
   const envelope = new Float32Array(bucketCount);
 
   if (bucketCount <= 0 || mono.length === 0) {
@@ -72,6 +71,56 @@ export function computeEnvelope(audioBuffer: AudioBuffer, bucketCount: number): 
   }
 
   return envelope;
+}
+
+export function computeEnvelope(audioBuffer: AudioBuffer, bucketCount: number): Float32Array {
+  return computeEnvelopeFromMono(mixDownToMono(audioBuffer), bucketCount);
+}
+
+// 20ms at TARGET_SAMPLE_RATE (16kHz) - short-window RMS scoring granularity for findQuietCutSample.
+const SILENCE_WINDOW_SAMPLES = Math.round(TARGET_SAMPLE_RATE * 0.02);
+
+function windowRms(mono: Float32Array, start: number, end: number): number {
+  let sumSquares = 0;
+  const count = Math.max(1, end - start);
+  for (let index = start; index < end; index += 1) {
+    sumSquares += mono[index] * mono[index];
+  }
+  return Math.sqrt(sumSquares / count);
+}
+
+// Used by chunked analysis (useChunkedAudioAnalysis) to avoid slicing a chunk boundary through the
+// middle of a word: scans [searchStartSample, searchEndSample) for the quietest short window and
+// returns its center as the cut point, instead of always cutting at a fixed sample count. Falls
+// back to `fallbackSample` (the plain fixed-duration boundary) when the whole search window is
+// continuously loud (e.g. uninterrupted speech spans it) rather than waiting for silence that never
+// comes - an imperfect cut is better than an unbounded chunk.
+export function findQuietCutSample(
+  mono: Float32Array,
+  searchStartSample: number,
+  searchEndSample: number,
+  fallbackSample: number,
+  quietThreshold = 0.02
+): number {
+  const start = Math.max(0, Math.min(searchStartSample, mono.length));
+  const end = Math.max(start, Math.min(searchEndSample, mono.length));
+
+  let bestSample = -1;
+  let bestRms = Infinity;
+
+  for (let cursor = start; cursor + SILENCE_WINDOW_SAMPLES <= end; cursor += SILENCE_WINDOW_SAMPLES) {
+    const rms = windowRms(mono, cursor, cursor + SILENCE_WINDOW_SAMPLES);
+    if (rms < bestRms) {
+      bestRms = rms;
+      bestSample = cursor + Math.floor(SILENCE_WINDOW_SAMPLES / 2);
+    }
+  }
+
+  if (bestSample === -1 || bestRms > quietThreshold) {
+    return Math.max(0, Math.min(fallbackSample, mono.length));
+  }
+
+  return bestSample;
 }
 
 export function encodeWav(mono: Float32Array, sampleRate: number): Blob {

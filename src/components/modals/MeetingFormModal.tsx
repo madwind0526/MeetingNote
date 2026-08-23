@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { Bot, FileInput, FileText, FolderOpen, Maximize2, Mic, Paperclip, Plus, Square, Trash2, Upload } from "lucide-react";
+import { useRef, useState } from "react";
+import { Bot, FileInput, FileText, FolderOpen, Maximize2, Mic, Paperclip, Plus, Trash2, Upload } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import { AudioAnalysisModal } from "./AudioAnalysisModal";
 import { PresentationSummaryModal } from "./PresentationSummaryModal";
 import { TranscriptModal } from "./TranscriptModal";
-import { LiveWaveform } from "../LiveWaveform";
 import type {
   ActionItem,
   AgendaItem,
@@ -26,18 +25,9 @@ import {
 } from "../../types/domain";
 import { generateMinutes } from "../../lib/llm";
 import type { OllamaConfig } from "../../lib/llm";
-import {
-  fetchAttachmentAsFile,
-  importMeetingsRequest,
-  inferImportFormat,
-  openAttachment,
-  transcribeAudioRequest,
-  uploadAttachment
-} from "../../lib/api";
+import { fetchAttachmentAsFile, importMeetingsRequest, inferImportFormat, openAttachment, uploadAttachment } from "../../lib/api";
 import { pickFileWithConfiguredPicker } from "../../lib/filePicker";
-import { decodeAudioFile, encodeWav, mixDownToMono } from "../../lib/audio";
-import { isSystemAudioCaptureSupported, startSystemAudioRecording } from "../../lib/systemAudioCapture";
-import type { SystemAudioRecording } from "../../lib/systemAudioCapture";
+import { isSystemAudioCaptureSupported } from "../../lib/systemAudioCapture";
 import { formatTranscriptText, transcriptFileNameFromAudio } from "../../lib/transcript";
 import type { DictionaryState } from "../../lib/dictionary";
 
@@ -153,16 +143,12 @@ export function MeetingFormModal({
   const [saveError, setSaveError] = useState("");
   const [isImportingFile, setIsImportingFile] = useState(false);
   const [importFileError, setImportFileError] = useState("");
-  // ---------- PC 소리 녹음 (system audio) ----------
-  const [isSystemRecording, setIsSystemRecording] = useState(false);
-  const [recordingElapsedSec, setRecordingElapsedSec] = useState(0);
-  const [liveCaptionLines, setLiveCaptionLines] = useState<string[]>([]);
-  const [systemRecordingError, setSystemRecordingError] = useState("");
-  const systemRecordingRef = useRef<SystemAudioRecording | null>(null);
-  const elapsedTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const liveCaptionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const liveCaptionChunksRef = useRef<Blob[]>([]);
-  const liveCaptionBusyRef = useRef(false);
+  // ---------- 오디오 분석 팝업 진입 방식 (파일 업로드 vs 실시간 녹음) ----------
+  // Tracks how the currently-open AudioAnalysisModal was entered, independent of whether
+  // pendingAudioFile happens to be set - a recording session sets pendingAudioFile too once it
+  // finishes (see onRecordingFinalized below), but that shouldn't flip an already-open recording
+  // popup back into file mode.
+  const [audioSourceMode, setAudioSourceMode] = useState<"file" | "recording" | null>(null);
   const audioFileInputRef = useRef<HTMLInputElement | null>(null);
   const materialFileInputRef = useRef<HTMLInputElement | null>(null);
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -385,11 +371,12 @@ export function MeetingFormModal({
     audioFileInputRef.current?.click();
   };
 
-  // "분석 시작" needs an in-memory File to decode - a freshly picked/recorded file already is one,
-  // but re-opening analysis on an already-saved meeting's audio (edit mode, nothing picked this
+  // "분석 시작" needs an in-memory File to decode - a freshly picked file already is one, but
+  // re-opening analysis on an already-saved meeting's audio (edit mode, nothing picked this
   // session) has to re-fetch the stored attachment first (B5/B6).
   const handleOpenAudioAnalysis = async () => {
     if (pendingAudioFile) {
+      setAudioSourceMode("file");
       setShowAudioAnalysis(true);
       return;
     }
@@ -404,6 +391,7 @@ export function MeetingFormModal({
     try {
       const file = await fetchAttachmentAsFile(draft.audio.audioPath, draft.audio.fileName);
       setPendingAudioFile(file);
+      setAudioSourceMode("file");
       setShowAudioAnalysis(true);
     } catch (error) {
       setExistingAudioLoadError(error instanceof Error ? error.message : "원본 오디오 파일을 불러오지 못했습니다.");
@@ -412,124 +400,24 @@ export function MeetingFormModal({
     }
   };
 
-  // 스피커로 나오는 소리(PC 시스템 오디오)를 실시간으로 녹음하는 것과, 지금까지의 파일 업로드는 서로
-  // 첨부파일 업로드, 회의록 저장)는 파일을 직접 선택했을 때와 완전히 동일한 경로를 그대로 탄다.
-  const LIVE_CAPTION_WINDOW_MS = 12000;
-
-  const runLiveCaptionWindow = async () => {
-    if (liveCaptionBusyRef.current || liveCaptionChunksRef.current.length === 0) {
-      return;
-    }
-
-    const chunks = liveCaptionChunksRef.current;
-    liveCaptionChunksRef.current = [];
-    liveCaptionBusyRef.current = true;
-
-    try {
-      const windowBlob = new Blob(chunks, { type: "audio/webm" });
-      const decoded = await decodeAudioFile(windowBlob);
-      const mono = mixDownToMono(decoded);
-      const wavBlob = encodeWav(mono, decoded.sampleRate);
-      const result = await transcribeAudioRequest({
-        provider: sttProvider,
-        audioBlob: wavBlob,
-        fileName: "live-caption-window.wav",
-        durationSec: decoded.duration,
-        preprocessing: { vocalIsolation: false, normalize: false, noiseRemoval: false },
-        attendeeNames: audioAttendeeNames()
-      });
-
-      const text = result.transcriptSegments
-        .map((segment) => segment.text)
-        .join(" ")
-        .trim();
-
-      if (text) {
-        setLiveCaptionLines((current) => [...current, text]);
-      }
-    } catch {
-      // Live captions are a best-effort preview, not the authoritative transcript (that comes from
-      // "분석 시작" after recording stops) - a failed window is silently skipped rather than
-      // surfaced as an error, so one slow/failed chunk doesn't interrupt the recording itself.
-    } finally {
-      liveCaptionBusyRef.current = false;
-    }
+  // "PC 소리 녹음" now just opens AudioAnalysisModal in recording mode - the popup itself owns
+  // starting system-audio capture (on mount), showing the live waveform, and running chunked
+  // analysis once the user clicks its own "분석 시작" button (see AudioAnalysisModal).
+  const handleOpenRecordingAnalysis = () => {
+    setAudioSourceMode("recording");
+    setShowAudioAnalysis(true);
   };
 
-  const clearSystemRecordingTimers = () => {
-    if (elapsedTimerRef.current) {
-      clearInterval(elapsedTimerRef.current);
-      elapsedTimerRef.current = null;
-    }
-    if (liveCaptionTimerRef.current) {
-      clearInterval(liveCaptionTimerRef.current);
-      liveCaptionTimerRef.current = null;
-    }
-  };
-
-  const handleStartSystemRecording = async () => {
-    if (isSystemRecording) {
-      return;
-    }
-
-    setSystemRecordingError("");
-
-    if (!isSystemAudioCaptureSupported()) {
-      setSystemRecordingError("이 환경에서는 PC 소리 녹음을 지원하지 않습니다.");
-      return;
-    }
-
-    try {
-      const recording = await startSystemAudioRecording((chunk) => {
-        liveCaptionChunksRef.current.push(chunk);
-      });
-
-      systemRecordingRef.current = recording;
-      liveCaptionChunksRef.current = [];
-      setLiveCaptionLines([]);
-      setRecordingElapsedSec(0);
-      setIsSystemRecording(true);
-
-      elapsedTimerRef.current = setInterval(() => {
-        setRecordingElapsedSec((current) => current + 1);
-      }, 1000);
-      liveCaptionTimerRef.current = setInterval(() => {
-        void runLiveCaptionWindow();
-      }, LIVE_CAPTION_WINDOW_MS);
-    } catch (error) {
-      setSystemRecordingError(error instanceof Error ? error.message : "PC 소리 녹음을 시작하지 못했습니다.");
-    }
-  };
-
-  const handleStopSystemRecording = async () => {
-    const recording = systemRecordingRef.current;
-    if (!recording) {
-      return;
-    }
-
-    clearSystemRecordingTimers();
-    systemRecordingRef.current = null;
-    setIsSystemRecording(false);
-
-    const blob = await recording.stop();
-    // Any audio captured after the last live-caption window still gets folded into the final,
-    // authoritative "분석 시작" pass below - only the rolling preview text skips it.
-    liveCaptionChunksRef.current = [];
-
-    const file = new File([blob], `pc-audio-${Date.now()}.webm`, { type: blob.type });
+  // Mirrors what a picked/fetched file's pendingAudioFile already gives the "완료" flow below -
+  // called once AudioAnalysisModal finishes stitching the recorded segments into one file, so
+  // handleAudioComplete can upload it as the retained attachment exactly like a picked file.
+  const handleRecordingFinalized = (file: File) => {
     setPendingAudioFile(file);
   };
 
-  useEffect(() => {
-    return () => {
-      clearSystemRecordingTimers();
-      void systemRecordingRef.current?.stop();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const handleAudioComplete = async (analysis: AudioAnalysis) => {
     setShowAudioAnalysis(false);
+    setAudioSourceMode(null);
     let nextAnalysis: AudioAnalysis = analysis;
 
     // B7 audio retention policy: keep the original recording alongside the meeting's materials
@@ -1034,43 +922,18 @@ export function MeetingFormModal({
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            {isSystemRecording ? (
-              <button className="danger-action" onClick={() => void handleStopSystemRecording()} type="button">
-                <Square size={15} />
-                녹음 중지 (
-                {`${Math.floor(recordingElapsedSec / 60)
-                  .toString()
-                  .padStart(2, "0")}:${(recordingElapsedSec % 60).toString().padStart(2, "0")}`}
-                )
-              </button>
-            ) : (
-              <button className="ghost-action" onClick={() => void handleStartSystemRecording()} type="button">
-                <Mic size={15} />
-                PC 소리 녹음
-              </button>
-            )}
+            <button
+              className="ghost-action"
+              disabled={!isSystemAudioCaptureSupported()}
+              onClick={handleOpenRecordingAnalysis}
+              title={isSystemAudioCaptureSupported() ? undefined : "이 환경에서는 PC 소리 녹음을 지원하지 않습니다."}
+              type="button"
+            >
+              <Mic size={15} />
+              PC 소리 녹음
+            </button>
             <span className="field-hint">스피커로 나오는 소리(상대방 목소리 등 PC가 재생하는 모든 소리)를 실시간으로 녹음합니다.</span>
           </div>
-          {systemRecordingError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{systemRecordingError}</span>}
-
-          {(isSystemRecording || liveCaptionLines.length > 0) && (
-            <div className="live-caption-panel">
-              {isSystemRecording && (
-                <LiveWaveform analyser={systemRecordingRef.current?.analyser ?? null} height={56} />
-              )}
-              <div className="live-caption-panel-header">
-                <span>실시간 자막 (미리보기 - 녹음 종료 후 "분석 시작"으로 정확한 대본을 생성합니다)</span>
-                {isSystemRecording && <span className="live-caption-recording-dot" />}
-              </div>
-              <div className="live-caption-panel-body">
-                {liveCaptionLines.length === 0 ? (
-                  <span className="field-hint">{isSystemRecording ? "자막을 준비하는 중..." : ""}</span>
-                ) : (
-                  liveCaptionLines.map((line, index) => <p key={index}>{line}</p>)
-                )}
-              </div>
-            </div>
-          )}
 
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <button
@@ -1115,15 +978,19 @@ export function MeetingFormModal({
         </div>
       </ModalShell>
 
-      {showAudioAnalysis && pendingAudioFile && (
+      {showAudioAnalysis && audioSourceMode && (audioSourceMode === "recording" || pendingAudioFile) && (
         <AudioAnalysisModal
           agenda={draft.agenda}
           attendeeNames={audioAttendeeNames()}
           dictionary={dictionary}
-          file={pendingAudioFile}
-          onClose={() => setShowAudioAnalysis(false)}
+          onClose={() => {
+            setShowAudioAnalysis(false);
+            setAudioSourceMode(null);
+          }}
           onComplete={handleAudioComplete}
           onDictionaryChange={onDictionaryChange}
+          onRecordingFinalized={handleRecordingFinalized}
+          source={audioSourceMode === "recording" ? { kind: "recording" } : { kind: "file", file: pendingAudioFile as File }}
           sttProvider={sttProvider}
         />
       )}

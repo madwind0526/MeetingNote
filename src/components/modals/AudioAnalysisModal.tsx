@@ -1,20 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FileText, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Users } from "lucide-react";
+import { FileText, Mic, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Users } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import type { AudioAnalysis, SttProviderId } from "../../types/domain";
-import { computeEnvelope, decodeAudioFile, encodeWav, mixDownToMono } from "../../lib/audio";
-import { base64ToBlob, registerVoiceProfileRequest, transcribeAudioRequest } from "../../lib/api";
-import type { TranscribeResult } from "../../lib/api";
+import { computeEnvelope, decodeAudioFile } from "../../lib/audio";
+import { registerVoiceProfileRequest } from "../../lib/api";
 import { saveDictionary } from "../../lib/dictionary";
 import type { DictionaryState } from "../../lib/dictionary";
+import { UNREGISTERED_SPEAKER_PREFIX } from "../../lib/speakerSessionLinking";
+import { isSystemAudioCaptureSupported, startSystemAudioCapture } from "../../lib/systemAudioCapture";
+import type { SystemAudioCapture } from "../../lib/systemAudioCapture";
+import { useChunkedAudioAnalysis } from "../../hooks/useChunkedAudioAnalysis";
+import { LiveWaveform } from "../LiveWaveform";
 
-// Must match server/audio/diarize.mjs's UNREGISTERED_SPEAKER_PREFIX exactly - marks a speaker
-// label whose auto-assigned name means "no voice profile matched yet", so renaming it here is
-// what registers a brand-new profile (see handleComplete below).
-const UNREGISTERED_SPEAKER_PREFIX = "미등록 화자 ";
+type AudioSource = { kind: "file"; file: File } | { kind: "recording" };
 
 interface AudioAnalysisModalProps {
-  file: File;
+  source: AudioSource;
   attendeeNames: string[];
   // Agenda order + 발표 시간(분) - passed straight through to transcribeAudioRequest as a soft
   // voice-matching hint (see server/audio/diarize.mjs). Optional since a brand-new meeting can
@@ -29,6 +30,11 @@ interface AudioAnalysisModalProps {
   onDictionaryChange: (next: DictionaryState) => void;
   onClose: () => void;
   onComplete: (analysis: AudioAnalysis) => void | Promise<void>;
+  // Fired once for source.kind === "recording", the moment the recorded segments are stitched
+  // into one final playable File (recording stopped and every queued chunk finished) - lets
+  // MeetingFormModal retain it as the attachment exactly like a picked file (see
+  // handleStopSystemRecording's old setPendingAudioFile call, now moved here).
+  onRecordingFinalized?: (file: File) => void;
 }
 
 // Number of waveform buckets sampled across the whole clip - fine enough resolution for a
@@ -206,24 +212,41 @@ function EditableTranscriptText({ text, onWordContextMenu }: { text: string; onW
 }
 
 export function AudioAnalysisModal({
-  file,
+  source,
   attendeeNames,
   agenda,
   sttProvider,
   dictionary,
   onDictionaryChange,
   onClose,
-  onComplete
+  onComplete,
+  onRecordingFinalized
 }: AudioAnalysisModalProps) {
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const activeTranscriptRowRef = useRef<HTMLLIElement | null>(null);
   const sourceAudioBufferRef = useRef<AudioBuffer | null>(null);
-  const analyzeAbortControllerRef = useRef<AbortController | null>(null);
   const sourceAudioUrlRef = useRef("");
   const processedAudioUrlRef = useRef("");
+
+  // ---------- Chunked/progressive analysis (shared engine for both file and recording) ----------
+  const analysis = useChunkedAudioAnalysis();
+
+  // ---------- Recording mode: capture starts as soon as the modal mounts, independent of
+  // whether chunked analysis has been started yet (see handleStartRecordingAnalyze) ----------
+  const captureRef = useRef<SystemAudioCapture | null>(null);
+  const [capture, setCapture] = useState<SystemAudioCapture | null>(null);
+  const [isRecordingActive, setIsRecordingActive] = useState(source.kind === "recording");
+  const [recordingElapsedSec, setRecordingElapsedSec] = useState(0);
+  const [captureError, setCaptureError] = useState("");
+  const [recordedFile, setRecordedFile] = useState<File | null>(null);
+  const [hasStartedRecordingAnalysis, setHasStartedRecordingAnalysis] = useState(false);
+
+  // The file this modal is actually working with right now - a picked file immediately, or the
+  // stitched recording once it's ready (null the whole time recording is still in progress).
+  const activeFile = source.kind === "file" ? source.file : recordedFile;
+
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
   const [sourceEnvelope, setSourceEnvelope] = useState<Float32Array | null>(null);
-  const [envelope, setEnvelope] = useState<Float32Array | null>(null);
   const [sourceAudioUrl, setSourceAudioUrl] = useState("");
   const [processedAudioUrl, setProcessedAudioUrl] = useState("");
   const [playbackSource, setPlaybackSource] = useState<PlaybackSource>("original");
@@ -236,7 +259,7 @@ export function AudioAnalysisModal({
   const [audioElementDurationSec, setAudioElementDurationSec] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeSpeaker, setActiveSpeaker] = useState<string | null>(null);
-  const [isDecoding, setIsDecoding] = useState(true);
+  const [isDecoding, setIsDecoding] = useState(source.kind === "file");
   const [decodeError, setDecodeError] = useState("");
 
   const [vocalIsolation, setVocalIsolation] = useState(false);
@@ -245,14 +268,7 @@ export function AudioAnalysisModal({
   const [selectedProvider, setSelectedProvider] = useState<SttProviderId>(sttProvider);
   const [sttModel, setSttModel] = useState(defaultSttModel(sttProvider));
 
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analyzeProgress, setAnalyzeProgress] = useState(0);
-  const [analyzeError, setAnalyzeError] = useState("");
-  const [result, setResult] = useState<TranscribeResult | null>(null);
-  // Live segments parsed straight from the local STT process while it's still running - no
-  // speaker label yet (diarization only runs once the whole job finishes), so the transcript
-  // panel shows them plainly until `result` replaces them with the final, speaker-tagged list.
-  const [liveSegments, setLiveSegments] = useState<{ startSec: number; endSec: number; text: string }[]>([]);
+  const { result, liveSegments, envelope: processedEnvelope, isAnalyzing, analyzeProgress, analyzeError } = analysis;
   const [editedSpeakerMap, setEditedSpeakerMap] = useState<Record<string, string>>({});
 
   // 발언 대본 word right-click -> "수정하기" 메뉴 -> 수정 사전 등록 (see EditableTranscriptText above).
@@ -271,7 +287,60 @@ export function AudioAnalysisModal({
     setProcessedAudioUrl(nextUrl);
   }
 
+  // Recording mode: start capturing as soon as the modal mounts (before "분석 시작" is ever
+  // clicked) so the live waveform is visible immediately, matching the file-mode popup already
+  // showing the original waveform as soon as it opens.
   useEffect(() => {
+    if (source.kind !== "recording") {
+      return;
+    }
+
+    let cancelled = false;
+
+    if (!isSystemAudioCaptureSupported()) {
+      setCaptureError("이 환경에서는 PC 소리 녹음을 지원하지 않습니다.");
+      setIsRecordingActive(false);
+      return;
+    }
+
+    startSystemAudioCapture()
+      .then((next) => {
+        if (cancelled) {
+          void next.stopAll();
+          return;
+        }
+        captureRef.current = next;
+        setCapture(next);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setCaptureError(error instanceof Error ? error.message : "PC 소리 녹음을 시작하지 못했습니다.");
+          setIsRecordingActive(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      void captureRef.current?.stopAll();
+      captureRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!isRecordingActive) {
+      return;
+    }
+
+    const timer = window.setInterval(() => setRecordingElapsedSec((current) => current + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [isRecordingActive]);
+
+  useEffect(() => {
+    if (!activeFile) {
+      return;
+    }
+
     let cancelled = false;
     setIsDecoding(true);
     setDecodeError("");
@@ -279,7 +348,7 @@ export function AudioAnalysisModal({
     setIsPlaying(false);
     setActiveSpeaker(null);
 
-    decodeAudioFile(file)
+    decodeAudioFile(activeFile)
       .then((buffer) => {
         if (cancelled) {
           return;
@@ -288,7 +357,6 @@ export function AudioAnalysisModal({
         const nextEnvelope = computeEnvelope(buffer, BUCKET_COUNT);
         setAudioBuffer(buffer);
         setSourceEnvelope(nextEnvelope);
-        setEnvelope(nextEnvelope);
       })
       .catch(() => {
         if (!cancelled) {
@@ -304,14 +372,18 @@ export function AudioAnalysisModal({
     return () => {
       cancelled = true;
     };
-  }, [file]);
+  }, [activeFile]);
 
   useEffect(() => {
+    if (!activeFile) {
+      return;
+    }
+
     if (sourceAudioUrlRef.current) {
       URL.revokeObjectURL(sourceAudioUrlRef.current);
     }
 
-    const nextUrl = URL.createObjectURL(file);
+    const nextUrl = URL.createObjectURL(activeFile);
     sourceAudioUrlRef.current = nextUrl;
     setSourceAudioUrl(nextUrl);
     setProcessedAudioUrl("");
@@ -327,7 +399,61 @@ export function AudioAnalysisModal({
         processedAudioUrlRef.current = "";
       }
     };
-  }, [file]);
+  }, [activeFile]);
+
+  // Once every chunk (file: all precomputed windows; recording: capture stopped and its queue
+  // drained) is done, swap playback over to the stitched processed audio - the same "processed
+  // audio becomes available" moment the single-shot flow used to reach right after its one
+  // transcribeAudioRequest call resolved.
+  useEffect(() => {
+    if (!analysis.finalAudioBlob) {
+      return;
+    }
+
+    if (source.kind === "recording" && !recordedFile) {
+      const file = new File([analysis.finalAudioBlob], `pc-audio-${Date.now()}.wav`, { type: "audio/wav" });
+      setRecordedFile(file);
+      onRecordingFinalized?.(file);
+      return;
+    }
+
+    let cancelled = false;
+    decodeAudioFile(analysis.finalAudioBlob).then((processedAudioBuffer) => {
+      if (cancelled) {
+        return;
+      }
+      setAudioBuffer(processedAudioBuffer);
+      replaceProcessedAudioUrl(analysis.finalAudioBlob as Blob);
+      setPlaybackSource("processed");
+      resetPlaybackPosition();
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [analysis.finalAudioBlob]);
+
+  // Additive: seeds a default entry for any speaker label newly added to `result` (as each chunk
+  // merges in) without ever overwriting one the user already renamed via the input fields below -
+  // renaming a speaker mid-analysis has to survive later chunks completing.
+  useEffect(() => {
+    if (!result) {
+      return;
+    }
+
+    setEditedSpeakerMap((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const [label, autoName] of Object.entries(result.speakerMap)) {
+        if (!(label in next)) {
+          next[label] = autoName;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [result]);
 
   useEffect(() => {
     setSelectedProvider(sttProvider);
@@ -340,12 +466,15 @@ export function AudioAnalysisModal({
   // highlights the shared full-mix envelope wherever that speaker's turns fall in time.
   const speakerMasks = useMemo(() => {
     const masks: Record<string, boolean[]> = {};
-    if (!result || !envelope) {
+    if (!result || !processedEnvelope) {
       return masks;
     }
 
-    const duration = result.durationSec || audioBuffer?.duration || 0;
-    const bucketCount = envelope.length;
+    // Prefer the real decoded buffer's duration (known up front for a picked file, or the true
+    // final total once a recording is stitched) over result.durationSec, which is only a running
+    // cumulative-so-far total while chunked analysis is still in progress.
+    const duration = audioBuffer?.duration || result.durationSec || 0;
+    const bucketCount = processedEnvelope.length;
 
     for (const label of speakerLabels) {
       const segments = result.transcriptSegments.filter((segment) => segment.speaker === label);
@@ -361,7 +490,7 @@ export function AudioAnalysisModal({
     }
 
     return masks;
-  }, [result, envelope, audioBuffer, speakerLabels]);
+  }, [result, processedEnvelope, audioBuffer, speakerLabels]);
 
   const preprocessLocked = isAnalyzing;
   const durationSec = audioBuffer?.duration ?? 0;
@@ -566,11 +695,7 @@ export function AudioAnalysisModal({
       });
       onDictionaryChange(saved);
 
-      const applyCorrection = (text: string) => text.split(correctionDraft.from).join(correctionDraft.to);
-      setResult((current) =>
-        current ? { ...current, transcriptSegments: current.transcriptSegments.map((segment) => ({ ...segment, text: applyCorrection(segment.text) })) } : current
-      );
-      setLiveSegments((current) => current.map((segment) => ({ ...segment, text: applyCorrection(segment.text) })));
+      analysis.applyTextCorrection(correctionDraft.from, correctionDraft.to);
 
       setCorrectionDraft(null);
     } catch (error) {
@@ -581,17 +706,14 @@ export function AudioAnalysisModal({
   }
 
   function clearAnalysisResult() {
-    setResult(null);
+    analysis.reset();
     setEditedSpeakerMap({});
-    setLiveSegments([]);
   }
 
   function restoreOriginalAudioPreview() {
     const sourceAudioBuffer = sourceAudioBufferRef.current;
     if (sourceAudioBuffer) {
-      const nextEnvelope = sourceEnvelope ?? computeEnvelope(sourceAudioBuffer, BUCKET_COUNT);
       setAudioBuffer(sourceAudioBuffer);
-      setEnvelope(nextEnvelope);
     }
     if (processedAudioUrlRef.current) {
       URL.revokeObjectURL(processedAudioUrlRef.current);
@@ -633,13 +755,13 @@ export function AudioAnalysisModal({
     restoreOriginalAudioPreview();
   }
 
-  function handlePlaybackSourceChange(source: PlaybackSource) {
-    if (source === "processed" && !processedAudioAvailable) {
+  function handlePlaybackSourceChange(nextPlaybackSource: PlaybackSource) {
+    if (nextPlaybackSource === "processed" && !processedAudioAvailable) {
       return;
     }
 
     resetPlaybackPosition();
-    setPlaybackSource(source);
+    setPlaybackSource(nextPlaybackSource);
   }
 
   function seekBy(deltaSeconds: number) {
@@ -732,67 +854,63 @@ export function AudioAnalysisModal({
   }
 
   async function handleAnalyze() {
-    if (!audioBuffer) {
+    // File mode only - recording mode's "분석 시작" is handleStartRecordingAnalyze below, since it
+    // has to run against the still-live capture instead of an already-decoded buffer.
+    const sourceAudioBuffer = sourceAudioBufferRef.current;
+    if (!sourceAudioBuffer || !activeFile) {
       return;
     }
 
-    setIsAnalyzing(true);
-    setAnalyzeProgress(0);
-    setAnalyzeError("");
-    setLiveSegments([]);
-
-    const abortController = new AbortController();
-    analyzeAbortControllerRef.current = abortController;
-
-    try {
-      resetPlaybackPosition();
-      const sourceAudioBuffer = sourceAudioBufferRef.current ?? audioBuffer;
-      // 정규화/DeNoise no longer run here - the server applies the full Demucs -> 정규화 -> DeNoise
-      // chain in that fixed order (see server/audio/audioPreprocess.mjs), which requires Demucs to
-      // see this untouched original mixdown for the cleanest vocal separation. What gets uploaded
-      // here is just a format conversion (decoded audio -> WAV), not preprocessing.
-      const mono = mixDownToMono(sourceAudioBuffer);
-      const wavBlob = encodeWav(mono, sourceAudioBuffer.sampleRate);
-      const analysis = await transcribeAudioRequest({
-        provider: selectedProvider,
-        model: sttModel,
-        audioBlob: wavBlob,
-        fileName: file.name,
-        durationSec: sourceAudioBuffer.duration,
-        preprocessing: { vocalIsolation, noiseRemoval, normalize },
-        attendeeNames,
-        agenda,
-        onProgress: setAnalyzeProgress,
-        onPartialSegments: setLiveSegments,
-        signal: abortController.signal
-      });
-
-      const processedAudioBlob = analysis.processedAudioBase64
-        ? base64ToBlob(analysis.processedAudioBase64, analysis.processedAudioMimeType ?? "audio/wav")
-        : wavBlob;
-      const processedAudioBuffer = await decodeAudioFile(processedAudioBlob);
-      setAudioBuffer(processedAudioBuffer);
-      setEnvelope(computeEnvelope(processedAudioBuffer, BUCKET_COUNT));
-      replaceProcessedAudioUrl(processedAudioBlob);
-      setPlaybackSource("processed");
-
-      setResult(analysis);
-      setEditedSpeakerMap({ ...analysis.speakerMap });
-      resetPlaybackPosition();
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
-        setAnalyzeError("사용자가 분석을 중지했습니다.");
-      } else {
-        setAnalyzeError(error instanceof Error ? error.message : "분석 중 오류가 발생했습니다.");
-      }
-    } finally {
-      setIsAnalyzing(false);
-      analyzeAbortControllerRef.current = null;
-    }
+    resetPlaybackPosition();
+    await analysis.startFileAnalysis(sourceAudioBuffer, {
+      provider: selectedProvider,
+      model: sttModel,
+      fileName: activeFile.name,
+      attendeeNames,
+      agenda,
+      preprocessing: { vocalIsolation, noiseRemoval, normalize }
+    });
   }
 
   function handleStopAnalyze() {
-    analyzeAbortControllerRef.current?.abort();
+    analysis.cancel();
+  }
+
+  function handleStartRecordingAnalyze() {
+    if (!capture) {
+      return;
+    }
+
+    setHasStartedRecordingAnalysis(true);
+    analysis.startRecordingAnalysis(capture, {
+      provider: selectedProvider,
+      model: sttModel,
+      fileName: "recording.wav",
+      attendeeNames,
+      agenda,
+      preprocessing: { vocalIsolation, noiseRemoval, normalize }
+    });
+  }
+
+  async function handleStopRecording() {
+    if (!capture) {
+      return;
+    }
+
+    setIsRecordingActive(false);
+
+    if (hasStartedRecordingAnalysis) {
+      await analysis.stopRecordingAnalysis(capture);
+      return;
+    }
+
+    // Analysis was never started - just stop capturing and keep the raw recording as a plain
+    // file. It'll decode like any picked file and its own "분석 시작" button (handleAnalyze) can
+    // still chunk-analyze it afterward.
+    const blob = await capture.stopAll();
+    const file = new File([blob], `pc-audio-${Date.now()}.webm`, { type: blob.type });
+    setRecordedFile(file);
+    onRecordingFinalized?.(file);
   }
 
   function speakerOptions(label: string): string[] {
@@ -847,13 +965,13 @@ export function AudioAnalysisModal({
     <ModalShell
       title="회의 음성 분석"
       onClose={onClose}
-      width="xwide"
+      width="full"
       footer={
         <div className="modal-footer-actions" style={{ marginLeft: "auto" }}>
           <button className="ghost-action" onClick={onClose} type="button">
             취소
           </button>
-          <button className="primary-action" disabled={!result} onClick={handleComplete} type="button">
+          <button className="primary-action" disabled={!result || isAnalyzing} onClick={handleComplete} type="button">
             완료 (대본 저장)
           </button>
         </div>
@@ -862,7 +980,95 @@ export function AudioAnalysisModal({
       {isDecoding && <div className="audio-analysis-status">오디오 파일을 분석 준비 중입니다...</div>}
       {!isDecoding && decodeError && <div className="audio-analysis-status error">{decodeError}</div>}
 
-      {!isDecoding && !decodeError && audioBuffer && sourceEnvelope && envelope && (
+      {source.kind === "recording" && !activeFile && (
+        <div className="audio-analysis-layout">
+          <div className="audio-analysis-transcript-panel">
+            <div className="waveform-window-title">
+              <FileText size={16} />
+              발언 대본
+            </div>
+            {!!result && <span className="field-hint">단어를 마우스 오른쪽 버튼으로 클릭하면 수정 사전에 등록할 수 있습니다.</span>}
+
+            {!result && liveSegments.length === 0 && (
+              <p className="audio-analysis-placeholder">
+                {isRecordingActive ? "분석 시작 버튼을 누르면 녹음 중에도 대본이 실시간으로 채워집니다." : "마지막 구간을 처리하는 중입니다..."}
+              </p>
+            )}
+
+            {result && (
+              <ul className="audio-analysis-transcript-list">
+                {result.transcriptSegments.map((segment, index) => (
+                  <li className="audio-analysis-transcript-row" key={`${segment.speaker}-${index}`}>
+                    <div className="audio-analysis-transcript-meta">
+                      <span className="audio-analysis-transcript-time">
+                        {formatMmSs(segment.startSec)}-{formatMmSs(segment.endSec)}
+                      </span>
+                      <span className="audio-analysis-transcript-speaker">{editedSpeakerMap[segment.speaker] ?? segment.speaker}</span>
+                    </div>
+                    <EditableTranscriptText onWordContextMenu={handleWordContextMenu} text={segment.text} />
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {liveSegments.length > 0 && (
+              <ul className="audio-analysis-transcript-list">
+                {liveSegments.map((segment, index) => (
+                  <li className="audio-analysis-transcript-row" key={`live-${index}`}>
+                    <div className="audio-analysis-transcript-meta">
+                      <span className="audio-analysis-transcript-time">
+                        {formatMmSs(segment.startSec)}-{formatMmSs(segment.endSec)}
+                      </span>
+                      <span className="audio-analysis-transcript-speaker">인식 중...</span>
+                    </div>
+                    <p className="audio-analysis-transcript-text">{segment.text}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="audio-analysis-main">
+            <section className="waveform-window">
+              <div className="waveform-window-title">
+                <Mic size={16} />
+                {isRecordingActive ? "PC 소리 녹음 중" : "녹음 종료 - 마지막 구간 처리 중"}
+                {isRecordingActive && <span className="live-caption-recording-dot" />}
+                <span className="field-hint" style={{ marginLeft: "auto" }}>
+                  {`${Math.floor(recordingElapsedSec / 60)
+                    .toString()
+                    .padStart(2, "0")}:${(recordingElapsedSec % 60).toString().padStart(2, "0")}`}
+                </span>
+              </div>
+              <LiveWaveform analyser={capture?.analyser ?? null} height={90} />
+              {captureError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{captureError}</span>}
+              {analyzeError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{analyzeError}</span>}
+
+              <div className="audio-playback-controls">
+                <div className="audio-playback-right" style={{ marginLeft: "auto" }}>
+                  {isRecordingActive && (
+                    <button className="danger-action" onClick={() => void handleStopRecording()} type="button">
+                      <Square size={14} />
+                      녹음 중지
+                    </button>
+                  )}
+                  <button
+                    className={isAnalyzing ? "primary-action analyze-progress-button" : "primary-action"}
+                    disabled={!capture || !isRecordingActive || hasStartedRecordingAnalysis}
+                    onClick={handleStartRecordingAnalyze}
+                    style={isAnalyzing ? { ["--analyze-progress" as string]: `${analyzeProgress}%` } : undefined}
+                    type="button"
+                  >
+                    {hasStartedRecordingAnalysis ? `분석 중... ${analyzeProgress}%` : "분석 시작"}
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      )}
+
+      {!isDecoding && !decodeError && audioBuffer && sourceEnvelope && (
         <div className="audio-analysis-layout">
           <div className="audio-analysis-transcript-panel">
             <div className="waveform-window-title">
@@ -1009,18 +1215,24 @@ export function AudioAnalysisModal({
                   />
                 </label>
 
-                {processedAudioAvailable && (
+                {processedEnvelope && (
                   <label className={`audio-waveform-choice ${playbackSource === "processed" ? "active" : ""}`}>
                     <input
                       checked={playbackSource === "processed"}
+                      disabled={!processedAudioAvailable}
                       onChange={() => handlePlaybackSourceChange("processed")}
                       type="checkbox"
                     />
-                    <span className="audio-waveform-choice-label">전처리</span>
+                    <span className="audio-waveform-choice-label">전처리{!processedAudioAvailable ? " (분석 중...)" : ""}</span>
                     <WaveformCanvas
                       currentTime={playbackVisualTime}
-                      durationSec={playbackSource === "processed" ? playbackDurationSec : durationSec}
-                      envelope={envelope}
+                      // While chunked analysis is still filling this in, result.durationSec is a
+                      // running cumulative total (not yet the full clip) - using it here (rather
+                      // than the original buffer's full duration) keeps the envelope's time axis
+                      // matching what's actually been processed so far instead of stretching a
+                      // partial waveform across the whole clip's width.
+                      durationSec={processedAudioAvailable ? (playbackSource === "processed" ? playbackDurationSec : durationSec) : (result?.durationSec ?? 0)}
+                      envelope={processedEnvelope}
                       height={FULL_WAVE_HEIGHT}
                     />
                   </label>
@@ -1114,7 +1326,7 @@ export function AudioAnalysisModal({
                         activeMask={speakerMasks[label]}
                         currentTime={playbackVisualTime}
                         durationSec={playbackSource === "processed" ? playbackDurationSec : durationSec}
-                        envelope={envelope}
+                        envelope={processedEnvelope ?? sourceEnvelope}
                         height={LANE_WAVE_HEIGHT}
                       />
                     </div>
