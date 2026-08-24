@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FileText, Mic, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Users } from "lucide-react";
+import { FileText, Mic, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Upload, Users } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import type { AudioAnalysis, SttProviderId } from "../../types/domain";
 import { computeEnvelope, decodeAudioFile } from "../../lib/audio";
 import { registerVoiceProfileRequest } from "../../lib/api";
 import { saveDictionary } from "../../lib/dictionary";
 import type { DictionaryState } from "../../lib/dictionary";
+import { parseTranscriptText } from "../../lib/transcript";
 import { UNREGISTERED_SPEAKER_PREFIX } from "../../lib/speakerSessionLinking";
 import { isSystemAudioCaptureSupported, startSystemAudioCapture } from "../../lib/systemAudioCapture";
 import type { SystemAudioCapture } from "../../lib/systemAudioCapture";
@@ -50,6 +51,9 @@ const DIM_COLOR = "rgba(150, 150, 150, 0.15)";
 // what's still ahead), so completed vs. remaining is visible at a glance instead of only via the
 // moving analysis-progress line.
 const PROGRESSED_WAVE_COLOR = "rgba(150, 150, 150, 0.55)";
+// Distinct from WAVE_COLOR (teal) on purpose - marks the segment whose transcript text was just
+// clicked, on the full-clip waveform (see handleTranscriptRowClick below).
+const HIGHLIGHT_COLOR = "#e6a23c";
 const SEEK_STEP_SECONDS = 5;
 const SEGMENT_EDGE_SECONDS = 0.06;
 const SPEAKER_SEGMENT_PADDING_SECONDS = 0.35;
@@ -96,7 +100,9 @@ function drawEnvelope(
   containerWidth: number,
   height: number,
   activeMask?: boolean[],
-  analysisProgressFraction?: number
+  analysisProgressFraction?: number,
+  durationSec?: number,
+  highlightRange?: { startSec: number; endSec: number }
 ) {
   const devicePixelRatio = window.devicePixelRatio || 1;
   const width = Math.max(1, Math.round(containerWidth));
@@ -138,6 +144,14 @@ function drawEnvelope(
       fillColor = isActive ? WAVE_COLOR : DIM_COLOR;
     }
 
+    if (highlightRange && durationSec && durationSec > 0) {
+      const bucketStartTime = (bucketIndex / bucketCount) * durationSec;
+      const bucketEndTime = ((bucketIndex + 1) / bucketCount) * durationSec;
+      if (bucketStartTime < highlightRange.endSec && bucketEndTime > highlightRange.startSec) {
+        fillColor = HIGHLIGHT_COLOR;
+      }
+    }
+
     context.fillStyle = fillColor;
     context.fillRect(x, midY - barHeight / 2, Math.max(1, barWidth - 0.5), barHeight);
   }
@@ -152,9 +166,20 @@ interface WaveformCanvasProps {
   // 0-100 - independent of playback, marks how far the STT job has progressed through the clip
   // so the user can see roughly where analysis currently is without waiting for it to finish.
   analysisProgressPercent?: number;
+  // Marks the clicked transcript segment's time range in a distinct color (see
+  // handleTranscriptRowClick) - only meaningful together with durationSec.
+  highlightRange?: { startSec: number; endSec: number };
 }
 
-function WaveformCanvas({ envelope, height, activeMask, currentTime = 0, durationSec = 0, analysisProgressPercent }: WaveformCanvasProps) {
+function WaveformCanvas({
+  envelope,
+  height,
+  activeMask,
+  currentTime = 0,
+  durationSec = 0,
+  analysisProgressPercent,
+  highlightRange
+}: WaveformCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const playheadPercent = durationSec > 0 ? Math.min(Math.max((currentTime / durationSec) * 100, 0), 100) : 0;
@@ -170,7 +195,7 @@ function WaveformCanvas({ envelope, height, activeMask, currentTime = 0, duratio
 
     const redraw = () => {
       if (container.clientWidth > 0) {
-        drawEnvelope(canvas, envelope, container.clientWidth, height, activeMask, analysisProgressFraction);
+        drawEnvelope(canvas, envelope, container.clientWidth, height, activeMask, analysisProgressFraction, durationSec, highlightRange);
       }
     };
 
@@ -179,7 +204,7 @@ function WaveformCanvas({ envelope, height, activeMask, currentTime = 0, duratio
     const observer = new ResizeObserver(redraw);
     observer.observe(container);
     return () => observer.disconnect();
-  }, [envelope, height, activeMask, analysisProgressPercent]);
+  }, [envelope, height, activeMask, analysisProgressPercent, durationSec, highlightRange]);
 
   return (
     <div className="waveform-canvas-wrap" ref={containerRef} style={{ height }}>
@@ -268,7 +293,16 @@ export function AudioAnalysisModal({
   const [selectedProvider, setSelectedProvider] = useState<SttProviderId>(sttProvider);
   const [sttModel, setSttModel] = useState(defaultSttModel(sttProvider));
 
-  const { result, liveSegments, envelope: processedEnvelope, isAnalyzing, analyzeProgress, analyzeError } = analysis;
+  const {
+    result,
+    liveSegments,
+    envelope: processedEnvelope,
+    isAnalyzing,
+    analyzeProgress,
+    analyzeError,
+    queuedChunkCount,
+    processedChunkCount
+  } = analysis;
   const [editedSpeakerMap, setEditedSpeakerMap] = useState<Record<string, string>>({});
 
   // 발언 대본 word right-click -> "수정하기" 메뉴 -> 수정 사전 등록 (see EditableTranscriptText above).
@@ -276,6 +310,10 @@ export function AudioAnalysisModal({
   const [correctionDraft, setCorrectionDraft] = useState<{ from: string; to: string } | null>(null);
   const [isSavingCorrection, setIsSavingCorrection] = useState(false);
   const [correctionError, setCorrectionError] = useState("");
+
+  // 발언 대본 불러오기 - loads an already-made transcript instead of running STT (see parseTranscriptText).
+  const transcriptFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [transcriptLoadError, setTranscriptLoadError] = useState("");
 
   function replaceProcessedAudioUrl(blob: Blob) {
     if (processedAudioUrlRef.current) {
@@ -303,7 +341,11 @@ export function AudioAnalysisModal({
       return;
     }
 
-    startSystemAudioCapture()
+    startSystemAudioCapture((message) => {
+      if (!cancelled) {
+        setCaptureError(message);
+      }
+    })
       .then((next) => {
         if (cancelled) {
           void next.stopAll();
@@ -328,13 +370,13 @@ export function AudioAnalysisModal({
   }, []);
 
   useEffect(() => {
-    if (!isRecordingActive) {
+    if (!isRecordingActive || !hasStartedRecordingAnalysis) {
       return;
     }
 
     const timer = window.setInterval(() => setRecordingElapsedSec((current) => current + 1), 1000);
     return () => window.clearInterval(timer);
-  }, [isRecordingActive]);
+  }, [isRecordingActive, hasStartedRecordingAnalysis]);
 
   useEffect(() => {
     if (!activeFile) {
@@ -463,10 +505,13 @@ export function AudioAnalysisModal({
   const speakerLabels = useMemo(() => (result ? Object.keys(result.speakerMap) : []), [result]);
 
   // Approximation only: the source audio is not truly source-separated, so a lane simply
-  // highlights the shared full-mix envelope wherever that speaker's turns fall in time.
+  // highlights the shared full-mix envelope wherever that speaker's turns fall in time. Falls back
+  // to sourceEnvelope when there's no processed envelope yet - notably a transcript loaded via
+  // "불러오기" never runs a chunk through the analysis pipeline, so processedEnvelope stays null.
+  const activeMaskEnvelope = processedEnvelope ?? sourceEnvelope;
   const speakerMasks = useMemo(() => {
     const masks: Record<string, boolean[]> = {};
-    if (!result || !processedEnvelope) {
+    if (!result || !activeMaskEnvelope) {
       return masks;
     }
 
@@ -474,7 +519,7 @@ export function AudioAnalysisModal({
     // final total once a recording is stitched) over result.durationSec, which is only a running
     // cumulative-so-far total while chunked analysis is still in progress.
     const duration = audioBuffer?.duration || result.durationSec || 0;
-    const bucketCount = processedEnvelope.length;
+    const bucketCount = activeMaskEnvelope.length;
 
     for (const label of speakerLabels) {
       const segments = result.transcriptSegments.filter((segment) => segment.speaker === label);
@@ -490,7 +535,7 @@ export function AudioAnalysisModal({
     }
 
     return masks;
-  }, [result, processedEnvelope, audioBuffer, speakerLabels]);
+  }, [result, activeMaskEnvelope, audioBuffer, speakerLabels]);
 
   const preprocessLocked = isAnalyzing;
   const durationSec = audioBuffer?.duration ?? 0;
@@ -515,6 +560,22 @@ export function AudioAnalysisModal({
       (segment) => playbackVisualTime >= segment.startSec && playbackVisualTime < segment.endSec
     );
   }, [playbackVisualTime, result]);
+
+  // Clicking a transcript row (handleTranscriptRowClick) seeks playback to that segment's start,
+  // which makes activeTranscriptIndex resolve back to that same segment - so the clicked segment's
+  // range on the full waveform can just follow activeTranscriptIndex instead of tracking its own
+  // separate "selected" state.
+  const activeTranscriptRange = useMemo(() => {
+    if (!result || activeTranscriptIndex < 0) {
+      return undefined;
+    }
+    const segment = result.transcriptSegments[activeTranscriptIndex];
+    return segment ? { startSec: segment.startSec, endSec: segment.endSec } : undefined;
+  }, [result, activeTranscriptIndex]);
+
+  function handleTranscriptRowClick(startSec: number) {
+    seekTo(startSec);
+  }
 
   function segmentsForSpeaker(label: string) {
     if (speakerLabels.length <= 1 && durationSec > 0) {
@@ -710,6 +771,35 @@ export function AudioAnalysisModal({
     setEditedSpeakerMap({});
   }
 
+  function triggerTranscriptFilePick() {
+    transcriptFileInputRef.current?.click();
+  }
+
+  async function handleTranscriptFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) {
+      return;
+    }
+
+    setTranscriptLoadError("");
+
+    try {
+      const text = await file.text();
+      const segments = parseTranscriptText(text);
+      if (segments.length === 0) {
+        setTranscriptLoadError("발언 대본 형식을 인식하지 못했습니다. 예: [00:00-00:05] [화자] 발언 내용");
+        return;
+      }
+
+      setEditedSpeakerMap({});
+      restoreOriginalAudioPreview();
+      analysis.loadExternalTranscript(segments, activeFile?.name ?? file.name);
+    } catch {
+      setTranscriptLoadError("발언 대본 파일을 읽을 수 없습니다.");
+    }
+  }
+
   function restoreOriginalAudioPreview() {
     const sourceAudioBuffer = sourceAudioBufferRef.current;
     if (sourceAudioBuffer) {
@@ -881,6 +971,9 @@ export function AudioAnalysisModal({
       return;
     }
 
+    // The popup shows the live waveform as soon as it opens, but actual recording (the
+    // MediaRecorder capturing data) only starts here, on the user's explicit "분석 시작" click.
+    capture.startRecording();
     setHasStartedRecordingAnalysis(true);
     analysis.startRecordingAnalysis(capture, {
       provider: selectedProvider,
@@ -898,19 +991,7 @@ export function AudioAnalysisModal({
     }
 
     setIsRecordingActive(false);
-
-    if (hasStartedRecordingAnalysis) {
-      await analysis.stopRecordingAnalysis(capture);
-      return;
-    }
-
-    // Analysis was never started - just stop capturing and keep the raw recording as a plain
-    // file. It'll decode like any picked file and its own "분석 시작" button (handleAnalyze) can
-    // still chunk-analyze it afterward.
-    const blob = await capture.stopAll();
-    const file = new File([blob], `pc-audio-${Date.now()}.webm`, { type: blob.type });
-    setRecordedFile(file);
-    onRecordingFinalized?.(file);
+    await analysis.stopRecordingAnalysis(capture);
   }
 
   function speakerOptions(label: string): string[] {
@@ -986,12 +1067,26 @@ export function AudioAnalysisModal({
             <div className="waveform-window-title">
               <FileText size={16} />
               발언 대본
+              <button
+                className="ghost-action"
+                disabled={isAnalyzing}
+                onClick={triggerTranscriptFilePick}
+                style={{ width: "fit-content", marginLeft: "auto" }}
+                type="button"
+              >
+                <Upload size={14} />
+                불러오기
+              </button>
             </div>
-            {!!result && <span className="field-hint">단어를 마우스 오른쪽 버튼으로 클릭하면 수정 사전에 등록할 수 있습니다.</span>}
+            <input accept=".txt,.md" hidden onChange={(event) => void handleTranscriptFileChange(event)} ref={transcriptFileInputRef} type="file" />
+            {!!result && <span className="field-hint">단어를 마우스 오른쪽 버튼으로 클릭하면 수정 사전에 등록, 발언자는 옆의 선택 상자로 바꿀 수 있습니다.</span>}
+            {transcriptLoadError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{transcriptLoadError}</span>}
 
             {!result && liveSegments.length === 0 && (
               <p className="audio-analysis-placeholder">
-                {isRecordingActive ? "분석 시작 버튼을 누르면 녹음 중에도 대본이 실시간으로 채워집니다." : "마지막 구간을 처리하는 중입니다..."}
+                {hasStartedRecordingAnalysis
+                  ? "녹음 중에도 대본이 실시간으로 채워집니다."
+                  : "분석 시작 버튼을 누르면 녹음이 시작되고, 이미 만들어진 발언 대본을 불러올 수도 있습니다."}
               </p>
             )}
 
@@ -1003,7 +1098,17 @@ export function AudioAnalysisModal({
                       <span className="audio-analysis-transcript-time">
                         {formatMmSs(segment.startSec)}-{formatMmSs(segment.endSec)}
                       </span>
-                      <span className="audio-analysis-transcript-speaker">{editedSpeakerMap[segment.speaker] ?? segment.speaker}</span>
+                      <select
+                        className="audio-analysis-transcript-speaker-select"
+                        onChange={(event) => analysis.updateSegmentSpeaker(index, event.target.value)}
+                        value={segment.speaker}
+                      >
+                        {speakerLabels.map((label) => (
+                          <option key={label} value={label}>
+                            {editedSpeakerMap[label] ?? label}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <EditableTranscriptText onWordContextMenu={handleWordContextMenu} text={segment.text} />
                   </li>
@@ -1030,15 +1135,97 @@ export function AudioAnalysisModal({
 
           <div className="audio-analysis-main">
             <section className="waveform-window">
+              <div className="audio-preprocess-header">
+                <div className="waveform-window-title">
+                  <SlidersHorizontal size={16} />
+                  전처리 옵션
+                </div>
+                <span className="field-hint">선택한 항목은 Demucs → 정규화 → DeNoise 순서로 적용됩니다.</span>
+              </div>
+
+              <div className="audio-stt-control-row">
+                <div className="audio-preprocess-options">
+                  <label className="export-archive-option compact">
+                    <input
+                      checked={vocalIsolation}
+                      disabled={preprocessLocked || selectedProvider === "mock"}
+                      onChange={(event) => handleVocalIsolationChange(event.target.checked)}
+                      type="checkbox"
+                    />
+                    <span>
+                      <strong>Demucs</strong>
+                    </span>
+                  </label>
+
+                  <label className="export-archive-option compact">
+                    <input
+                      checked={normalize}
+                      disabled={preprocessLocked || selectedProvider === "mock"}
+                      onChange={(event) => handleNormalizeChange(event.target.checked)}
+                      type="checkbox"
+                    />
+                    <span>
+                      <strong>정규화</strong>
+                    </span>
+                  </label>
+
+                  <label className="export-archive-option compact">
+                    <input
+                      checked={noiseRemoval}
+                      disabled={preprocessLocked || selectedProvider === "mock"}
+                      onChange={(event) => handleNoiseRemovalChange(event.target.checked)}
+                      type="checkbox"
+                    />
+                    <span>
+                      <strong>DeNoise</strong>
+                    </span>
+                  </label>
+                </div>
+
+                <label className="stt-model-picker">
+                  <span>엔진</span>
+                  <select disabled={isAnalyzing} onChange={(event) => handleProviderChange(event.target.value as SttProviderId)} value={selectedProvider}>
+                    {STT_PROVIDER_OPTIONS.map((provider) => (
+                      <option key={provider.id} value={provider.id}>
+                        {provider.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="stt-model-picker">
+                  <span>모델</span>
+                  <select
+                    disabled={isAnalyzing || sttModelOptions.length < 2}
+                    onChange={(event) => handleModelChange(event.target.value)}
+                    value={sttModel}
+                  >
+                    {sttModelOptions.map((model) => (
+                      <option key={model} value={model}>
+                        {model}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <section className="waveform-window">
               <div className="waveform-window-title">
                 <Mic size={16} />
-                {isRecordingActive ? "PC 소리 녹음 중" : "녹음 종료 - 마지막 구간 처리 중"}
-                {isRecordingActive && <span className="live-caption-recording-dot" />}
-                <span className="field-hint" style={{ marginLeft: "auto" }}>
-                  {`${Math.floor(recordingElapsedSec / 60)
-                    .toString()
-                    .padStart(2, "0")}:${(recordingElapsedSec % 60).toString().padStart(2, "0")}`}
-                </span>
+                {!isRecordingActive ? "녹음 종료 - 마지막 구간 처리 중" : hasStartedRecordingAnalysis ? "PC 소리 녹음 중" : "PC 소리 대기 중"}
+                {isRecordingActive && hasStartedRecordingAnalysis && <span className="live-caption-recording-dot" />}
+                {hasStartedRecordingAnalysis && (
+                  <span className="field-hint" style={{ marginLeft: "auto" }}>
+                    {isRecordingActive
+                      ? `${Math.floor(recordingElapsedSec / 60)
+                          .toString()
+                          .padStart(2, "0")}:${(recordingElapsedSec % 60).toString().padStart(2, "0")} · 처리됨 ${processedChunkCount}개`
+                      : queuedChunkCount > 0
+                        ? `${processedChunkCount}/${queuedChunkCount}개 구간 처리 중...`
+                        : "처리 중..."}
+                  </span>
+                )}
               </div>
               <LiveWaveform analyser={capture?.analyser ?? null} height={90} />
               {captureError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{captureError}</span>}
@@ -1046,24 +1233,52 @@ export function AudioAnalysisModal({
 
               <div className="audio-playback-controls">
                 <div className="audio-playback-right" style={{ marginLeft: "auto" }}>
-                  {isRecordingActive && (
+                  {isRecordingActive && hasStartedRecordingAnalysis && (
                     <button className="danger-action" onClick={() => void handleStopRecording()} type="button">
                       <Square size={14} />
                       녹음 중지
                     </button>
                   )}
                   <button
-                    className={isAnalyzing ? "primary-action analyze-progress-button" : "primary-action"}
+                    className="primary-action"
                     disabled={!capture || !isRecordingActive || hasStartedRecordingAnalysis}
                     onClick={handleStartRecordingAnalyze}
-                    style={isAnalyzing ? { ["--analyze-progress" as string]: `${analyzeProgress}%` } : undefined}
                     type="button"
                   >
-                    {hasStartedRecordingAnalysis ? `분석 중... ${analyzeProgress}%` : "분석 시작"}
+                    {hasStartedRecordingAnalysis ? "분석 중..." : "분석 시작"}
                   </button>
                 </div>
               </div>
             </section>
+
+            {result && (
+              <section className="waveform-window">
+                <div className="waveform-window-title">
+                  <Users size={16} />
+                  화자 목록
+                </div>
+
+                <div className="speaker-lanes">
+                  {speakerLabels.map((label, index) => (
+                    <div className="speaker-lane-row" key={label}>
+                      <div className="speaker-lane-chip">{index + 1}</div>
+                      <input
+                        list={`speaker-options-live-${index}`}
+                        onChange={(event) => setEditedSpeakerMap((prev) => ({ ...prev, [label]: event.target.value }))}
+                        placeholder="화자 이름"
+                        type="text"
+                        value={editedSpeakerMap[label] ?? ""}
+                      />
+                      <datalist id={`speaker-options-live-${index}`}>
+                        {speakerOptions(label).map((name) => (
+                          <option key={name} value={name} />
+                        ))}
+                      </datalist>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         </div>
       )}
@@ -1074,11 +1289,23 @@ export function AudioAnalysisModal({
             <div className="waveform-window-title">
               <FileText size={16} />
               발언 대본
+              <button
+                className="ghost-action"
+                disabled={isAnalyzing}
+                onClick={triggerTranscriptFilePick}
+                style={{ width: "fit-content", marginLeft: "auto" }}
+                type="button"
+              >
+                <Upload size={14} />
+                불러오기
+              </button>
             </div>
-            {!!result && <span className="field-hint">단어를 마우스 오른쪽 버튼으로 클릭하면 수정 사전에 등록할 수 있습니다.</span>}
+            <input accept=".txt,.md" hidden onChange={(event) => void handleTranscriptFileChange(event)} ref={transcriptFileInputRef} type="file" />
+            {!!result && <span className="field-hint">단어를 마우스 오른쪽 버튼으로 클릭하면 수정 사전에 등록, 발언자는 옆의 선택 상자로 바꿀 수 있습니다.</span>}
+            {transcriptLoadError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{transcriptLoadError}</span>}
 
             {!result && liveSegments.length === 0 && (
-              <p className="audio-analysis-placeholder">분석 시작 버튼을 누르면 시간과 발언 내용이 여기에 표시됩니다.</p>
+              <p className="audio-analysis-placeholder">분석 시작 버튼을 누르거나, 이미 만들어진 발언 대본을 불러올 수 있습니다.</p>
             )}
 
             {result && (
@@ -1088,13 +1315,27 @@ export function AudioAnalysisModal({
                     aria-current={index === activeTranscriptIndex ? "true" : undefined}
                     className={`audio-analysis-transcript-row ${index === activeTranscriptIndex ? "active" : ""}`}
                     key={`${segment.speaker}-${index}`}
+                    onClick={() => handleTranscriptRowClick(segment.startSec)}
                     ref={index === activeTranscriptIndex ? activeTranscriptRowRef : undefined}
+                    style={{ cursor: "pointer" }}
+                    title="클릭하면 이 구간의 음성 파형으로 이동합니다"
                   >
                     <div className="audio-analysis-transcript-meta">
                       <span className="audio-analysis-transcript-time">
                         {formatMmSs(segment.startSec)}-{formatMmSs(segment.endSec)}
                       </span>
-                      <span className="audio-analysis-transcript-speaker">{editedSpeakerMap[segment.speaker] ?? segment.speaker}</span>
+                      <select
+                        className="audio-analysis-transcript-speaker-select"
+                        onChange={(event) => analysis.updateSegmentSpeaker(index, event.target.value)}
+                        onClick={(event) => event.stopPropagation()}
+                        value={segment.speaker}
+                      >
+                        {speakerLabels.map((label) => (
+                          <option key={label} value={label}>
+                            {editedSpeakerMap[label] ?? label}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <EditableTranscriptText onWordContextMenu={handleWordContextMenu} text={segment.text} />
                   </li>
@@ -1209,9 +1450,14 @@ export function AudioAnalysisModal({
                   <WaveformCanvas
                     analysisProgressPercent={isAnalyzing ? analyzeProgress : undefined}
                     currentTime={playbackVisualTime}
-                    durationSec={playbackSource === "original" ? playbackDurationSec : sourceDurationSec}
+                    // playbackDurationSec (not sourceDurationSec) even when this isn't the active
+                    // source - currentTime always comes from the same <audio> element regardless of
+                    // which waveform is shown, so both canvases need the same denominator or their
+                    // playhead bars (and highlightRange) drift apart from each other.
+                    durationSec={playbackDurationSec}
                     envelope={sourceEnvelope}
                     height={FULL_WAVE_HEIGHT}
+                    highlightRange={activeTranscriptRange}
                   />
                 </label>
 
@@ -1223,17 +1469,16 @@ export function AudioAnalysisModal({
                       onChange={() => handlePlaybackSourceChange("processed")}
                       type="checkbox"
                     />
-                    <span className="audio-waveform-choice-label">전처리{!processedAudioAvailable ? " (분석 중...)" : ""}</span>
+                    <span className="audio-waveform-choice-label">전처리</span>
                     <WaveformCanvas
                       currentTime={playbackVisualTime}
-                      // While chunked analysis is still filling this in, result.durationSec is a
-                      // running cumulative total (not yet the full clip) - using it here (rather
-                      // than the original buffer's full duration) keeps the envelope's time axis
-                      // matching what's actually been processed so far instead of stretching a
-                      // partial waveform across the whole clip's width.
-                      durationSec={processedAudioAvailable ? (playbackSource === "processed" ? playbackDurationSec : durationSec) : (result?.durationSec ?? 0)}
+                      // Same playbackDurationSec as the 원본 canvas above, for the same reason - the
+                      // playhead (and highlightRange) has to use one shared denominator across both
+                      // waveforms or they drift out of sync with each other.
+                      durationSec={playbackDurationSec}
                       envelope={processedEnvelope}
                       height={FULL_WAVE_HEIGHT}
+                      highlightRange={activeTranscriptRange}
                     />
                   </label>
                 )}

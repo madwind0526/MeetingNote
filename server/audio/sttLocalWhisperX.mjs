@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { readEnvFile } from "../envFile.mjs";
+import { readAppSettings, resolveComputeDevice } from "../settingsFile.mjs";
 import { runPythonCommand, runDiarizeWithEmbeddings, createLineSplitter } from "./pyannoteDiarize.mjs";
 
 const CHECK_TIMEOUT_MS = 20000;
@@ -16,6 +17,19 @@ function whisperXPythonPath() {
 
 function ffmpegBinPath() {
   return process.env.MEETINGNOTE_FFMPEG_BIN || DEFAULT_FFMPEG_BIN;
+}
+
+const DEFAULT_VAD_ONSET = 0.3;
+const DEFAULT_VAD_OFFSET = 0.2;
+
+// Settings' VAD onset/offset (see SettingsView's "WhisperX 음성 감지" section) - how confident
+// silero's voice-activity detector must be before marking speech as starting/continuing. Only
+// WhisperX exposes these (the plain Whisper CLI has no separate VAD step to tune).
+async function resolveVadThresholds() {
+  const settings = await readAppSettings();
+  const onset = typeof settings?.vadOnset === "number" && Number.isFinite(settings.vadOnset) ? settings.vadOnset : DEFAULT_VAD_ONSET;
+  const offset = typeof settings?.vadOffset === "number" && Number.isFinite(settings.vadOffset) ? settings.vadOffset : DEFAULT_VAD_OFFSET;
+  return { onset, offset };
 }
 
 // See pyannoteDiarize.mjs's runPythonCommand for why PYTHONIOENCODING/PYTHONUTF8 are set - same
@@ -117,6 +131,11 @@ export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "ba
   const env = await readEnvFile();
   const hfToken = env.HUGGINGFACE_TOKEN;
   const speakerCount = Array.isArray(attendeeNames) ? attendeeNames.filter(Boolean).length : 0;
+  const device = await resolveComputeDevice();
+  // float16 only runs on CUDA - faster-whisper (WhisperX's backend) rejects it on CPU, so CPU
+  // falls back to int8 (its standard fast CPU quantization) instead of hardcoding a GPU-only value.
+  const computeType = device === "cpu" ? "int8" : "float16";
+  const { onset: vadOnset, offset: vadOffset } = await resolveVadThresholds();
 
   try {
     await writeFile(inputPath, audioBuffer);
@@ -130,9 +149,12 @@ export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "ba
           "    'whisperx',",
           `    ${JSON.stringify(inputPath)},`,
           `    '--model', ${JSON.stringify(model)},`,
-          "    '--language', 'ko',",
-          "    '--device', os.environ.get('MEETINGNOTE_WHISPERX_DEVICE', 'cuda'),",
-          "    '--compute_type', os.environ.get('MEETINGNOTE_WHISPERX_COMPUTE_TYPE', 'float16'),",
+          // No --language - see sttLocalWhisperCli.mjs's transcribeLocalWhisperCli for why forcing
+          // Korean was wrong (it broke chunks that were actually in another language).
+          `    '--device', ${JSON.stringify(device)},`,
+          `    '--compute_type', ${JSON.stringify(computeType)},`,
+          `    '--vad_onset', ${JSON.stringify(String(vadOnset))},`,
+          `    '--vad_offset', ${JSON.stringify(String(vadOffset))},`,
           "    '--output_format', 'json',",
           `    '--output_dir', ${JSON.stringify(workDir)},`,
           "]",
@@ -185,7 +207,7 @@ export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "ba
         hfToken,
         speakerCount,
         ffmpegBin: ffmpegBinPath(),
-        device: process.env.MEETINGNOTE_WHISPERX_DEVICE || "cuda",
+        device,
         timeoutMs: TRANSCRIBE_TIMEOUT_MS,
         signal
       });

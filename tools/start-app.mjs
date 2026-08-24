@@ -94,7 +94,8 @@ function runBuild() {
     console.log("Building Electron main process...");
     const build = spawn(process.execPath, [tscEntry, "-p", "tsconfig.node.json"], {
       stdio: "inherit",
-      cwd: projectRoot
+      cwd: projectRoot,
+      windowsHide: true
     });
     build.on("exit", (code) => resolve(code ?? 1));
     build.on("error", () => resolve(1));
@@ -124,7 +125,8 @@ async function ensureDevServer() {
   const child = spawn(process.execPath, [viteEntry, "--host", "127.0.0.1"], {
     stdio: "inherit",
     cwd: projectRoot,
-    detached: true
+    detached: true,
+    windowsHide: true
   });
   child.unref();
   return child;
@@ -170,6 +172,9 @@ const electronEnv = { ...process.env, VITE_DEV_SERVER_URL: devServerUrl };
 delete electronEnv.ELECTRON_RUN_AS_NODE;
 
 console.log("Launching Electron...");
+// windowsHide was tried here to suppress console flicker from Electron's own Chromium helper
+// processes (GPU/utility/crashpad-handler), but it stopped the main BrowserWindow itself from
+// appearing at all - reverted.
 const electron = spawn(electronPath, ["."], {
   stdio: "inherit",
   cwd: projectRoot,

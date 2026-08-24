@@ -172,16 +172,24 @@ export function App() {
         setSettings(fileSettings);
         setView(fileSettings.defaultView);
       }
-
-      void refreshLlmStatus(fileSettings?.ollamaBaseUrl ?? settings.ollamaBaseUrl);
-      void refreshSttStatus();
     })();
 
     return () => {
       mounted = false;
     };
+  }, []);
+
+  // Claude CLI / Whisper CLI / WhisperX status checks each spawn a real subprocess - only worth
+  // paying that cost when Settings (the only screen that shows this status) is actually open,
+  // not on every app launch.
+  useEffect(() => {
+    if (!showSettings) {
+      return;
+    }
+    void refreshLlmStatus(settings.ollamaBaseUrl);
+    void refreshSttStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshLlmStatus, refreshSttStatus]);
+  }, [showSettings]);
 
   useEffect(() => {
     let mounted = true;

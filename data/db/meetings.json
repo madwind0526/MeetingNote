@@ -2475,5 +2475,135 @@
     "comments": [],
     "createdAt": "2026-08-21T14:07:14.160Z",
     "updatedAt": "2026-08-21T14:24:24.087Z"
+  },
+  {
+    "id": "a374f0ea-bd76-4468-90d2-f1db201989c7",
+    "title": "실험 1번째",
+    "date": "2026-08-24",
+    "startTime": "22:00",
+    "endTime": "22:29",
+    "organizer": "신헌종",
+    "secretary": "김성민",
+    "attendees": [
+      {
+        "id": "973ab4a5-8d5b-47c8-a19c-9681fcadc813",
+        "name": "김규리",
+        "role": "",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "f7dc966c-207c-4869-8524-f3e0501513a4",
+        "name": "한동환",
+        "role": "",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "96281917-c7d5-4472-a689-21c2da7f4ba2",
+        "name": "문일화",
+        "role": "",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "logic BM 현황",
+        "durationMinutes": 10,
+        "material": "AI 반도체 기술 및 산업 동향.pdf",
+        "materialPath": "2026-08-24-실험 1번째/materials/AI 반도체 기술 및 산업 동향.pdf",
+        "materialMdPath": "2026-08-24-실험 1번째/materials/AI 반도체 기술 및 산업 동향.md",
+        "presenter": "김규리",
+        "presentationSummary": "[발표 정보]와 [참석자 라벨](발표1: 김규리, 발표2: 한동환, 참석1: 문일화, 주관자: 신헌종)을 기준으로 [회의 전체 발언 대본]을 확인했습니다.\n\n제공된 대본에는 \"미등록 화자 1\"이 결제 모듈 개발 완료 및 테스트 일정에 대해 이야기하는 내용만 있으며, 이는 \"logic BM 현황\" 발표(김규리)나 참석자 라벨에 해당하는 발언과 전혀 일치하지 않습니다. 발표 자료(AI 반도체 기술 및 산업 동향) 역시 대본 내용과 주제가 겹치지 않습니다.\n\n즉, 이 발표와 실제로 관련된 구간을 대본에서 찾을 수 없었습니다. 추측해서 내용을 만들어낼 수 없으므로, 정리할 (질문)/(답변)/(의견)/(할일) 항목이 없습니다.\n\n관련 구간이 포함된 정확한 회의 대본을 다시 확인해 주시면 정리를 진행하겠습니다."
+      },
+      {
+        "no": 2,
+        "title": "Project status",
+        "durationMinutes": 10,
+        "material": "AI Art Magazine 2607_s.pdf",
+        "materialPath": "2026-08-24-실험 1번째/materials/AI Art Magazine 2607_s.pdf",
+        "materialMdPath": "2026-08-24-실험 1번째/materials/AI Art Magazine 2607_s.md",
+        "presenter": "한동환"
+      }
+    ],
+    "audio": {
+      "fileName": "diarize-2speaker-ko-en.wav",
+      "durationSec": 34.34,
+      "preprocessing": {
+        "vocalIsolation": true,
+        "noiseRemoval": true,
+        "normalize": true
+      },
+      "transcriptSegments": [
+        {
+          "speaker": "미등록 화자 1",
+          "startSec": 0,
+          "endSec": 2.82,
+          "text": "Good morning, everyone. Let's start today's meeting."
+        },
+        {
+          "speaker": "미등록 화자 1",
+          "startSec": 3.8200000000000003,
+          "endSec": 7.18,
+          "text": "First, let's review last week's progress on the project."
+        },
+        {
+          "speaker": "미등록 화자 1",
+          "startSec": 8.120000000000001,
+          "endSec": 11.74,
+          "text": "네. 지난주에는 결제 모듈 개발을 완료했고,"
+        },
+        {
+          "speaker": "미등록 화자 1",
+          "startSec": 12.01,
+          "endSec": 15.15,
+          "text": "이번 주부터는 테스트를 진행할 예정입니다."
+        },
+        {
+          "speaker": "미등록 화자 1",
+          "startSec": 16.09,
+          "endSec": 20.21,
+          "text": "That sounds great. Do you think we can finish testing by Friday?"
+        },
+        {
+          "speaker": "미등록 화자 1",
+          "startSec": 21.17,
+          "endSec": 25.130000000000003,
+          "text": "네. 금요일까지 충분히 마무리할 수 있을 것 같습니다."
+        },
+        {
+          "speaker": "미등록 화자 1",
+          "startSec": 25.42,
+          "endSec": 28.44,
+          "text": "추가 인력도 필요 없을 것 같아요"
+        },
+        {
+          "speaker": "미등록 화자 1",
+          "startSec": 28.44,
+          "endSec": 31.480000000000004,
+          "text": "Perfect, thank you for the update"
+        },
+        {
+          "speaker": "미등록 화자 1",
+          "startSec": 31.480000000000004,
+          "endSec": 34.34,
+          "text": "Let's move on to the next agenda item"
+        }
+      ],
+      "speakerMap": {
+        "미등록 화자 1": "미등록 화자 1"
+      },
+      "analyzedAt": "2026-08-24T13:39:07.551Z",
+      "audioPath": "2026-08-24-실험 1번째/audio/diarize-2speaker-ko-en.wav",
+      "transcriptPath": "2026-08-24-실험 1번째/audio/diarize-2speaker-ko-en-stt-transcript.txt"
+    },
+    "minutes": "파일 쓰기 권한이 없어 저장하지 못했습니다. 대신 아래에 회의록 전체 내용을 바로 보여드립니다.\n\n---\n\n# 회의록 - 실험 1번째\n\n## 회의 기본정보\n\n| 항목 | 내용 |\n|------|------|\n| 제목 | 실험 1번째 |\n| 일시 | 2026-08-24 22:00 ~ 22:29 |\n| 주관자 | 신헌종 |\n| 참석자 | 김규리 (발표자), 한동환 (발표자), 문일화 |\n\n## 사전 A/I List\n\n사전에 계획된 A/I(Action Item)는 없습니다.\n\n## Agenda 논의 내용\n\n### 1. logic BM 현황 (발표자: 김규리, 10분)\n\n제공된 발표 자료(AI 반도체 기술 및 산업 동향)와 참석자 라벨(발표1: 김규리 등)을 기준으로 회의 전체 발언 대본을 확인하였으나, 대본에는 \"미등록 화자 1\"이 결제 모듈 개발 및 테스트 일정에 대해 언급하는 내용만 존재하며, 이는 \"logic BM 현황\" 발표 주제나 참석자 라벨과 일치하지 않습니다. 따라서 본 안건과 실제로 대응되는 발언 구간을 찾을 수 없어, 추측성 정리 없이 논의 내용을 기재하지 않습니다. 정확한 회의 대본이 추가로 확인되면 별도로 보완이 필요합니다.\n\n### 2. Project status (발표자: 한동환, 10분)\n\n본 안건에 대해서는 별도의 발표별 정리가 제공되지 않아, 발언 대본을 직접 근거로 요약합니다. (단, 해당 구간의 발언자는 대본상 \"미등록 화자 1\"로만 표시되어 있어 특정 참석자로 단정하지 않습니다.)\n\n- 지난주 진행 상황 리뷰 결과, 결제 모듈 개발이 완료되었음을 확인함.\n- 이번 주부터 결제 모듈에 대한 테스트를 진행할 예정임.\n- 금요일까지 테스트를 충분히 마무리할 수 있을 것으로 예상되며, 추가 인력 투입은 필요하지 않을 것으로 판단됨.\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 결제 모듈 테스트 진행 및 완료 | 미등록 화자 1 | 금요일 |\n| \"logic BM 현황\" 안건과 실제로 일치하는 회의 대본 구간 재확인 필요 | - | - |\n\n## 태그\n\n#실험1번째 #logicBM현황 #프로젝트현황 #결제모듈 #테스트일정\n\n---\n\n파일로 저장을 원하시면 저장 경로에 대한 쓰기 권한을 승인해 주시거나, 원하시는 다른 경로를 알려주세요.",
+    "authorId": "d3515e17-60e6-4137-a1ee-a315d6ce1c9d",
+    "comments": [],
+    "createdAt": "2026-08-24T13:42:42.020Z",
+    "updatedAt": "2026-08-24T13:42:42.020Z"
   }
 ]

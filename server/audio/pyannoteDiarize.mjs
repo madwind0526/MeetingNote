@@ -34,6 +34,7 @@ export function runPythonCommand(command, args, { timeoutMs, cwd, onStdoutChunk,
     const child = spawn(command, args, {
       timeout: timeoutMs,
       cwd,
+      windowsHide: true,
       env: { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUTF8: "1", PYTHONUNBUFFERED: "1" }
     });
     let stdout = "";

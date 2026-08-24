@@ -19,3 +19,12 @@ export async function readAppSettings() {
 export function settingsFilePath() {
   return SETTINGS_PATH;
 }
+
+// Shared by sttLocalWhisperCli.mjs, sttLocalWhisperX.mjs, and vocalIsolation.mjs so Settings'
+// CPU/GPU choice (AppSettings.computeDevice) is the one place all three local tools read their
+// torch device from, instead of each shelling out with its own hardcoded "cuda" default. Missing/
+// invalid settings resolve to "cuda" - the same default all three used before this setting existed.
+export async function resolveComputeDevice() {
+  const settings = await readAppSettings();
+  return settings?.computeDevice === "cpu" ? "cpu" : "cuda";
+}

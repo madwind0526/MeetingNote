@@ -22,6 +22,18 @@ function normalizeSettings(parsed: Partial<AppSettings> | null): AppSettings {
     settings.filePickerMode = defaultSettings.filePickerMode;
   }
 
+  if (!["cpu", "gpu"].includes(settings.computeDevice)) {
+    settings.computeDevice = defaultSettings.computeDevice;
+  }
+
+  if (typeof settings.vadOnset !== "number" || !Number.isFinite(settings.vadOnset)) {
+    settings.vadOnset = defaultSettings.vadOnset;
+  }
+
+  if (typeof settings.vadOffset !== "number" || !Number.isFinite(settings.vadOffset)) {
+    settings.vadOffset = defaultSettings.vadOffset;
+  }
+
   return settings;
 }
 

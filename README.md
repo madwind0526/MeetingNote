@@ -230,19 +230,13 @@ imports\demucs-test\htdemucs\sample\no_vocals.wav
 ```powershell
 setx MEETINGNOTE_WHISPERX_PYTHON "C:\Claude\MeetingNote\.venv-whisperx\Scripts\python.exe"
 setx MEETINGNOTE_FFMPEG_BIN "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin"
-setx MEETINGNOTE_WHISPERX_DEVICE "cuda"
-setx MEETINGNOTE_WHISPERX_COMPUTE_TYPE "float16"
-setx MEETINGNOTE_DEMUCS_DEVICE "cuda"
 setx MEETINGNOTE_DEMUCS_MODEL "htdemucs"
 ```
 
-CPU 전용으로 쓰려면:
-
-```powershell
-setx MEETINGNOTE_WHISPERX_DEVICE "cpu"
-setx MEETINGNOTE_WHISPERX_COMPUTE_TYPE "int8"
-setx MEETINGNOTE_DEMUCS_DEVICE "cpu"
-```
+CPU/GPU는 이제 환경 변수가 아니라 앱 설정(Settings → "연산 장치")에서 고릅니다. Whisper CLI/WhisperX/Demucs
+세 곳 모두 이 설정 하나를 따르며, WhisperX는 CPU를 고르면 compute type도 자동으로 `int8`로 전환됩니다
+(`MEETINGNOTE_WHISPERX_DEVICE`/`MEETINGNOTE_WHISPERX_COMPUTE_TYPE`/`MEETINGNOTE_DEMUCS_DEVICE` 환경 변수는
+더 이상 읽지 않습니다).
 
 OpenAI Whisper API를 사용할 경우:
 
@@ -311,10 +305,9 @@ Demucs는 source separation 모델이라 완벽한 무음 제거기는 아닙니
 
 ### WhisperX가 너무 느림
 
-- GPU 사용: `MEETINGNOTE_WHISPERX_DEVICE=cuda`
-- GPU compute type: `MEETINGNOTE_WHISPERX_COMPUTE_TYPE=float16`
+- Settings → "연산 장치"에서 GPU가 선택되어 있는지 확인 (compute type은 자동으로 GPU=float16/CPU=int8로 맞춰짐)
 - 작은 모델부터 테스트: `tiny`, `base`, `small`
-- CPU에서는 `compute_type=int8` 권장
+- 화자 구간이 자주 끊기거나 너무 뭉친다면 Settings의 VAD onset/offset 값을 조정
 
 ## 빌드
 

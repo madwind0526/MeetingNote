@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { readEnvFile } from "../envFile.mjs";
+import { resolveComputeDevice } from "../settingsFile.mjs";
 import { runPythonCommand, runDiarizeWithEmbeddings, createLineSplitter } from "./pyannoteDiarize.mjs";
 
 const CHECK_TIMEOUT_MS = 10000;
@@ -23,10 +24,6 @@ function whisperCommand() {
 
 function whisperModel(model) {
   return model || process.env.MEETINGNOTE_WHISPER_MODEL || "base";
-}
-
-function whisperDevice() {
-  return process.env.MEETINGNOTE_WHISPER_DEVICE || "cuda";
 }
 
 function whisperXPythonPath() {
@@ -91,12 +88,17 @@ export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "
   const inputBaseName = `input${inputExt}`;
   const inputPath = path.join(workDir, inputBaseName);
   const outputJsonPath = path.join(workDir, "input.json");
+  const device = await resolveComputeDevice();
 
   try {
     await writeFile(inputPath, audioBuffer);
 
     let result;
     try {
+      // No --language flag - each chunk auto-detects its own language instead of being forced to
+      // decode as Korean. A chunk that's actually in English (or any other language) was previously
+      // garbled by being force-decoded as Korean; most chunks are still Korean and Whisper's
+      // detector is reliable with 12s+ of clear speech (this app's minimum chunk length).
       result = await runCommand(
         whisperCommand(),
         [
@@ -107,10 +109,8 @@ export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "
           workDir,
           "--model",
           whisperModel(model),
-          "--language",
-          "Korean",
           "--device",
-          whisperDevice()
+          device
         ],
         {
           timeoutMs: TRANSCRIBE_TIMEOUT_MS,
@@ -176,7 +176,7 @@ export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "
         hfToken,
         speakerCount,
         ffmpegBin: ffmpegBinPath(),
-        device: whisperDevice(),
+        device,
         timeoutMs: DIARIZE_TIMEOUT_MS,
         signal
       });

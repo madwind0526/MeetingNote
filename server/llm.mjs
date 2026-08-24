@@ -15,7 +15,7 @@ const ANTHROPIC_MODEL = "claude-3-5-haiku-20241022";
 // can't be interpreted as a second command - unlike `exec`/`execFile` with `shell: true`.
 function runCommand(command, args, { timeoutMs, cwd, stdin } = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { timeout: timeoutMs, cwd });
+    const child = spawn(command, args, { timeout: timeoutMs, cwd, windowsHide: true });
     let stdout = "";
     let stderr = "";
 

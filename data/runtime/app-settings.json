@@ -1,1 +1,15 @@
-{"theme":"dark","defaultView":"card","llmProvider":"ollama","ollamaBaseUrl":"http://127.0.0.1:11434","ollamaModel":"gemma4:latest","sttProvider":"local-whisper-cli","importDuplicateMode":"replace","exportDefaultFormat":"json","attachmentsFolder":"","filePickerMode":"native"}
+{
+  "theme": "dark",
+  "defaultView": "card",
+  "llmProvider": "claude-cli",
+  "ollamaBaseUrl": "http://127.0.0.1:11434",
+  "ollamaModel": "gemma4:latest",
+  "sttProvider": "local-whisper-cli",
+  "importDuplicateMode": "replace",
+  "exportDefaultFormat": "json",
+  "attachmentsFolder": "",
+  "filePickerMode": "builtin",
+  "computeDevice": "gpu",
+  "vadOnset": 0.3,
+  "vadOffset": 0.2
+}

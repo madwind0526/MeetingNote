@@ -625,11 +625,11 @@ export function MeetingFormModal({
             <table className="editable-table">
               <thead>
                 <tr>
-                  <th>이름</th>
-                  <th>역할</th>
-                  <th>주요 참석자</th>
-                  <th>발표자</th>
-                  <th></th>
+                  <th style={{ width: "30%" }}>이름</th>
+                  <th style={{ width: "30%" }}>역할</th>
+                  <th style={{ width: "16%", textAlign: "center" }}>주요 참석자</th>
+                  <th style={{ width: "14%", textAlign: "center" }}>발표자</th>
+                  <th style={{ width: "10%", textAlign: "center" }}>삭제</th>
                 </tr>
               </thead>
               <tbody>
@@ -670,8 +670,14 @@ export function MeetingFormModal({
                         type="checkbox"
                       />
                     </td>
-                    <td>
-                      <button className="row-icon-button" onClick={() => removeAttendee(index)} title="삭제" type="button">
+                    <td style={{ textAlign: "center" }}>
+                      <button
+                        className="row-icon-button"
+                        onClick={() => removeAttendee(index)}
+                        style={{ display: "inline-grid" }}
+                        title="삭제"
+                        type="button"
+                      >
                         <Trash2 size={15} />
                       </button>
                     </td>

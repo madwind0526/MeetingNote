@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import type { SttProviderId } from "../types/domain";
 import { base64ToBlob, transcribeAudioRequest } from "../lib/api";
 import type { TranscribeResult } from "../lib/api";
-import { computeEnvelopeFromMono, decodeAudioFile, encodeWav, findQuietCutSample, mixDownToMono } from "../lib/audio";
+import { computeEnvelopeFromMono, computeRms, decodeAudioFile, encodeWav, findQuietCutSample, mixDownToMono } from "../lib/audio";
 import { reconcileUnregisteredSpeakers } from "../lib/speakerSessionLinking";
 import type { SessionSpeaker } from "../lib/speakerSessionLinking";
 import type { SystemAudioCapture } from "../lib/systemAudioCapture";
@@ -18,6 +18,12 @@ const MIN_CHUNK_MS = 12000;
 const MAX_CHUNK_MS = 20000;
 const QUIET_CHECK_INTERVAL_MS = 300;
 const QUIET_AMPLITUDE_THRESHOLD = 0.02;
+// Same default as findQuietCutSample's per-window quietThreshold - below this, a chunk is treated
+// as having no speech at all and is never sent to STT (see processChunk). STT models (Whisper in
+// particular) are prone to hallucinating plausible-sounding but entirely fabricated text on
+// near-silent audio (e.g. stock phrases like "다음 영상에서 만나요"), so skipping the call outright
+// avoids that instead of trying to filter it out of the response afterwards.
+const SILENCE_RMS_THRESHOLD = 0.02;
 
 export interface ChunkedAnalysisOptions {
   provider: SttProviderId;
@@ -67,6 +73,12 @@ export function useChunkedAudioAnalysis() {
   const [result, setResult] = useState<TranscribeResult | null>(null);
   const [envelope, setEnvelope] = useState<Float32Array | null>(null);
   const [finalAudioBlob, setFinalAudioBlob] = useState<Blob | null>(null);
+  // Recording mode only - how many segments have been queued for STT vs. actually finished, so the
+  // UI can show real progress ("3/5 처리됨") instead of a single indefinite "처리 중..." during the
+  // (sometimes long) drain after "녹음 중지", when it's otherwise impossible to tell whether
+  // processing is still moving or stuck.
+  const [queuedChunkCount, setQueuedChunkCount] = useState(0);
+  const [processedChunkCount, setProcessedChunkCount] = useState(0);
 
   const sessionSpeakersRef = useRef<SessionSpeaker[]>([]);
   const processedMonoChunksRef = useRef<Float32Array[]>([]);
@@ -87,6 +99,8 @@ export function useChunkedAudioAnalysis() {
     setResult(null);
     setEnvelope(null);
     setFinalAudioBlob(null);
+    setQueuedChunkCount(0);
+    setProcessedChunkCount(0);
     sessionSpeakersRef.current = [];
     processedMonoChunksRef.current = [];
     cancelledRef.current = false;
@@ -147,6 +161,24 @@ export function useChunkedAudioAnalysis() {
     async (chunkMono: Float32Array, sampleRate: number, chunkStartSec: number, options: ChunkedAnalysisOptions) => {
       setLiveSegments([]);
       setAnalyzeProgress(0);
+
+      if (computeRms(chunkMono) < SILENCE_RMS_THRESHOLD) {
+        setAnalyzeProgress(100);
+        mergeChunkResult(
+          {
+            fileName: options.fileName,
+            durationSec: chunkMono.length / sampleRate,
+            preprocessing: options.preprocessing,
+            transcriptSegments: [],
+            speakerMap: {},
+            analyzedAt: new Date().toISOString()
+          },
+          chunkStartSec,
+          chunkMono
+        );
+        setLiveSegments([]);
+        return;
+      }
 
       const wavBlob = encodeWav(chunkMono, sampleRate);
       const abortController = new AbortController();
@@ -260,6 +292,7 @@ export function useChunkedAudioAnalysis() {
           const chunkStartSec = recordingCursorSecRef.current;
           recordingCursorSecRef.current += decoded.duration;
           await processChunk(mono, decoded.sampleRate, chunkStartSec, options);
+          setProcessedChunkCount((count) => count + 1);
         }
       } catch (error) {
         handleChunkError(error);
@@ -301,6 +334,7 @@ export function useChunkedAudioAnalysis() {
         lastRotateAt = performance.now();
         void capture.rotateSegment().then((blob) => {
           recordingQueueRef.current.push(blob);
+          setQueuedChunkCount((count) => count + 1);
           void drainRecordingQueue(options);
         });
       }, QUIET_CHECK_INTERVAL_MS);
@@ -321,6 +355,7 @@ export function useChunkedAudioAnalysis() {
       const finalBlob = await capture.stopAll();
       recordingFinishedRef.current = true;
       recordingQueueRef.current.push(finalBlob);
+      setQueuedChunkCount((count) => count + 1);
 
       const options = activeOptionsRef.current;
       if (options) {
@@ -353,6 +388,47 @@ export function useChunkedAudioAnalysis() {
     setLiveSegments((current) => current.map((segment) => ({ ...segment, text: apply(segment.text) })));
   }, []);
 
+  // Loads an already-made transcript (parsed by parseTranscriptText) in place of running STT -
+  // speaker names from the file double as both the raw label and the display name (there's no
+  // diarization output to key off), so they flow straight into speakerMap/transcriptSegments the
+  // same shape a real analysis run would have produced.
+  const loadExternalTranscript = useCallback(
+    (segments: { startSec: number; endSec: number; speaker: string; text: string }[], fileName: string) => {
+      reset();
+
+      const speakerMap: Record<string, string> = {};
+      let durationSec = 0;
+      for (const segment of segments) {
+        speakerMap[segment.speaker] = segment.speaker;
+        durationSec = Math.max(durationSec, segment.endSec);
+      }
+
+      setResult({
+        fileName,
+        durationSec,
+        preprocessing: { vocalIsolation: false, noiseRemoval: false, normalize: false },
+        transcriptSegments: segments,
+        speakerMap,
+        analyzedAt: new Date().toISOString()
+      });
+    },
+    [reset]
+  );
+
+  // Reassigns a single utterance to a different (already-known) speaker label - the waveform lane
+  // it shows up in follows automatically since speakerMasks in AudioAnalysisModal is derived from
+  // transcriptSegments[].speaker, not tracked separately.
+  const updateSegmentSpeaker = useCallback((segmentIndex: number, newSpeaker: string) => {
+    setResult((current) => {
+      if (!current || !current.transcriptSegments[segmentIndex]) {
+        return current;
+      }
+      const nextSegments = current.transcriptSegments.slice();
+      nextSegments[segmentIndex] = { ...nextSegments[segmentIndex], speaker: newSpeaker };
+      return { ...current, transcriptSegments: nextSegments };
+    });
+  }, []);
+
   return {
     isAnalyzing,
     analyzeProgress,
@@ -361,11 +437,15 @@ export function useChunkedAudioAnalysis() {
     result,
     envelope,
     finalAudioBlob,
+    queuedChunkCount,
+    processedChunkCount,
     startFileAnalysis,
     startRecordingAnalysis,
     stopRecordingAnalysis,
     cancel,
     reset,
-    applyTextCorrection
+    applyTextCorrection,
+    loadExternalTranscript,
+    updateSegmentSpeaker
   };
 }

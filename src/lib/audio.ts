@@ -89,6 +89,13 @@ function windowRms(mono: Float32Array, start: number, end: number): number {
   return Math.sqrt(sumSquares / count);
 }
 
+// Same RMS calculation as findQuietCutSample's per-window scoring, but over an entire chunk - used
+// by useChunkedAudioAnalysis to skip sending a near-silent chunk to STT at all (see its
+// SILENCE_RMS_THRESHOLD).
+export function computeRms(mono: Float32Array): number {
+  return windowRms(mono, 0, mono.length);
+}
+
 // Used by chunked analysis (useChunkedAudioAnalysis) to avoid slicing a chunk boundary through the
 // middle of a word: scans [searchStartSample, searchEndSample) for the quietest short window and
 // returns its center as the cut point, instead of always cutting at a fixed sample count. Falls

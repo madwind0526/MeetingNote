@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { resolveComputeDevice } from "../settingsFile.mjs";
 
 const DEMUCS_TIMEOUT_MS = 900000;
 const DEFAULT_PYTHON_PATH = path.resolve(process.cwd(), ".venv-whisperx", "Scripts", "python.exe");
@@ -20,10 +21,6 @@ function demucsModel() {
   return process.env.MEETINGNOTE_DEMUCS_MODEL || "htdemucs";
 }
 
-function demucsDevice() {
-  return process.env.MEETINGNOTE_DEMUCS_DEVICE || "cuda";
-}
-
 function runCommand(command, args, { timeoutMs, cwd, signal } = {}) {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
@@ -38,7 +35,7 @@ function runCommand(command, args, { timeoutMs, cwd, signal } = {}) {
       env.PATH = `${ffmpegBin}${path.delimiter}${env.PATH ?? ""}`;
     }
 
-    const child = spawn(command, args, { timeout: timeoutMs, cwd, env });
+    const child = spawn(command, args, { timeout: timeoutMs, cwd, env, windowsHide: true });
     let stdout = "";
     let stderr = "";
     let aborted = false;
@@ -102,13 +99,14 @@ export async function isolateVocalsWithDemucs(audioBuffer, fileName, signal) {
   const inputPath = path.join(workDir, `input${path.extname(fileName || "") || ".wav"}`);
   const outputRoot = path.join(workDir, "separated");
   const model = demucsModel();
+  const device = await resolveComputeDevice();
 
   try {
     await writeFile(inputPath, audioBuffer);
 
     const result = await runCommand(
       executable,
-      ["-m", "demucs.separate", "--two-stems", "vocals", "-n", model, "--device", demucsDevice(), "-o", outputRoot, inputPath],
+      ["-m", "demucs.separate", "--two-stems", "vocals", "-n", model, "--device", device, "-o", outputRoot, inputPath],
       { timeoutMs: DEMUCS_TIMEOUT_MS, cwd: workDir, signal }
     );
 

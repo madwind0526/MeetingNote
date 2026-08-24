@@ -406,26 +406,26 @@ export const llmProviders: LlmProviderOption[] = [
   {
     id: "local-preview",
     label: "로컬 검색 (LLM 없음)",
-    description: "설치나 API 키 없이 저장된 회의록에서 키워드로 바로 검색합니다. 회의록 작성 시에는 안내 문구만 채워집니다.",
+    description: "키워드 검색만, 회의록 자동 작성 불가",
     requiresApiKey: false
   },
   {
     id: "ollama",
     label: "Ollama (로컬)",
-    description: "이 PC(또는 사내망)에서 실행 중인 Ollama 서버로 로컬 모델을 호출합니다. API 키가 필요 없습니다.",
+    description: "로컬/사내망 Ollama 서버 필요",
     requiresApiKey: false,
     requiresOllamaConfig: true
   },
   {
     id: "claude-cli",
     label: "Claude CLI",
-    description: "이 PC에 설치된 Claude Code CLI(claude 명령)로 질문에 답하거나 회의록을 작성합니다. 별도 API 키가 필요 없습니다.",
+    description: "Claude Code CLI 설치 필요",
     requiresApiKey: false
   },
   {
     id: "anthropic-api",
     label: "Anthropic API",
-    description: "Anthropic API 키로 Claude 모델을 직접 호출합니다.",
+    description: "API 키 필요",
     requiresApiKey: true
   }
 ];
@@ -451,23 +451,23 @@ export const sttProviders: SttProviderOption[] = [
   {
     id: "mock",
     label: "Mock (오프라인 미리보기, 무료)",
-    description: "API 키나 설치 없이 그럴듯한 예시 대본을 생성합니다. 실제 음성 인식이 아니라 화면/흐름 확인용입니다.",
+    description: "실제 인식 아님, 화면 확인용",
     isFree: true,
     requiresApiKey: false
   },
   {
     id: "local-whisper-cli",
     label: "로컬 Whisper (무료)",
-    description: "이 PC에 설치된 OpenAI Whisper CLI(pip install -U openai-whisper, ffmpeg 필요)로 오프라인에서 실제 음성을 인식합니다. API 키는 필요 없지만 사전 설치가 필요합니다.",
+    description: "Whisper CLI/ffmpeg 필요",
     isFree: true,
     requiresApiKey: false,
-    requiresLocalInstall: true
+    requiresLocalInstall: true,
+    requiresHuggingFaceToken: true
   },
   {
     id: "local-whisperx",
-    label: "로컬 WhisperX GPU (무료)",
-    description:
-      "이 PC의 .venv-whisperx 환경과 CUDA GPU를 사용해 실제 회의 음성을 인식합니다. WhisperX와 FFmpeg shared build가 필요합니다. Hugging Face 토큰을 등록하면 화자 분리(누가 말했는지 구분)까지 자동으로 적용됩니다.",
+    label: "로컬 WhisperX (무료)",
+    description: "WhisperX 필요",
     isFree: true,
     requiresApiKey: false,
     requiresLocalInstall: true,
@@ -476,15 +476,14 @@ export const sttProviders: SttProviderOption[] = [
   {
     id: "openai-whisper",
     label: "OpenAI Whisper API (유료)",
-    description: "업로드한 음성 파일을 OpenAI 서버에서 인식합니다. 설치 없이 정확도가 높지만 OPENAI_API_KEY와 사용 요금이 필요합니다.",
+    description: "OPENAI_API_KEY 필요",
     isFree: false,
     requiresApiKey: true
   },
   {
     id: "naver-clova",
     label: "Naver Clova Speech (유료)",
-    description:
-      "업로드한 음성 파일을 NAVER Cloud CLOVA Speech Recognition(CSR)에서 인식합니다. 화자 분리가 자동으로 포함됩니다. 한국어 인식 정확도가 Whisper보다 높지만 NCP Invoke URL/Secret Key와 사용 요금이 필요합니다.",
+    description: "Invoke URL/Secret Key 필요",
     isFree: false,
     requiresApiKey: false,
     requiresNaverClovaConfig: true
@@ -510,6 +509,13 @@ export interface AppSettings {
   // policy blocks the OS's native file dialog/Explorer integration entirely. Only takes effect in
   // the Electron desktop app.
   filePickerMode: "native" | "builtin";
+  // Torch device for the three local tools that can use a GPU: Whisper CLI, WhisperX, and Demucs
+  // (vocal isolation) - see server/settingsFile.mjs's resolveComputeDevice. "gpu" maps to "cuda".
+  computeDevice: "cpu" | "gpu";
+  // WhisperX's silero VAD onset/offset thresholds (--vad_onset/--vad_offset) - how confident the
+  // voice-activity detector must be to mark speech starting/continuing. Only used by WhisperX.
+  vadOnset: number;
+  vadOffset: number;
 }
 
 export const defaultSettings: AppSettings = {
@@ -522,7 +528,10 @@ export const defaultSettings: AppSettings = {
   importDuplicateMode: "replace",
   exportDefaultFormat: "json",
   attachmentsFolder: "",
-  filePickerMode: "native"
+  filePickerMode: "native",
+  computeDevice: "gpu",
+  vadOnset: 0.3,
+  vadOffset: 0.2
 };
 
 export function attendeeSummary(attendees: Attendee[]): string {

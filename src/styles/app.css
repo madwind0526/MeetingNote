@@ -117,7 +117,7 @@ p {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 128px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
   height: 100vh;
   overflow: hidden;
@@ -391,7 +391,7 @@ p {
   gap: 14px;
   min-height: 0;
   overflow: hidden;
-  padding: 16px 10px;
+  padding: 16px 12px;
   border-right: 1px solid rgba(32, 33, 36, 0.12);
 }
 
@@ -427,42 +427,31 @@ p {
 .icon-nav-button,
 .icon-button {
   display: grid;
-  grid-template-rows: auto auto;
   place-items: center;
-  gap: 3px;
   width: 100%;
-  max-width: 108px;
+  max-width: 40px;
   border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
   color: inherit;
-  padding: 8px 4px;
+  padding: 8px;
 }
 
 .icon-button {
-  /* Fixed instead of width:100%/max-width:108px - the sidebar-tools grid item's own "auto" track
-     width is content-sized per button (each label's own rendered width), so percentage widths
-     resolved against it never actually converged on one shared size. A definite width sidesteps
-     that entirely; 108px exactly fills .left-sidebar's own content width (128px column - 10px*2
-     padding), so this can't overflow the rail. */
-  width: 108px;
-  padding: 8px 4px;
+  /* Fixed instead of width:100%/max-width:40px - the sidebar-tools grid item's own "auto" track
+     width is content-sized per button, so percentage widths resolved against it never actually
+     converged on one shared size. A definite width sidesteps that entirely; 40px comfortably fits
+     .left-sidebar's own content width (64px column - 12px*2 padding). */
+  width: 40px;
+  padding: 8px;
 }
 
 .toolbar-actions .icon-button {
-  grid-template-rows: 1fr;
   align-content: center;
   width: 44px;
   height: 44px;
   max-width: none;
   padding: 0;
-}
-
-.icon-nav-button span,
-.icon-button span {
-  font-size: 0.7rem;
-  font-weight: 600;
-  line-height: 1;
 }
 
 .icon-nav-button:hover,
@@ -1622,18 +1611,30 @@ p {
 
 .settings-section-title {
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  flex-wrap: wrap;
   gap: 8px;
   font-size: 1rem;
   font-weight: 650;
 }
 
 .settings-section-title svg {
+  align-self: center;
   color: #1f6f68;
 }
 
 .dark .settings-section-title svg {
   color: #8ed8c8;
+}
+
+.settings-section-desc-inline {
+  color: #60706a;
+  font-size: 0.84rem;
+  font-weight: 400;
+}
+
+.dark .settings-section-desc-inline {
+  color: #bac6c0;
 }
 
 .settings-section-desc {
@@ -1686,27 +1687,58 @@ p {
   background: rgba(31, 111, 104, 0.1);
 }
 
-.llm-provider-item p {
-  margin: 0;
+/* The action button sits right after wherever the title/description text ends, with a small
+   fixed gap - its position follows the text instead of landing at a fixed x position on every
+   row. The status text stays pinned to the far right regardless of the button's position:
+   .llm-provider-item-actions stretches to fill the rest of the row, and margin-left: auto on
+   .llm-provider-status pushes it to that stretched box's right edge. */
+.llm-provider-item-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  row-gap: 4px;
+  column-gap: 12px;
+}
+
+.llm-provider-item-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.llm-provider-item-title strong {
+  flex-shrink: 0;
+}
+
+.llm-provider-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.llm-provider-item-actions .ghost-action {
+  flex-shrink: 0;
+}
+
+.llm-provider-item-desc {
   color: #60706a;
   font-size: 0.82rem;
 }
 
-.dark .llm-provider-item p {
+.dark .llm-provider-item-desc {
   color: #bac6c0;
-}
-
-.llm-provider-item-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
 }
 
 .llm-provider-status {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 4px;
+  margin-left: auto;
   color: #8b968f;
   font-size: 0.76rem;
   font-weight: 650;
@@ -1734,6 +1766,14 @@ p {
   align-content: start;
   gap: 6px;
   min-width: 0;
+}
+
+/* Puts two .field blocks side by side on one row (e.g. 가져오기 중복 처리 / 내보내기 기본 형식)
+   instead of stacked - each .field inside still lays out its own label+select normally. */
+.settings-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .field.full {
@@ -3100,6 +3140,21 @@ p {
 }
 
 .dark .audio-analysis-transcript-speaker {
+  color: #8ed8c8;
+}
+
+.audio-analysis-transcript-speaker-select {
+  border: none;
+  background: transparent;
+  color: #1f6f68;
+  font-size: 0.78rem;
+  font-weight: 650;
+  font-family: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+
+.dark .audio-analysis-transcript-speaker-select {
   color: #8ed8c8;
 }
 
