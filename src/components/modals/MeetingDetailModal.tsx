@@ -3,6 +3,7 @@ import { Calendar, Clock, Download, FileText, FolderOpen, MessageSquare, Pause, 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ModalShell } from "./ModalShell";
+import { MdViewerModal } from "./MdViewerModal";
 import { TranscriptModal } from "./TranscriptModal";
 import type { Meeting, PublicMember } from "../../types/domain";
 import { canDeleteMeeting, computeAttendeeBadges, computeMeetingStatus, meetingStatusLabels } from "../../types/domain";
@@ -19,53 +20,50 @@ function resolveMemberName(members: PublicMember[], authorId: string) {
 }
 
 // Renders the "발표 자료" cell as a plain label, or - when a real file was attached via the
-// form - a clickable button that opens it (OS default app in Electron, browser tab otherwise),
-// plus a second button to open its .md conversion when one exists (B4).
+// form - a clickable icon that opens it (OS default app in Electron, browser tab otherwise), plus
+// a second icon to open its .md conversion (in-app MdViewerModal, not an external app - B4), then
+// the file name.
 function MaterialCell({
   material,
   materialPath,
   materialMdPath,
-  onError
+  onError,
+  onOpenMdViewer
 }: {
   material: string;
   materialPath?: string;
   materialMdPath?: string;
   onError: (message: string) => void;
+  onOpenMdViewer: (path: string, title: string) => void;
 }) {
   if (!materialPath) {
     return <>{material || "-"}</>;
   }
 
-  const handleOpen = async (path: string, errorMessage: string) => {
+  const handleOpenOriginal = async () => {
     try {
-      await openAttachment(path);
+      await openAttachment(materialPath);
     } catch (error) {
-      onError(error instanceof Error ? error.message : errorMessage);
+      onError(error instanceof Error ? error.message : "첨부파일을 여는 데 실패했습니다.");
     }
   };
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-      <button
-        className="ghost-action"
-        onClick={() => handleOpen(materialPath, "첨부파일을 여는 데 실패했습니다.")}
-        style={{ minHeight: 26, padding: "0 8px", fontSize: "0.86rem" }}
-        title="첨부파일 열기"
-        type="button"
-      >
+      <button className="row-icon-button" onClick={() => void handleOpenOriginal()} title="첨부파일 열기" type="button">
         <FolderOpen size={13} />
-        {material || "첨부파일"}
       </button>
       {materialMdPath && (
         <button
           className="row-icon-button"
-          onClick={() => handleOpen(materialMdPath, "Markdown 변환본을 여는 데 실패했습니다.")}
+          onClick={() => onOpenMdViewer(materialMdPath, material || "Markdown 변환본")}
           title="Markdown 변환본 열기"
           type="button"
         >
           <FileText size={13} />
         </button>
       )}
+      <span>{material || "첨부파일"}</span>
     </div>
   );
 }
@@ -143,6 +141,7 @@ export function MeetingDetailModal({
   const [materialError, setMaterialError] = useState("");
   const [commentDraft, setCommentDraft] = useState("");
   const [showTranscript, setShowTranscript] = useState(false);
+  const [mdViewerTarget, setMdViewerTarget] = useState<{ path: string; title: string } | null>(null);
   const transcriptText = formatTranscriptText(meeting.audio);
 
   const handleSubmitComment = () => {
@@ -285,6 +284,7 @@ export function MeetingDetailModal({
                         materialMdPath={item.materialMdPath}
                         materialPath={item.materialPath}
                         onError={setMaterialError}
+                        onOpenMdViewer={(path, title) => setMdViewerTarget({ path, title })}
                       />
                     </td>
                     <td>{item.presenter || "-"}</td>
@@ -325,6 +325,7 @@ export function MeetingDetailModal({
                         materialMdPath={item.materialMdPath}
                         materialPath={item.materialPath}
                         onError={setMaterialError}
+                        onOpenMdViewer={(path, title) => setMdViewerTarget({ path, title })}
                       />
                     </td>
                     <td style={{ textAlign: "center" }}>{item.presenter || "-"}</td>
@@ -403,6 +404,9 @@ export function MeetingDetailModal({
     </ModalShell>
     {showTranscript && (
       <TranscriptModal content={transcriptText} onClose={() => setShowTranscript(false)} title={`STT 대본 - ${meeting.title || "제목 없음"}`} />
+    )}
+    {mdViewerTarget && (
+      <MdViewerModal onClose={() => setMdViewerTarget(null)} path={mdViewerTarget.path} title={mdViewerTarget.title} />
     )}
     </>
   );

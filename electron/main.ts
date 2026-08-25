@@ -1,49 +1,28 @@
 import { app, BrowserWindow, desktopCapturer, dialog, ipcMain, session, shell } from "electron";
-import { execFile } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 import { resolveAttachmentPath, toProjectRelativePath } from "../server/attachments.mjs";
 import { readMembers, createMember, updateMember, disableMember, verifyLogin, toPublicMember } from "../server/members.mjs";
-
-const execFileAsync = promisify(execFile);
 
 const settingsFilePath = path.resolve(process.cwd(), process.env.MEETINGNOTE_SETTINGS_FILE ?? "data/runtime/app-settings.json");
 const allowedWritePaths = new Set<string>();
 
-async function readGitValue(args: string[], fallback: string) {
-  try {
-    const { stdout } = await execFileAsync("git", args, { cwd: process.cwd() });
-    return stdout.trim() || fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-async function buildVersionInfo() {
+// Build version is set by hand in package.json's "version" field instead of being derived from
+// git history at request time - `git status --porcelain` in particular scans the whole working
+// tree and was a real contributor to slow startup, on top of spawning 3 git subprocesses on every
+// launch (this ran on every app boot, not just once).
+function buildVersionInfo() {
   const packageJson = JSON.parse(readFileSync(path.resolve(process.cwd(), "package.json"), "utf8")) as { version?: string };
   const version = packageJson.version ?? "0.0.0";
-  const majorVersion = version.split(".")[0] || "0";
-  // These three `git` calls are independent of each other - run them concurrently instead of
-  // blocking the main process on each one in turn (execSync previously did both: sequential *and*
-  // synchronous, freezing all other IPC handling for the duration of all three).
-  const [commitCount, commitSha, statusPorcelain] = await Promise.all([
-    readGitValue(["rev-list", "--count", "HEAD"], "0"),
-    readGitValue(["rev-parse", "--short", "HEAD"], "unknown"),
-    readGitValue(["status", "--porcelain"], "")
-  ]);
-  const shaPatch = Number.parseInt(commitSha.slice(0, 1), 16);
-  const stateLabel = statusPorcelain ? "dirty" : "clean";
-  const buildVersion = `${majorVersion}.${commitCount}.${Number.isFinite(shaPatch) ? shaPatch : 0}`;
 
   return {
     version,
-    buildVersion,
-    buildLabel: `v${buildVersion}, ${stateLabel}`,
-    commitSha,
-    commitCount,
-    dirty: stateLabel === "dirty"
+    buildVersion: version,
+    buildLabel: `v${version}`,
+    commitSha: "",
+    commitCount: "",
+    dirty: false
   };
 }
 

@@ -1,5 +1,28 @@
 import spawn from "cross-spawn";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { readEnvFile } from "./envFile.mjs";
+import { readAppSettings } from "./settingsFile.mjs";
+
+const WINDOWS_EXECUTABLE_EXTENSIONS = [".cmd", ".exe", ".ps1", ".bat", ""];
+
+// Cheap existence-only check (no subprocess spawn) - scans PATH for a file literally named
+// `command` with a common Windows executable extension. Used instead of actually running the
+// command just to see if it's there.
+function isCommandInstalled(command) {
+  const pathEnv = process.env.PATH || process.env.Path || "";
+  const dirs = pathEnv.split(path.delimiter).filter(Boolean);
+
+  for (const dir of dirs) {
+    for (const ext of WINDOWS_EXECUTABLE_EXTENSIONS) {
+      if (existsSync(path.join(dir, `${command}${ext}`))) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
 
 // A full meeting-minutes prompt (whole transcript + agenda + materials) genuinely takes longer to
 // generate than a short query - measured a real presentation-summary call getting SIGTERM-killed
@@ -58,7 +81,14 @@ function stripWrappingCodeFence(text) {
   return match ? match[1].trim() : trimmed;
 }
 
-export async function checkClaudeCliAvailable() {
+// deep=false (the default) only scans PATH for a file named `claude` - no subprocess spawn.
+// deep=true actually runs `claude --version` to confirm it works, for the user's explicit
+// "지금 확인" action instead of running automatically on every Settings open.
+export async function checkClaudeCliAvailable(deep = false) {
+  if (!deep) {
+    return { available: isCommandInstalled("claude"), version: null };
+  }
+
   try {
     const version = await runCommand("claude", ["--version"], { timeoutMs: 10000 });
     return { available: true, version };
@@ -67,8 +97,19 @@ export async function checkClaudeCliAvailable() {
   }
 }
 
+// Settings' "System Message" (아래 LLM 선택) - a user-authored persona/style instruction (tone,
+// what to emphasize) prepended before this app's own structured system prompt (output format,
+// language, refusal rules), which still has to win when the two conflict - a user free-typing
+// "간결하게 정리하세요" shouldn't be able to accidentally break the required output format.
+async function resolveSystemPrompt(basePrompt) {
+  const settings = await readAppSettings();
+  const custom = typeof settings?.systemMessage === "string" ? settings.systemMessage.trim() : "";
+  return custom ? `${custom}\n\n${basePrompt}` : basePrompt;
+}
+
 export async function askClaudeCli(systemPrompt, userPrompt) {
   try {
+    const resolvedSystemPrompt = await resolveSystemPrompt(systemPrompt);
     // Running `claude -p` inside this project's own folder would otherwise load this repo's
     // CLAUDE.md and answer in character as "the MeetingNote coding assistant" instead of the
     // prompt, even though the question has nothing to do with code. `--system-prompt` replaces
@@ -78,7 +119,7 @@ export async function askClaudeCli(systemPrompt, userPrompt) {
     // The user prompt (question + meeting data) goes over stdin rather than as a CLI argument:
     // a multi-line, multi-KB argument routed through cmd.exe (required to launch the .cmd shim
     // on Windows) gets mangled/truncated, so the CLI would see an empty or corrupted prompt.
-    const result = await runCommand("claude", ["-p", "--system-prompt", systemPrompt], {
+    const result = await runCommand("claude", ["-p", "--system-prompt", resolvedSystemPrompt], {
       timeoutMs: CLAUDE_CLI_TIMEOUT_MS,
       stdin: userPrompt
     });
@@ -101,6 +142,8 @@ export async function askAnthropicApi(systemPrompt, userPrompt) {
     throw new Error("Anthropic API 키가 설정되지 않았습니다. 설정에서 먼저 등록해 주세요.");
   }
 
+  const resolvedSystemPrompt = await resolveSystemPrompt(systemPrompt);
+
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -110,8 +153,11 @@ export async function askAnthropicApi(systemPrompt, userPrompt) {
     },
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
-      max_tokens: 1024,
-      system: systemPrompt,
+      // 1024 was enough for a short query answer but silently truncates a full structured meeting
+      // record (multi-agenda summary + 할일 table + tags) for anything beyond a short meeting -
+      // 8192 gives real headroom for an hour-long, multi-agenda meeting's minutes.
+      max_tokens: 8192,
+      system: resolvedSystemPrompt,
       messages: [{ role: "user", content: userPrompt }]
     })
   });
@@ -147,6 +193,8 @@ export async function askOllama(systemPrompt, userPrompt, baseUrl, model) {
     throw new Error("Ollama 서버 주소와 모델을 먼저 설정해 주세요.");
   }
 
+  const resolvedSystemPrompt = await resolveSystemPrompt(systemPrompt);
+
   let response;
   try {
     response = await fetch(new URL("/api/chat", baseUrl), {
@@ -156,9 +204,14 @@ export async function askOllama(systemPrompt, userPrompt, baseUrl, model) {
         model,
         stream: false,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: resolvedSystemPrompt },
           { role: "user", content: userPrompt }
-        ]
+        ],
+        // Without this, Ollama falls back to the model file's own default context window (often
+        // 2048-4096 tokens for many models) - a full hour-long meeting's transcript can exceed that
+        // on its own, and Ollama silently drops the earliest input rather than erroring, so this
+        // has to be set explicitly rather than left to the model default.
+        options: { num_ctx: 8192 }
       })
     });
   } catch (error) {
@@ -271,12 +324,103 @@ export function buildMinutesPrompt(meeting) {
   return sections.join("\n\n");
 }
 
+// B5 has no real per-agenda timestamp data (a meeting has exactly one continuous recording), so
+// this estimates each agenda item's rough position from the agenda's own planned order + 발표
+// 시간(분), then snaps both edges to the nearest natural pause in the transcript (the biggest gap
+// between consecutive segments within a search radius) instead of cutting at an arbitrary second -
+// same idea as src/lib/audio.ts's findQuietCutSample, but over transcript segment gaps (already
+// known from STT) instead of re-analyzing raw audio. This is inherently approximate (actual
+// discussion can run over/under the planned time, and time spent on A/I List or earlier agenda
+// items before this one isn't accounted for), which is why the search radius is generous and why
+// the whole-transcript fallback below still exists for when nothing reasonable is found.
+const WINDOW_SEARCH_RADIUS_SEC = 3 * 60;
+const WINDOW_FALLBACK_DURATION_SEC = 5 * 60;
+const WINDOW_EDGE_PADDING_SEC = 20;
+// Hard cap regardless of how the time window above comes out - protects a small local model's
+// context even if the estimated window ends up larger than expected (e.g. a long Q&A).
+const WINDOW_MAX_CHARS = 8000;
+
+function estimateAgendaStartSec(agenda, agendaItem) {
+  const items = Array.isArray(agenda) ? agenda : [];
+  const index = items.findIndex((item) => item.no === agendaItem.no);
+  const precedingItems = index >= 0 ? items.slice(0, index) : [];
+  return precedingItems.reduce((sum, item) => sum + (Number.isFinite(item.durationMinutes) ? item.durationMinutes : 0), 0) * 60;
+}
+
+// Finds the gap between consecutive segments closest to targetSec (ties broken by the wider gap)
+// within searchRadiusSec, and returns its midpoint as the snapped boundary - falls back to
+// targetSec itself if no segment gap falls in range at all. Picking the widest gap in range
+// (rather than the nearest one) was the actual bug here despite the function's name: a long silence
+// well outside where the boundary should be could still win over a short-but-close pause, dragging
+// the snapped boundary away from targetSec - for agenda item 1 (estimatedStart always exactly 0)
+// this could pull windowStart minutes into the recording, cutting off the presentation's opening.
+function snapToNearestPause(sortedSegments, targetSec, searchRadiusSec) {
+  let best = null;
+
+  for (let index = 0; index < sortedSegments.length - 1; index += 1) {
+    const gapStart = sortedSegments[index].endSec;
+    const gapEnd = sortedSegments[index + 1].startSec;
+    const gapMid = (gapStart + gapEnd) / 2;
+    const distance = Math.abs(gapMid - targetSec);
+    if (distance > searchRadiusSec) {
+      continue;
+    }
+
+    const gapSec = gapEnd - gapStart;
+    if (!best || distance < best.distance || (distance === best.distance && gapSec > best.gapSec)) {
+      best = { boundarySec: gapMid, distance, gapSec };
+    }
+  }
+
+  return best ? best.boundarySec : targetSec;
+}
+
+function windowTranscriptForAgendaItem(transcriptSegments, agenda, agendaItem) {
+  if (!Array.isArray(transcriptSegments) || transcriptSegments.length === 0) {
+    return [];
+  }
+
+  const sorted = transcriptSegments.slice().sort((a, b) => a.startSec - b.startSec);
+  const estimatedStart = estimateAgendaStartSec(agenda, agendaItem);
+  const plannedDurationSec =
+    Number.isFinite(agendaItem.durationMinutes) && agendaItem.durationMinutes > 0
+      ? agendaItem.durationMinutes * 60
+      : WINDOW_FALLBACK_DURATION_SEC;
+  const estimatedEnd = estimatedStart + plannedDurationSec;
+
+  // Agenda item 1 always estimates to exactly 0 (no preceding items), and any other item can land
+  // this close too - snapping it to a real pause nearby is pointless (there's nothing before 0 to
+  // protect against including) and only risks the nearest-pause search still picking something a
+  // little off zero, so skip snapping entirely and start the window at the true beginning.
+  const snappedStart = estimatedStart <= WINDOW_EDGE_PADDING_SEC ? 0 : snapToNearestPause(sorted, estimatedStart, WINDOW_SEARCH_RADIUS_SEC);
+  const windowStart = Math.max(0, snappedStart - WINDOW_EDGE_PADDING_SEC);
+  const windowEnd = snapToNearestPause(sorted, estimatedEnd, WINDOW_SEARCH_RADIUS_SEC) + WINDOW_EDGE_PADDING_SEC;
+
+  return sorted.filter((segment) => segment.endSec > windowStart && segment.startSec < windowEnd);
+}
+
+// Keeps whole lines up to maxChars (always keeps at least one line) instead of a raw string slice,
+// so the cap never cuts a transcript line in half.
+function capTranscriptLines(lines, maxChars) {
+  const kept = [];
+  let total = 0;
+  for (const line of lines) {
+    const nextTotal = total + line.length + 1;
+    if (kept.length > 0 && nextTotal > maxChars) {
+      break;
+    }
+    kept.push(line);
+    total = nextTotal;
+  }
+  return kept;
+}
+
 // Builds the user-message prompt for /api/llm/presentation-summary (B5). Unlike buildMinutesPrompt
 // above (which groups the transcript by speaker for a whole-meeting summary), this keeps the
-// transcript in chronological order - the LLM has to find which stretch of a single, undivided
-// meeting recording actually discusses this one Agenda item itself (this app has no per-agenda
-// timestamp data - see memory-bank/roadmap.md's confirmed B5 design), and chronological order
-// preserves the question/answer adjacency that signal depends on.
+// transcript in chronological order and windows it down to the agenda item's estimated stretch
+// (see windowTranscriptForAgendaItem) instead of sending the whole meeting's transcript for every
+// single agenda item - chronological order also preserves the question/answer adjacency B5's
+// (질문)/(답변) tagging depends on.
 // `badgeLabels` is a plain {name: label} map (e.g. {"김도현": "주관자", "박준혁": "발표1"}) built by
 // the caller from B1's computeAttendeeBadges (a TS function in src/types/domain.ts that this plain
 // .mjs file can't import directly), so the LLM tags its output with the same labels used elsewhere.
@@ -304,12 +448,23 @@ export function buildPresentationSummaryPrompt(meeting, agendaItem, materialMark
   const audio = source.audio && typeof source.audio === "object" ? source.audio : null;
   if (audio && Array.isArray(audio.transcriptSegments) && audio.transcriptSegments.length) {
     const speakerMap = audio.speakerMap && typeof audio.speakerMap === "object" ? audio.speakerMap : {};
-    const transcriptLines = audio.transcriptSegments.map((segment) => {
-      const speakerName = resolveSpeakerName(segment.speaker, speakerMap);
-      return `[${formatMmSs(segment.startSec)}-${formatMmSs(segment.endSec)}] ${speakerName}: ${segment.text || ""}`;
-    });
+    const windowedSegments = windowTranscriptForAgendaItem(audio.transcriptSegments, source.agenda, agendaItem);
+    const isWindowed = windowedSegments.length > 0 && windowedSegments.length < audio.transcriptSegments.length;
+    const segmentsToUse = windowedSegments.length ? windowedSegments : audio.transcriptSegments;
 
-    sections.push(["[회의 전체 발언 대본 - 이 발표와 무관한 구간이 섞여 있을 수 있음]", ...transcriptLines].join("\n"));
+    const transcriptLines = capTranscriptLines(
+      segmentsToUse.map((segment) => {
+        const speakerName = resolveSpeakerName(segment.speaker, speakerMap);
+        return `[${formatMmSs(segment.startSec)}-${formatMmSs(segment.endSec)}] ${speakerName}: ${segment.text || ""}`;
+      }),
+      WINDOW_MAX_CHARS
+    );
+
+    const sectionLabel = isWindowed
+      ? "[발표 구간으로 추정되는 발언 대본 - Agenda 순서·발표 시간으로 추정한 구간이라 실제와 시간 오차가 있을 수 있음]"
+      : "[회의 전체 발언 대본 - 이 발표와 무관한 구간이 섞여 있을 수 있음]";
+
+    sections.push([sectionLabel, ...transcriptLines].join("\n"));
   }
 
   return sections.join("\n\n");

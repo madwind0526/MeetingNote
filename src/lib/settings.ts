@@ -34,6 +34,14 @@ function normalizeSettings(parsed: Partial<AppSettings> | null): AppSettings {
     settings.vadOffset = defaultSettings.vadOffset;
   }
 
+  if (typeof settings.systemMessage !== "string") {
+    settings.systemMessage = defaultSettings.systemMessage;
+  }
+
+  if (typeof settings.silenceThreshold !== "number" || !Number.isFinite(settings.silenceThreshold) || settings.silenceThreshold < 0) {
+    settings.silenceThreshold = defaultSettings.silenceThreshold;
+  }
+
   return settings;
 }
 

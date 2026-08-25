@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { RefreshCw } from "lucide-react";
 import { TopToolbar } from "./components/TopToolbar";
 import { LeftSidebar } from "./components/LeftSidebar";
 import { SettingsView } from "./components/SettingsView";
@@ -121,6 +122,7 @@ export function App() {
   const [listSortAsc, setListSortAsc] = useState(false);
   const [llmStatus, setLlmStatus] = useState<LlmStatus | null>(null);
   const [sttStatus, setSttStatus] = useState<SttStatus | null>(null);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
   const [showLlmApiKeyModal, setShowLlmApiKeyModal] = useState(false);
   const [showSttApiKeyModal, setShowSttApiKeyModal] = useState(false);
   const [showNaverClovaConfig, setShowNaverClovaConfig] = useState(false);
@@ -130,21 +132,35 @@ export function App() {
   const [systemMessage, setSystemMessage] = useState("준비되었습니다.");
   const [buildInfo, setBuildInfo] = useState<BuildInfo>(FALLBACK_BUILD_INFO);
 
-  const refreshLlmStatus = useCallback(async (ollamaBaseUrl?: string) => {
+  const refreshLlmStatus = useCallback(async (ollamaBaseUrl?: string, deep = false) => {
     try {
-      setLlmStatus(await fetchLlmStatus(ollamaBaseUrl));
+      setLlmStatus(await fetchLlmStatus(ollamaBaseUrl, deep));
     } catch {
       // Settings screen just shows "확인 중..." if this fails - not worth surfacing as an error.
     }
   }, []);
 
-  const refreshSttStatus = useCallback(async () => {
+  const refreshSttStatus = useCallback(async (deep = false) => {
     try {
-      setSttStatus(await fetchSttStatus());
+      setSttStatus(await fetchSttStatus(deep));
     } catch {
       // Same as above - Settings just keeps showing "확인 중...".
     }
   }, []);
+
+  // "설치 여부 확인" - claude --version / whisper -h / WhisperX's torch+whisperx import are real
+  // subprocess spawns, taking a few real seconds, unlike the cheap check that runs automatically
+  // when Settings opens. Without isCheckingStatus the button gave no feedback while that ran (the
+  // status badges only update once the response lands, with no indication one is in flight), which
+  // looked exactly like the click did nothing.
+  const handleCheckStatus = useCallback(async () => {
+    setIsCheckingStatus(true);
+    try {
+      await Promise.all([refreshLlmStatus(settings.ollamaBaseUrl, true), refreshSttStatus(true)]);
+    } finally {
+      setIsCheckingStatus(false);
+    }
+  }, [refreshLlmStatus, refreshSttStatus, settings.ollamaBaseUrl]);
 
   useEffect(() => {
     let mounted = true;
@@ -665,6 +681,10 @@ export function App() {
                 <h1>설정</h1>
               </div>
               <div className="view-header-actions">
+                <button className="ghost-action" disabled={isCheckingStatus} onClick={() => void handleCheckStatus()} type="button">
+                  <RefreshCw size={15} />
+                  {isCheckingStatus ? "확인 중..." : "설치 여부 확인"}
+                </button>
                 <button className="primary-action" onClick={handleSaveSettings} type="button">
                   설정 저장
                 </button>
@@ -763,6 +783,7 @@ export function App() {
           onClose={() => setFormModal(null)}
           onDictionaryChange={setDictionary}
           onSubmit={handleCreateSubmit}
+          silenceThreshold={settings.silenceThreshold}
           sttProvider={activeSttProvider}
         />
       )}
@@ -777,6 +798,7 @@ export function App() {
           onClose={() => setFormModal(null)}
           onDictionaryChange={setDictionary}
           onSubmit={(draft) => handleEditSubmit(formModal.meeting.id, draft)}
+          silenceThreshold={settings.silenceThreshold}
           sttProvider={activeSttProvider}
         />
       )}

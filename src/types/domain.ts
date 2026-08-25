@@ -516,6 +516,14 @@ export interface AppSettings {
   // voice-activity detector must be to mark speech starting/continuing. Only used by WhisperX.
   vadOnset: number;
   vadOffset: number;
+  // Below this RMS amplitude, a chunked-analysis audio segment is treated as silence and skipped
+  // entirely instead of being sent to STT - see useChunkedAudioAnalysis's SILENCE_RMS_THRESHOLD
+  // default. Prevents Whisper-style hallucinated text on near-silent audio.
+  silenceThreshold: number;
+  // Custom persona/style instruction prepended before this app's own system prompt for every LLM
+  // call (query/회의록 작성/발표 내용 정리) - see server/llm.mjs's resolveSystemPrompt. Empty string
+  // means "no custom message" (just this app's own system prompt, unchanged).
+  systemMessage: string;
 }
 
 export const defaultSettings: AppSettings = {
@@ -531,7 +539,9 @@ export const defaultSettings: AppSettings = {
   filePickerMode: "native",
   computeDevice: "gpu",
   vadOnset: 0.3,
-  vadOffset: 0.2
+  vadOffset: 0.2,
+  silenceThreshold: 0.004,
+  systemMessage: ""
 };
 
 export function attendeeSummary(attendees: Attendee[]): string {

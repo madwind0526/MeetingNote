@@ -69,11 +69,19 @@ function buildBootstrapCode(body) {
   ].join("\n");
 }
 
-export async function checkLocalWhisperXAvailable() {
+// deep=false (the default) only checks whether the venv's python.exe exists - no subprocess spawn.
+// deep=true additionally imports torch/torchcodec/whisperx inside that venv to confirm it actually
+// works, which is slow (real package imports, not just a file check) - only runs for the user's
+// explicit "지금 확인" action instead of automatically on every Settings open.
+export async function checkLocalWhisperXAvailable(deep = false) {
   const pythonPath = whisperXPythonPath();
 
   if (!existsSync(pythonPath)) {
     return { available: false, version: null };
+  }
+
+  if (!deep) {
+    return { available: true, version: null };
   }
 
   try {

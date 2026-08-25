@@ -217,6 +217,17 @@ export async function fetchAttachmentAsFile(relativePath: string, fileName: stri
   return new File([blob], fileName, { type: blob.type });
 }
 
+// Fetches a stored .md attachment's raw text - used by MdViewerModal to render it in-app instead
+// of opening it in an external app/tab (openAttachment).
+export async function fetchAttachmentText(relativePath: string): Promise<string> {
+  const response = await fetch(attachmentUrl(relativePath));
+  if (!response.ok) {
+    throw new Error(`Markdown 파일을 불러오지 못했습니다 (${response.status}).`);
+  }
+
+  return response.text();
+}
+
 // Opens the native "select a folder" dialog (Electron only) for Settings' storage-folder picker. The
 // returned path is always relative to the project root (C:\Claude\MeetingNote) - the main process
 // rejects any folder outside that tree and this throws with its Korean error message in that

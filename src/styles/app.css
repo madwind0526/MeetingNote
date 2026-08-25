@@ -1614,8 +1614,26 @@ p {
   align-items: baseline;
   flex-wrap: wrap;
   gap: 8px;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 650;
+  color: #1f6f68;
+}
+
+.dark .settings-section-title {
+  color: #8ed8c8;
+}
+
+/* Higher specificity than .field label (which would otherwise win and shrink/recolor this back
+   down) - only needed where .settings-section-title is used on a <label> inside .field (System
+   Message), every other section title is a plain <div> unaffected by .field label. */
+.field label.settings-section-title {
+  font-size: 1.2rem;
+  font-weight: 650;
+  color: #1f6f68;
+}
+
+.dark .field label.settings-section-title {
+  color: #8ed8c8;
 }
 
 .settings-section-title svg {

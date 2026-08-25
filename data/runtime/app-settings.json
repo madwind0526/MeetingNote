@@ -1,7 +1,7 @@
 {
   "theme": "dark",
   "defaultView": "card",
-  "llmProvider": "claude-cli",
+  "llmProvider": "ollama",
   "ollamaBaseUrl": "http://127.0.0.1:11434",
   "ollamaModel": "gemma4:latest",
   "sttProvider": "local-whisper-cli",
@@ -11,5 +11,7 @@
   "filePickerMode": "builtin",
   "computeDevice": "gpu",
   "vadOnset": 0.3,
-  "vadOffset": 0.2
+  "vadOffset": 0.2,
+  "silenceThreshold": 0.004,
+  "systemMessage": ""
 }

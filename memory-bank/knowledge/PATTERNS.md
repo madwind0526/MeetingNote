@@ -173,3 +173,27 @@ Wave 2에서 디자인 시스템(app.css의 색상 토큰, `.field`/`.primary-ac
 재사용하라, 새 클래스는 최소한으로"라고 명시하면 대부분의 컴포넌트가 새 CSS 없이 완성된다. 실제로 UI 셸 7개
 컴포넌트는 새 CSS 없이, 모달 대부분도 기존 클래스만으로 완성됐고, 오직 오디오 파형/스크립트 패널처럼 정말
 새로운 시각 요소가 필요한 경우에만(`AudioAnalysisModal`) 기존 토큰 색상을 따라 소량의 CSS를 추가했다.
+
+## STT 완료 시 원본 첨부 + 대본 텍스트 파일을 항상 같이 저장
+
+**사용 시점:** 분석/변환 결과를 나중에 사람이 직접 열어봐야 하는 기능(STT, 발표 자료 MD 변환 등).
+
+STT 분석이 끝나면 `transcriptSegments`를 JSON으로 회의 레코드에만 저장하는 걸로는 부족하다 -
+`data/attachments/.../audio/`에 원본 오디오 옆에 `*-stt-transcript.txt`(사람이 읽을 수 있는
+`[mm:ss-mm:ss] 화자: 내용` 포맷)도 함께 저장하고, `audio.transcriptPath`로 회의 레코드에 연결한다.
+상세/편집 화면 모두 원본 오디오 열기 버튼 옆에 대본 열기 버튼을 나란히 둔다(기존 `openAttachment()`
+재사용, 새 열기 메커니즘 불필요). MD 뷰어가 생긴 뒤로는 이 패턴을 발표 내용 정리(B5 결과)와 회의록
+(B6 결과)에도 그대로 확장해서, `data/attachments/.../materials/발표내용정리-*.md`와
+`.../audio/*-회의록.md`로 LLM 생성 결과도 항상 파일로 남긴다 - DB(JSON)에만 있는 결과는 diff/검토가
+어렵고, 새 clone/pull 환경에서 첨부 폴더가 통째로 빠지면 조용히 사라져 버린다.
+
+## 재생 위치와 화면 하이라이트 사이의 체감 지연 보정
+
+**사용 시점:** `<audio>`/`<video>` 재생 위치를 다른 UI(파형 playhead, 활성 자막/대본 줄 강조)와
+동기화할 때.
+
+`timeupdate` 이벤트만 믿고 파형 playhead나 활성 대본 줄을 그리면, 실제로 들리는 소리보다 화면이 살짝
+앞서가는 것처럼 느껴질 수 있다(브라우저의 `timeupdate` 발화 빈도/디코딩 지연 때문). `AudioAnalysisModal`은
+재생 중일 때만 작은 고정 오프셋(`PLAYBACK_VISUAL_LATENCY_SECONDS`)만큼 뺀 "시각적 현재 시각"을 만들어
+playhead 위치와 활성 대본 줄 판정(`activeTranscriptIndex`) 양쪽에 똑같이 사용한다 - 재생 중이 아닐 때는
+보정하지 않는다(멈춰 있을 때는 지연이 없으므로).

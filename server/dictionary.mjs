@@ -52,16 +52,101 @@ export async function writeDictionary(draft) {
   return normalized;
 }
 
-// Longest-from-first so a longer phrase (e.g. "REST API") is substituted before a shorter one
-// that could shadow part of it (e.g. "API") - otherwise the shorter rule fires first and mangles
-// the longer phrase's match.
+// Script-aware boundary check, NOT a plain \p{L}/\p{N} check: a first cut at this blocked any
+// adjacent letter (Latin or Hangul) on either side, which correctly stopped "CD" from matching
+// inside "CDN" but then also stopped "AI" from matching in "AI를" or "CPU" in "CPU가" - Korean
+// grammar attaches particles directly to a preceding word with no space, so an English acronym
+// immediately followed by a Hangul particle is completely normal and has to still match. The rule
+// that actually captures "this is a different term" vs "this is the same acronym plus a Korean
+// particle" is same-script continuation: block only when the touching character is in the SAME
+// script class (Latin+Latin or Hangul+Hangul) as the entry's own boundary character; a different
+// script on the other side (Latin entry butting into Hangul, or vice versa) is always a safe
+// boundary.
+function scriptCategory(char) {
+  if (!char) {
+    return null;
+  }
+  if (/[A-Za-z0-9]/.test(char)) {
+    return "latin";
+  }
+  if (/\p{Script=Hangul}/u.test(char)) {
+    return "hangul";
+  }
+  return null;
+}
+
+// Same-script continuation alone isn't enough for a Hangul entry followed by more Hangul: "에이아이는"
+// (에이아이 + topic particle) and "에이아이디어" (에이아이 as a literal prefix of an unrelated word,
+// "아이디어") are both "Hangul entry directly followed by Hangul", but only the first should match -
+// a particle attaches to a complete word, it doesn't start a new one. Longest-first so "으로는"
+// isn't shadowed by "로" matching first.
+const KOREAN_PARTICLES = [
+  "이라고는", "이라고", "라고는", "라고", "이라서", "라서", "이라는", "라는", "이란", "란",
+  "에게서", "한테서", "부터는", "까지는", "에서는", "으로는", "로는",
+  "이지만", "인데도", "이면서", "으로써", "로써", "으로서", "로서",
+  "에게", "한테", "부터", "까지", "에서", "으로", "처럼", "만큼", "보다",
+  "이나", "이랑", "하고", "이며", "이고", "인지", "인데", "입니다", "이다", "였다",
+  "은", "는", "이", "가", "을", "를", "의", "에", "로", "와", "과", "도", "만", "나", "랑", "들"
+];
+
+function startsWithKoreanParticle(text) {
+  return KOREAN_PARTICLES.some((particle) => text.startsWith(particle));
+}
+
+function isWholeMatch(text, from, index) {
+  const fromFirstCategory = scriptCategory(from[0]);
+  const fromLastCategory = scriptCategory(from[from.length - 1]);
+  const before = index > 0 ? text[index - 1] : null;
+  const matchEnd = index + from.length;
+  const after = matchEnd < text.length ? text[matchEnd] : null;
+  const blockedBefore = fromFirstCategory !== null && scriptCategory(before) === fromFirstCategory;
+  const sameScriptAfter = fromLastCategory !== null && scriptCategory(after) === fromLastCategory;
+  const blockedAfter = sameScriptAfter && !(fromLastCategory === "hangul" && startsWithKoreanParticle(text.slice(matchEnd)));
+
+  return !blockedBefore && !blockedAfter;
+}
+
+// Longest-from-first, and every entry matches against the ORIGINAL text only - never against a
+// result some earlier entry already rewrote. Applying entries one at a time over an accumulating
+// string let an earlier replacement's own output get re-matched by a later entry: "에이아이" ->
+// "AI (Artificial Intelligence)" would then have its "AI" caught by a separate, shorter "AI" ->
+// "Artificial Intelligence" entry, producing "Artificial Intelligence (Artificial Intelligence)".
+// Collecting every entry's matches against the same original text and merging them into one pass
+// (longer entries claim their span first, so a shorter entry can never match inside a span a
+// longer one already took) avoids that entirely.
 export function applyEntriesToText(text, entries) {
   const sorted = entries.filter((entry) => entry.from).sort((a, b) => b.from.length - a.from.length);
-  let result = text;
+  const claimed = []; // [start, end) ranges already taken by an earlier (longer) entry's match
+  const matches = [];
+
+  const isFree = (start, end) => !claimed.some(([claimedStart, claimedEnd]) => start < claimedEnd && end > claimedStart);
 
   for (const entry of sorted) {
-    result = result.split(entry.from).join(entry.to);
+    let searchFrom = 0;
+    for (;;) {
+      const index = text.indexOf(entry.from, searchFrom);
+      if (index === -1) {
+        break;
+      }
+      const matchEnd = index + entry.from.length;
+      searchFrom = index + 1;
+
+      if (isFree(index, matchEnd) && isWholeMatch(text, entry.from, index)) {
+        matches.push({ start: index, end: matchEnd, to: entry.to });
+        claimed.push([index, matchEnd]);
+      }
+    }
   }
+
+  matches.sort((a, b) => a.start - b.start);
+
+  let result = "";
+  let cursor = 0;
+  for (const match of matches) {
+    result += text.slice(cursor, match.start) + match.to;
+    cursor = match.end;
+  }
+  result += text.slice(cursor);
 
   return result;
 }

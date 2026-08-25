@@ -57,8 +57,8 @@ export function PresentationSummaryModal({ agendaItem, llmProvider, meeting, oll
       <div className="field full">
         <label>정리 결과</label>
         <span className="field-hint">
-          이 발표의 자료와 회의 전체 대본에서 관련된 부분을 찾아 (질문)/(답변)/(의견)/(할일) 형식으로 자동 정리합니다. 필요하면 직접
-          수정할 수 있습니다.
+          발표 자료를 기준으로 [발표 내용]을, 발언 대본에서 (의견)/(질문)/(답변)/(참고)을 찾아 [논의 내용]을 자동 정리합니다.
+          필요하면 직접 수정할 수 있습니다.
         </span>
         <textarea
           onChange={(event) => setSummary(event.target.value)}

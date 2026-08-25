@@ -20,11 +20,17 @@ npm start
 - 회의록 List/Card 보기
 - 회의 기본 정보, 참석자, A/I List, Agenda 편집
 - PDF, Word, PowerPoint, JSON 가져오기/내보내기
-- 오디오 전체/화자별 파형 확인
+- 파일 업로드/PC 소리 녹음 오디오를 청크 단위로 실시간 분석(전체·화자별 파형, 대본 불러오기/발언자 수정)
 - 원본 파형과 전처리 파형 비교 재생
 - Demucs 음성 분리, DeNoise, 정규화 전처리
 - Mock, WhisperX, Whisper CLI, Whisper API STT 엔진 선택
-- LLM 기반 회의록 자동 작성 및 회의록 질의
+- 발표 자료(PDF/Word/PPT) 자동 Markdown 변환 + 앱 내 뷰어
+- LLM(Claude CLI/Anthropic API/Ollama) 기반 발표별 내용 정리, 회의록 자동 작성, 회의록 질의
+- 약어/수정 사전 자동·소급 치환 (STT 오인식 교정)
+
+## 스크린샷
+
+`Screenshot/` 폴더에 최근 실행 화면 캡처가 있습니다.
 
 ## 로컬 STT 구성 개요
 
@@ -322,6 +328,11 @@ npm run build
 - `.venv-whisperx/`
 - `node_modules/`
 - `dist/`, `dist-electron/`
-- `data/db/`, `data/runtime/`, `data/attachments/`
+- `data/runtime/` (Settings 등 로컬 실행 상태)
 - `imports/`, `exports/`
 - `*.tsbuildinfo`, `*.log`, `tmp_*`
+
+`data/db/`(회의록 DB)와 `data/attachments/`(첨부파일 원본)는 오히려 의도적으로 커밋됩니다 - 회의록이
+참조하는 `materialPath`/`audioPath`가 실제로 존재해야 clone/pull한 환경에서도 첨부파일 열기·Markdown
+변환본 보기가 정상 동작합니다. 새 회의록을 만들거나 첨부파일을 추가한 뒤에는 `data/db/`와
+`data/attachments/`도 함께 커밋해야 합니다.

@@ -18,12 +18,15 @@ const MIN_CHUNK_MS = 12000;
 const MAX_CHUNK_MS = 20000;
 const QUIET_CHECK_INTERVAL_MS = 300;
 const QUIET_AMPLITUDE_THRESHOLD = 0.02;
-// Same default as findQuietCutSample's per-window quietThreshold - below this, a chunk is treated
-// as having no speech at all and is never sent to STT (see processChunk). STT models (Whisper in
-// particular) are prone to hallucinating plausible-sounding but entirely fabricated text on
-// near-silent audio (e.g. stock phrases like "다음 영상에서 만나요"), so skipping the call outright
-// avoids that instead of trying to filter it out of the response afterwards.
-const SILENCE_RMS_THRESHOLD = 0.02;
+// Below this, a chunk is treated as having no speech at all and is never sent to STT (see
+// processChunk). STT models (Whisper in particular) are prone to hallucinating plausible-sounding
+// but entirely fabricated text on near-silent audio (e.g. stock phrases like "다음 영상에서 만나요"),
+// so skipping the call outright avoids that instead of trying to filter it out of the response
+// afterwards. 0.004 tuned from real recordings, exposed as Settings' 무음 임계값 (silenceThreshold)
+// for further tuning - findQuietCutSample's own 0.02 default is for picking the quietest point to
+// CUT at (relative comparison against other windows in the same clip), not for judging whether a
+// chunk has speech at all, so the two don't need to match.
+const DEFAULT_SILENCE_RMS_THRESHOLD = 0.004;
 
 export interface ChunkedAnalysisOptions {
   provider: SttProviderId;
@@ -32,6 +35,7 @@ export interface ChunkedAnalysisOptions {
   attendeeNames: string[];
   agenda?: { no: number; durationMinutes: number; presenter: string }[];
   preprocessing: { vocalIsolation: boolean; noiseRemoval: boolean; normalize: boolean };
+  silenceThreshold?: number;
 }
 
 function concatFloat32(chunks: Float32Array[]): Float32Array {
@@ -162,7 +166,8 @@ export function useChunkedAudioAnalysis() {
       setLiveSegments([]);
       setAnalyzeProgress(0);
 
-      if (computeRms(chunkMono) < SILENCE_RMS_THRESHOLD) {
+      const silenceThreshold = options.silenceThreshold ?? DEFAULT_SILENCE_RMS_THRESHOLD;
+      if (computeRms(chunkMono) < silenceThreshold) {
         setAnalyzeProgress(100);
         mergeChunkResult(
           {

@@ -4,7 +4,6 @@ import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { homedir } from "node:os";
-import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -119,7 +118,7 @@ const MINUTES_SYSTEM_PROMPT = [
   "제공된 회의 기본정보, A/I List, Agenda, 발표별 정리(있는 경우), 화자별 발언 대본을 근거로 한국어 회의록을 Markdown으로 작성하세요.",
   "A/I List는 이번 회의가 시작되기 전에 이미 계획된 사전 액션 아이템이므로, 회의록 맨 앞부분에서 그대로 정리해 주세요.",
   "그다음 Agenda 순서대로 논의 내용을 요약하고 결정 사항을 정리하세요 - 어떤 Agenda 항목에 [발표별 정리] 내용이 제공되어 있으면 그 내용을 우선 근거로 삼고, 제공되지 않은 항목만 [발언 대본]에서 직접 찾아 요약하세요. [발표별 정리]와 [발언 대본] 내용이 서로 다르게 보여도 [발표별 정리]를 우선 근거로 삼아 정리하고, 내용이 다르다는 이유로 회의록 작성을 거부하거나 해당 항목을 건너뛰지 마세요.",
-  "회의록 마지막에는 반드시 \"할일\" 섹션을 만들어, 사전 A/I List·안건 논의 중 새로 나온 후속 조치·[발표별 정리]의 (할일) 태그 내용을 전부 모아 마크다운 표로 정리하세요. 표는 정확히 '할일 | 담당자 | 납기' 세 컬럼만 사용하고, 납기가 언급되지 않았으면 '-'로 채우세요. 이 표 하나로 모든 할일을 통합하고, 별도의 \"회의 중 추가된 Action Item\" 같은 산문 섹션은 만들지 마세요.",
+  "회의록 마지막에는 반드시 \"할일\" 섹션을 만들어, 사전 A/I List·안건 논의 중 새로 나온 후속 조치·[발표별 정리]에서 언급된 후속 조치를 전부 모아 마크다운 표로 정리하세요. 표는 정확히 '할일 | 담당자 | 납기' 세 컬럼만 사용하고, 납기가 언급되지 않았으면 '-'로 채우세요. 이 표 하나로 모든 할일을 통합하고, 별도의 \"회의 중 추가된 Action Item\" 같은 산문 섹션은 만들지 마세요.",
   "\"할일\" 표 다음, 회의록의 맨 마지막에는 \"## 태그\" 섹션을 만들어 이 회의의 핵심 주제·안건·키워드를 나타내는 태그를 `#태그` 형식으로 한 줄에 공백으로 나열하세요. 태그 개수는 5개~10개 사이로 하되, 논의 내용이 짧고 단순한 회의는 5개에 가깝게, 안건이 많고 논의가 풍부한 회의는 10개에 가깝게 회의록 분량에 비례해서 정하세요. 각 태그는 공백 없는 한글 명사(구)로 간결하게 작성하세요.",
   "제공되지 않은 내용은 추측해서 지어내지 마세요.",
   "이 요청은 소프트웨어 프로젝트나 코드와 무관하며, 오직 회의록 작성 작업입니다."
@@ -127,11 +126,10 @@ const MINUTES_SYSTEM_PROMPT = [
 
 const PRESENTATION_SUMMARY_SYSTEM_PROMPT = [
   "당신은 회의에서 특정 발표(Agenda 항목) 하나에 대한 내용만 정리하는 도우미입니다.",
-  "제공된 [발표 정보]와 [발표 자료](있는 경우)를 참고해서, [회의 전체 발언 대본]에서 이 발표와 실제로 관련된 구간만 스스로 찾아 사용하세요 - 다른 발표나 이 발표와 무관한 구간은 무시하세요.",
-  "[발표 자료]와 [회의 전체 발언 대본]의 내용이 서로 다르거나 상충하면 [발표 자료]를 기준으로 정리하세요 - 내용이 다르다는 이유로 정리를 거부하거나 중단하지 말고, 정리 결과 맨 위에 '(참고) 발표 자료와 발언 대본 내용이 다릅니다.' 한 줄만 남긴 뒤 반드시 정리를 계속하세요.",
-  "정리 결과는 이 '(참고)' 줄 다음부터 반드시 다음 4가지 태그만 사용하고, 각 줄은 '(태그) 라벨-이름: 내용' 형식으로 한 줄씩 작성하세요: (질문)=발표 중 누군가 던진 질문, (답변)=그 질문에 대한 답변, (의견)=질문이 아닌 의견/코멘트, (할일)=발표 중 새로 언급된 후속 조치.",
+  "정리 결과는 반드시 \"[발표 내용]\"과 \"[논의 내용]\" 두 섹션으로만 구성하세요.",
+  "\"[발표 내용]\" 섹션: [발표 자료](있는 경우)를 기준으로 발표 내용을 정리하고, [발언 대본]은 자료에 없는 맥락을 보완하는 보조 수단으로만 사용하세요. [발표 자료]가 없으면 [발언 대본]만으로 정리하세요. [발표 자료]와 [발언 대본] 내용이 서로 다르거나 상충해도 [발표 자료]를 기준으로 정리하고, 내용이 다르다는 이유로 정리를 거부하거나 중단하지 마세요 - 그런 경우 이 섹션 맨 위에 \"발표 자료와 발언 대본 내용이 다릅니다.\" 한 줄만 남긴 뒤 반드시 정리를 계속하세요.",
+  "\"[논의 내용]\" 섹션: [발언 대본]에서 이 발표와 실제로 관련된 구간만 스스로 찾아 사용하고(다른 발표나 무관한 구간은 무시), 반드시 다음 4가지 태그만 사용해서 각 줄을 '(태그) 라벨-이름: 내용' 형식으로 작성하세요: (의견)=발표자가 아닌 사람이 낸 의견, (질문)=발표자가 아닌 사람이 물어본 질문, (답변)=발표자가 그 질문을 듣고 답한 내용, (참고)=그 외 참고할 만한 사항. 해당하는 내용이 없는 태그는 그 줄 자체를 만들지 마세요.",
   "라벨은 [참석자 라벨]에 주어진 것을 정확히 그대로 사용하세요(예: 주관자, 발표1, 참석1) - 라벨을 새로 만들어내지 마세요.",
-  "해당하는 내용이 없는 태그는 그 줄 자체를 만들지 마세요.",
   "제공되지 않은 내용은 추측해서 지어내지 마세요.",
   "이 요청은 소프트웨어 프로젝트나 코드와 무관하며, 오직 회의 발표 내용 정리 작업입니다."
 ].join(" ");
@@ -168,31 +166,21 @@ const ATTACHMENT_CONTENT_TYPES: Record<string, string> = {
   ".mp4": "video/mp4"
 };
 
-function readGitValue(command: string, fallback: string) {
-  try {
-    return execSync(command, { cwd: process.cwd(), encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim() || fallback;
-  } catch {
-    return fallback;
-  }
-}
-
+// Build version is set by hand in package.json's "version" field instead of being derived from
+// git history at request time - `git status --porcelain` in particular scans the whole working
+// tree and was a real contributor to slow startup (this ran again on every /api/build-info
+// request, not just once), on top of being one more subprocess spawn.
 function buildVersionInfo() {
   const packageJson = JSON.parse(readFileSync(path.resolve(process.cwd(), "package.json"), "utf8")) as { version?: string };
   const version = packageJson.version ?? "0.0.0";
-  const majorVersion = version.split(".")[0] || "0";
-  const commitCount = readGitValue("git rev-list --count HEAD", "0");
-  const commitSha = readGitValue("git rev-parse --short HEAD", "unknown");
-  const shaPatch = Number.parseInt(commitSha.slice(0, 1), 16);
-  const stateLabel = readGitValue("git status --porcelain", "") ? "dirty" : "clean";
-  const buildVersion = `${majorVersion}.${commitCount}.${Number.isFinite(shaPatch) ? shaPatch : 0}`;
 
   return {
     version,
-    buildVersion,
-    buildLabel: `v${buildVersion}, ${stateLabel}`,
-    commitSha,
-    commitCount,
-    dirty: stateLabel === "dirty"
+    buildVersion: version,
+    buildLabel: `v${version}`,
+    commitSha: "",
+    commitCount: "",
+    dirty: false
   };
 }
 
@@ -1029,9 +1017,10 @@ export default defineConfig(() => {
             try {
               const url = new URL(request.url ?? "/", "http://127.0.0.1");
               const ollamaBaseUrl = url.searchParams.get("ollamaBaseUrl") || undefined;
+              const deep = url.searchParams.get("deep") === "true";
 
               const [claudeCli, anthropicApiKeySet, ollama] = await Promise.all([
-                checkClaudeCliAvailable(),
+                checkClaudeCliAvailable(deep),
                 checkAnthropicApiKeyConfigured(),
                 ollamaBaseUrl ? checkOllamaAvailable(ollamaBaseUrl) : Promise.resolve({ available: false, models: [] })
               ]);
@@ -1126,9 +1115,11 @@ export default defineConfig(() => {
           });
 
           // B5 - per-Agenda-item structured summary. See PRESENTATION_SUMMARY_SYSTEM_PROMPT/
-          // buildPresentationSummaryPrompt: the LLM is handed the whole meeting transcript and
-          // finds the relevant stretch itself (confirmed design - this app has no per-agenda
-          // timestamp data since each meeting has exactly one recording).
+          // buildPresentationSummaryPrompt: since this app has no per-agenda timestamp data (each
+          // meeting has exactly one recording), buildPresentationSummaryPrompt estimates and windows
+          // down to this agenda item's likely stretch of the transcript rather than sending the
+          // whole meeting every time - the LLM is still told to ignore any unrelated stretch that
+          // slips into the window.
           server.middlewares.use("/api/llm/presentation-summary", async (request, response) => {
             try {
               if (!requireTrusted(request, response) || request.method !== "POST") {
@@ -1189,10 +1180,13 @@ export default defineConfig(() => {
 
           server.middlewares.use("/api/stt/status", async (request, response) => {
             try {
+              const url = new URL(request.url ?? "/", "http://127.0.0.1");
+              const deep = url.searchParams.get("deep") === "true";
+
               const [env, localWhisperCli, localWhisperX] = await Promise.all([
                 readEnvFile() as Promise<Record<string, string>>,
-                checkLocalWhisperAvailable(),
-                checkLocalWhisperXAvailable()
+                checkLocalWhisperAvailable(deep),
+                checkLocalWhisperXAvailable(deep)
               ]);
 
               sendJson(response, 200, {

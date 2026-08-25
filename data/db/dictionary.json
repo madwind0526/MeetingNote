@@ -1,6 +1,54 @@
 {
   "abbreviations": [
     {
+      "id": "b5a4b2b0-1d5b-4c0c-9b1f-1f0c7c3a1a01",
+      "from": "에이아이",
+      "to": "AI (Artificial Intelligence)",
+      "description": "STT가 'AI'를 한국어 발음으로 잘못 받아적은 경우 교정"
+    },
+    {
+      "id": "b5a4b2b0-1d5b-4c0c-9b1f-1f0c7c3a1a02",
+      "from": "씨피유",
+      "to": "CPU (Central Processing Unit)",
+      "description": "STT가 'CPU'를 한국어 발음으로 잘못 받아적은 경우 교정"
+    },
+    {
+      "id": "b5a4b2b0-1d5b-4c0c-9b1f-1f0c7c3a1a03",
+      "from": "지피유",
+      "to": "GPU (Graphics Processing Unit)",
+      "description": "STT가 'GPU'를 한국어 발음으로 잘못 받아적은 경우 교정"
+    },
+    {
+      "id": "b5a4b2b0-1d5b-4c0c-9b1f-1f0c7c3a1a04",
+      "from": "엔피유",
+      "to": "NPU (Neural Processing Unit)",
+      "description": "STT가 'NPU'를 한국어 발음으로 잘못 받아적은 경우 교정"
+    },
+    {
+      "id": "b5a4b2b0-1d5b-4c0c-9b1f-1f0c7c3a1a05",
+      "from": "에이피아이",
+      "to": "API (Application Programming Interface)",
+      "description": "STT가 'API'를 한국어 발음으로 잘못 받아적은 경우 교정"
+    },
+    {
+      "id": "b5a4b2b0-1d5b-4c0c-9b1f-1f0c7c3a1a06",
+      "from": "에스에스디",
+      "to": "SSD (Solid State Drive)",
+      "description": "STT가 'SSD'를 한국어 발음으로 잘못 받아적은 경우 교정"
+    },
+    {
+      "id": "b5a4b2b0-1d5b-4c0c-9b1f-1f0c7c3a1a07",
+      "from": "아이씨",
+      "to": "IC (Integrated Circuit)",
+      "description": "STT가 'IC'를 한국어 발음으로 잘못 받아적은 경우 교정"
+    },
+    {
+      "id": "b5a4b2b0-1d5b-4c0c-9b1f-1f0c7c3a1a08",
+      "from": "디램",
+      "to": "DRAM (Dynamic Random Access Memory)",
+      "description": "STT가 'DRAM'을 한국어 발음으로 잘못 받아적은 경우 교정"
+    },
+    {
       "id": "bc8fa470-c486-42f2-b8af-654ffe9be6bb",
       "from": "FAB",
       "to": "Fabrication Facility",

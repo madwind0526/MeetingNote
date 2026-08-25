@@ -7,10 +7,7 @@
 
 | 유형 | 발견사항 | 이동 대상 |
 |------|----------|-----------|
-| Feature/fix | STT transcript output was only stored as JSON segments in the meeting record, so the detail view could open the original audio but not a generated transcript file. Analysis completion now uploads a `*-stt-transcript.txt` file under the meeting `audio` attachment folder, persists `audio.transcriptPath`, shows transcript text under the audio field in edit mode, and links both original audio and STT transcript from detail view. | Move to `knowledge/PATTERNS.md` or `knowledge/trouble-shooting.md` at wave flush. |
-| Bug/fix | Audio playback UI could feel slightly ahead of heard audio, and transcript rows did not indicate the currently playing segment. `AudioAnalysisModal` now uses a shared compensated visual time for waveform playheads and active transcript highlighting. Unlabeled STT segments now inherit the previous explicit speaker in `server/audio/diarize.mjs` instead of defaulting each missing segment to `A`. | Move to `knowledge/trouble-shooting.md` at wave flush. |
-| Bug/fix | Native-mode file picking had been fixed only for audio. All file-open entry points now use `pickFileWithConfiguredPicker`, which routes through the built-in navigator in builtin mode, Electron `dialog:openFile` in native mode, and hidden browser file input only as fallback. Electron open/save/folder dialogs now use the sender BrowserWindow as owner. | Move to `knowledge/trouble-shooting.md` at wave flush. |
-| (없음) | 2026-08-17, Wave 11(가져오기/내보내기 재구성 + Naver Clova/HF 화자 분리 + encodeWav 반올림 버그 수정) 완료 후 전체 flush됨. 상세 내용은 `knowledge/PATTERNS.md`(오디오 STT+화자 분리 파이프라인 항목, 2026-08-17 갱신), `knowledge/RULES.md`(G-06/G-07), `knowledge/trouble-shooting.md` 참고. 재사용 가능한 항목은 `C:\Claude\memory-bank\`에도 추가함(python-subprocess-cp949-crash, js-const-param-name-collision-tdz, playwright-getbyplaceholder-substring-match, whisper-language-locked-per-file, vite-config-imported-file-restart, web-audio-pcm-int16-rounding). | - |
+| (없음) | 2026-08-25 세션 완료 후 전체 flush됨. 사전 substring/스크립트 인식 경계 버그, B5 windowing nearest-pause 버그는 `knowledge/trouble-shooting.md`로, STT 대본/발표정리/회의록 md 파일 저장 패턴과 재생-하이라이트 지연 보정 패턴은 `knowledge/PATTERNS.md`로 이동. Wave 요약은 `STATE.md` 참고. | - |
 
 ---
 

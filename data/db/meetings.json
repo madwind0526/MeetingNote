@@ -1,45 +1,45 @@
 [
   {
-    "id": "6fdb0467-5b0c-43bb-ba3e-c7e55c6fe6b0",
+    "id": "4557e65b-bd2c-4ec2-8436-dfd7e33b0b87",
     "title": "3분기 실행 현황 점검 회의",
     "date": "2026-08-20",
-    "startTime": "14:00",
-    "endTime": "14:30",
+    "startTime": "10:00",
+    "endTime": "10:30",
     "organizer": "김도현",
     "secretary": "정하은",
     "attendees": [
       {
-        "id": "presenter1",
+        "id": "박서연",
         "name": "박서연",
         "role": "백엔드팀",
         "isKeyAttendee": true,
         "isPresenter": true
       },
       {
-        "id": "presenter2",
+        "id": "이준호",
         "name": "이준호",
-        "role": "CS팀",
+        "role": "고객지원팀",
         "isKeyAttendee": true,
         "isPresenter": true
       },
       {
-        "id": "presenter3",
+        "id": "최유나",
         "name": "최유나",
         "role": "인프라팀",
         "isKeyAttendee": true,
         "isPresenter": true
       },
       {
-        "id": "attendee1",
+        "id": "정하은",
         "name": "정하은",
-        "role": "기획팀",
+        "role": "간사",
         "isKeyAttendee": true,
         "isPresenter": false
       },
       {
-        "id": "attendee2",
+        "id": "강민재",
         "name": "강민재",
-        "role": "디자인팀",
+        "role": "참석자",
         "isKeyAttendee": true,
         "isPresenter": false
       }
@@ -48,30 +48,33 @@
     "agenda": [
       {
         "no": 1,
-        "title": "AI 코드리뷰 어시스턴트 파일럿 결과",
-        "durationMinutes": 1,
-        "material": "ai-code-review-pilot.pptx",
-        "materialPath": "2026-08-22-3분기 실행 현황 점검 회의/materials/ai-code-review-pilot.pptx",
-        "materialMdPath": "2026-08-22-3분기 실행 현황 점검 회의/materials/ai-code-review-pilot.md",
-        "presenter": "박서연"
+        "title": "AI 코드리뷰 파일럿",
+        "durationMinutes": 5,
+        "material": "AI-코드리뷰-파일럿.pptx",
+        "materialPath": "2026-08-20-3분기 실행 현황 점검 회의/materials/AI-코드리뷰-파일럿.pptx",
+        "materialMdPath": "2026-08-20-3분기 실행 현황 점검 회의/materials/AI-코드리뷰-파일럿.md",
+        "presenter": "박서연",
+        "presentationSummary": "**[발표 내용]**\n*   **파일럿 개요:** AI 코드리뷰 어시스턴트를 활용한 파일럿 프로젝트가 진행되었으며, 8월 한 달간 백엔드팀 12명을 대상으로 총 PR 340건에 적용되었습니다.\n*   **효율성 증대:** 리뷰 대기 시간이 기존 18시간에서 6시간으로 크게 단축되었습니다.\n*   **자동화 처리율:** 코드 리뷰 시 발생하는 스타일 지적의 72%가 자동으로 처리되었습니다.\n*   **오타/취약점 처리:** 현재 시스템은 오타를 약 9%까지 감지하며, 특히 보안 관련 오타는 민감도가 높아 9월부터는 해당 민감도를 더욱 개선(튜닝)할 계획입니다.\n\n**[논의 내용]**\n(질문) 참석1: 혹시 오타 관련 민감도(오타뮤은)는 어느 정도인가요?\n(답변) 발표1: 현재 오타뮤은은 약 9% 정도입니다. 특히 보안 관련 오타는 민감하게 다루고 있어서 9월부터는 이 부분을 더 튜닝할 계획입니다."
       },
       {
         "no": 2,
-        "title": "고객 지원 티켓 처리 프로세스 개선안",
-        "durationMinutes": 1,
-        "material": "cs-ticket-process-improvement.pdf",
-        "materialPath": "2026-08-22-3분기 실행 현황 점검 회의/materials/cs-ticket-process-improvement.pdf",
-        "materialMdPath": "2026-08-22-3분기 실행 현황 점검 회의/materials/cs-ticket-process-improvement.md",
-        "presenter": "이준호"
+        "title": "고객 지원 프로세스 개선",
+        "durationMinutes": 5,
+        "material": "고객-지원-프로세스-개선.pdf",
+        "materialPath": "2026-08-20-3분기 실행 현황 점검 회의/materials/고객-지원-프로세스-개선.pdf",
+        "materialMdPath": "2026-08-20-3분기 실행 현황 점검 회의/materials/고객-지원-프로세스-개선.md",
+        "presenter": "이준호",
+        "presentationSummary": "**[발표 내용]**\n*   **고객 지원 프로세스 개선 주요 내용:**\n    *   1차 응대 챗봇 도입을 통한 평균 응답 시간 단축\n    *   상담사 배정 로직 개편\n    *   고객 만족도 조사 점수 상승\n\n**[논의 내용]**\n(이 섹션에는 해당 발표와 관련된 논의 내용이 발언 대본에 존재하지 않아 작성하지 않습니다.)"
       },
       {
         "no": 3,
-        "title": "3분기 인프라 비용 집행 현황",
-        "durationMinutes": 1,
-        "material": "q3-infra-cost.xlsx",
-        "materialPath": "2026-08-22-3분기 실행 현황 점검 회의/materials/q3-infra-cost.xlsx",
-        "materialMdPath": "2026-08-22-3분기 실행 현황 점검 회의/materials/q3-infra-cost.md",
-        "presenter": "최유나"
+        "title": "인프라 비용 집행",
+        "durationMinutes": 5,
+        "material": "인프라-비용-집행.pdf",
+        "materialPath": "2026-08-20-3분기 실행 현황 점검 회의/materials/인프라-비용-집행.pdf",
+        "materialMdPath": "2026-08-20-3분기 실행 현황 점검 회의/materials/인프라-비용-집행.md",
+        "presenter": "최유나",
+        "presentationSummary": "발표 자료와 발언 대본 내용이 다릅니다.\n\n[발표 내용]\n*   클라우드 비용 전분기 대비 최적화 진행\n*   예약 인스턴스 전환을 통해 비용 절감 효과를 거두었음\n*   다음 분기 예산안 초안을 공유할 예정임\n\n[논의 내용]"
       }
     ],
     "audio": {
@@ -267,40 +270,75 @@
       "speakerMap": {
         "SPEAKER_01": "미등록 화자 1",
         "SPEAKER_02": "미등록 화자 2",
-        "SPEAKER_04": "정도윤",
-        "SPEAKER_03": "미등록 화자 3",
-        "SPEAKER_00": "미등록 화자 4"
+        "SPEAKER_04": "미등록 화자 3",
+        "SPEAKER_03": "미등록 화자 4",
+        "SPEAKER_00": "미등록 화자 5"
       },
-      "analyzedAt": "2026-08-21T13:41:24.901Z",
-      "audioPath": "2026-08-22-3분기 실행 현황 점검 회의/audio/meeting-3presenter-2attendee-ko.wav",
-      "transcriptPath": "2026-08-22-3분기 실행 현황 점검 회의/audio/meeting-3presenter-2attendee-ko-stt-transcript.txt"
+      "analyzedAt": "2026-08-25T13:40:33.078Z",
+      "audioPath": "2026-08-20-3분기 실행 현황 점검 회의/audio/meeting-3presenter-2attendee-ko.wav",
+      "transcriptPath": "2026-08-20-3분기 실행 현황 점검 회의/audio/3분기-실행-현황-점검-회의-stt-transcript.txt"
     },
-    "minutes": "# 3분기 실행 현황 점검 회의 회의록\n\n**일시:** 2026년 8월 22일 (금) 14:00-14:30\n**주관자:** 김도현\n**참석자:** 박서연(백엔드팀), 이준호(CS팀), 최유나(인프라팀), 정하은(기획팀), 강민재(디자인팀)\n\n***\n\n### 🎯 사전 액션 아이템 (A/I List)\n*없음*\n\n### 📋 회의 안건 논의 결과 요약\n\n**1. AI 코드리뷰 어시스턴트 파일럿 결과 (발표자: 박서연)**\n백엔드팀에서 진행한 AI 코드리뷰 어시스턴트 파일럿 결과를 공유했습니다.\n*   **적용 현황:** 8월 한 달간 백엔드팀 12명을 대상으로 PR 340건에 적용되었습니다.\n*   **효과:** 리뷰 대기시간이 기존 18시간에서 6시간으로 크게 감소했으며, 스타일 지적의 72%를 자동 처리하는 성과를 거두었습니다.\n*   **개선 필요 사항:** 현재 오타율은 약 9% 수준이며, 특히 보안 관련 오타에 민감하여 9월부터는 해당 부분을 집중적으로 튜닝할 계획입니다.\n\n**2. 고객 지원 티켓 처리 프로세스 개선안 (발표자: 이준호)**\n현재의 고객 지원 티켓 처리 프로세스 개선 방안에 대해 논의했습니다.\n*   **현황 문제점:** 평균 최초 응답 시간이 4.2시간으로 높은 편이며, 반복 문의가 전체 티켓의 41%를 차지하는 문제가 있습니다.\n*   **개선 목표:** 자동응답 챗봇 도입과 티켓 자동 라우팅 시스템을 도입하여 응답시간을 1.5시간까지 단축하는 것을 목표로 합니다.\n*   **일정 계획:** 챗봇 도입을 위한 1차 배포를 10월 중으로 목표하고 있습니다.\n\n**3. 3분기 인프라 비용 집행 현황 (발표자: 최유나)**\n3분기 인프라 예산 및 비용 집행 현황을 점검했습니다.\n*   **예산 집행 현황:** 3분기 총 예산은 6,900만원이었으며, 현재까지 6,550만원이 집행되어 집행률은 95%를 기록했습니다.\n*   **주요 초과 항목:** 클라우드 서버는 예산 대비 94% 수준이었으나, Clock DriverN 트래픽은 121%로 예산을 초과했습니다. 이는 8월 프로모션 트래픽 급증에 기인합니다.\n*   **주요 미달 항목:** 백업DR(Disaster Recovery) 쪽은 리전 이전 작업 지연으로 인해 집행률이 68%로 낮은 상황입니다.\n\n***\n\n### ✅ 할일 (Action Items)\n\n| 할일 | 담당자 | 납기 |\n| :--- | :--- | :--- |\n| AI 코드리뷰 어시스턴트의 보안 관련 오타율 튜닝 진행 | 백엔드팀 | 9월 |\n| 자동응답 챗봇 및 티켓 자동 라우팅 1차 배포 | CS팀 | 10월 중 |\n\n***\n\n## 태그\n#3분기실행점검 #AI코드리뷰 #고객지원프로세스 #인프라비용 #프로세스개선",
+    "minutes": "# 3분기 실행 현황 점검 회의록\n\n**일시:** 2026년 8월 20일 (화) 10:00 - 10:30\n**주관자:** 김도현\n**참석자:** 박서연(발표), 이준호(발표), 최유나(발표), 정하은(간사), 강민재(참석)\n\n***\n\n### 🚀 사전 액션 아이템 (A/I List)\n이번 회의에는 사전 계획된 액션 아이템이 없습니다.\n\n### 📝 회의 안건별 논의 요약\n\n#### 1. AI 코드리뷰 파일럿 현황 점검 (발표자: 박서연)\n*   **파일럿 개요:** 8월 한 달간 백엔드팀 12명을 대상으로 총 340건의 PR에 AI 코드리뷰 어시스턴트 파일럿을 성공적으로 진행했습니다.\n*   **주요 성과:** 리뷰 대기 시간이 기존 18시간에서 6시간으로 대폭 단축되었으며, 코드 리뷰 과정에서 발생하는 스타일 지적의 72%가 자동으로 처리되었습니다.\n*   **오타/취약점 처리:** 현재 오타 감지 민감도는 약 9% 수준입니다. 특히 보안과 관련된 오타는 민감도가 높다고 판단되어, 9월부터는 이 부분을 집중적으로 튜닝할 계획입니다.\n\n#### 2. 고객 지원 프로세스 개선 현황 (발표자: 이준호)\n*   **개선 목표 및 내용:** 고객 지원 프로세스 효율성 개선을 위해 1차 응대 챗봇 도입과 티켓 자동 라우팅 로직 개편을 추진합니다.\n*   **기대 효과:** 현재 평균 최초 응답 시간이 4.2시간에 달하는 비효율성을 개선하여, 이를 1.5시간 이내로 단축하는 것을 목표로 합니다.\n*   **향후 계획:** 해당 챗봇 및 시스템은 10월 중 1차 배포를 목표로 진행될 예정입니다.\n\n#### 3. 인프라 비용 집행 현황 점검 (발표자: 최유나)\n*   **비용 현황:** 3분기 인프라 예산 6,900만 원 중 현재 6,550만 원을 집행하여 집행률은 95%를 기록했습니다.\n*   **비용 초과 항목:** Cloud Server 비용(94%)과 Clock DriverN 트래픽 비용(121%)에서 예산을 초과했습니다. 이는 8월 프로모션 트래픽 급증에 기인한 것으로 확인되었습니다.\n*   **지연 항목:** 백업 DR(Disaster Recovery) 관련 예산 집행률이 68%로 낮은 상태입니다. 이는 리전 이전 작업이 지연되고 있기 때문으로, 빠른 후속 조치가 필요합니다.\n\n***\n\n### ✨ 할일 (Action Items)\n\n| 할일 | 담당자 | 납기 |\n| :--- | :--- | :--- |\n| 보안 관련 오타 민감도 개선(튜닝) | 백엔드팀 (박서연) | 9월 |\n| 챗봇 및 자동 라우팅 시스템 1차 배포 | 고객지원팀 (이준호) | 10월 |\n| DR 백업 리전 이전 작업 완료 | 인프라팀 (최유나) | - |\n\n***\n\n## 태그\n#3분기점검 #AI코드리뷰 #고객지원개선 #인프라비용 #프로세스자동화 #기술운영 #할일정리",
     "authorId": "",
     "comments": [],
-    "createdAt": "2026-08-21T13:36:26.084Z",
-    "updatedAt": "2026-08-21T15:13:12.225Z"
+    "createdAt": "2026-08-25T13:39:55.644Z",
+    "updatedAt": "2026-08-25T13:57:19.163Z"
   },
   {
-    "id": "66209fe6-14e0-4330-917c-6fbfcd30ba0d",
-    "title": "배치테스트 1회차 - 모바일 앱 성능 개선",
-    "date": "2026-08-23",
+    "id": "5f153cb7-e897-441e-9883-d120bd5a155d",
+    "title": "3분기 프로젝트 진행 현황 공유 회의",
+    "date": "2026-08-21",
     "startTime": "10:00",
     "endTime": "10:30",
-    "organizer": "윤서진",
-    "secretary": "",
+    "organizer": "박지훈",
+    "secretary": "오유진",
     "attendees": [
       {
-        "id": "한지민",
-        "name": "한지민",
-        "role": "",
+        "id": "김민서",
+        "name": "김민서",
+        "role": "신제품개발팀",
         "isKeyAttendee": true,
         "isPresenter": true
       },
       {
-        "id": "조은우",
-        "name": "조은우",
-        "role": "",
+        "id": "이수아",
+        "name": "이수아",
+        "role": "마케팅팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "정도윤",
+        "name": "정도윤",
+        "role": "인프라팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "최하은",
+        "name": "최하은",
+        "role": "고객지원팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "강태양",
+        "name": "강태양",
+        "role": "참석자",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      },
+      {
+        "id": "오유진",
+        "name": "오유진",
+        "role": "간사",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      },
+      {
+        "id": "배시온",
+        "name": "배시온",
+        "role": "참석자",
         "isKeyAttendee": true,
         "isPresenter": false
       }
@@ -309,385 +347,48 @@
     "agenda": [
       {
         "no": 1,
-        "title": "모바일 앱 성능 개선",
-        "durationMinutes": 1,
-        "material": "모바일-앱-성능-개선.pptx",
-        "materialPath": "2026-08-23-배치테스트 1회차 - 모바일 앱 성능 개선/materials/모바일-앱-성능-개선.pptx",
-        "materialMdPath": "2026-08-23-배치테스트 1회차 - 모바일 앱 성능 개선/materials/모바일-앱-성능-개선.md",
-        "presenter": "한지민"
-      }
-    ],
-    "audio": {
-      "fileName": "배치테스트-1회차-모바일-앱-성능-개선.wav",
-      "durationSec": 51.379999999999995,
-      "preprocessing": {
-        "vocalIsolation": false,
-        "noiseRemoval": false,
-        "normalize": false
-      },
-      "transcriptSegments": [
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 0,
-          "endSec": 3.6,
-          "text": "안녕하세요. 배치 테스트 1회차 회의를 시작하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 4.86,
-          "endSec": 7.92,
-          "text": "오늘은 모바일 앱 성능 개선 순서로 진행하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 9.84,
-          "endSec": 11.92,
-          "text": "안녕하세요. 한지민입니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 13.16,
-          "endSec": 16.14,
-          "text": "모바일 앱 성능 개선 관련해서 말씀드리면"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 16.14,
-          "endSec": 20.26,
-          "text": "앱 시작 시간 3.2초, 1.8초로 단축,"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 21.240000000000002,
-          "endSec": 25.16,
-          "text": "크래시율 0.8%, 0.2%로 감소,"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 25.16,
-          "endSec": 31.38,
-          "text": "메모리 사용량 15% 절감 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 32.980000000000004,
-          "endSec": 36.16,
-          "text": "네. 메모리 사용량 15% 절감 부분이고,"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 37.28,
-          "endSec": 40.66,
-          "text": "다음 분기 목표, 시작 시간 1.2초."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 42.519999999999996,
-          "endSec": 43.16,
-          "text": "모두 수고하셨습니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 44.900000000000006,
-          "endSec": 48.44,
-          "text": "오늘 논의된 내용은 회의록으로 정리해서 공유 드리겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 49.7,
-          "endSec": 51.379999999999995,
-          "text": "이상으로 회의를 마치겠습니다."
-        }
-      ],
-      "speakerMap": {
-        "SPEAKER_00": "윤서진",
-        "SPEAKER_01": "한지민"
-      },
-      "analyzedAt": "2026-08-21T13:52:23.405Z",
-      "audioPath": "2026-08-23-배치테스트 1회차 - 모바일 앱 성능 개선/audio/배치테스트-1회차-모바일-앱-성능-개선.wav",
-      "transcriptPath": "2026-08-23-배치테스트 1회차 - 모바일 앱 성능 개선/audio/배치테스트-1회차-모바일-앱-성능-개선-stt-transcript.txt"
-    },
-    "minutes": "# 회의록 - 배치테스트 1회차: 모바일 앱 성능 개선\n\n## 회의 기본정보\n- **제목**: 배치테스트 1회차 - 모바일 앱 성능 개선\n- **일시**: 2026-08-23 10:00-10:30\n- **주관자**: 윤서진\n\n## 참석자\n- 한지민 (발표자)\n- 조은우\n\n## A/I List (사전 액션 아이템)\n사전에 계획된 A/I 항목 없음\n\n## Agenda 논의 내용\n\n### 1. 모바일 앱 성능 개선 (발표자: 한지민)\n한지민이 모바일 앱 성능 개선 결과를 보고함.\n- 앱 시작 시간: 3.2초 → 1.8초로 단축\n- 크래시율: 0.8% → 0.2%로 감소\n- 메모리 사용량 15% 절감\n- 다음 분기 목표: 앱 시작 시간 1.2초\n\n주관자(윤서진)가 메모리 사용량 15% 절감 부분에 대해 추가 설명을 요청하였고, 한지민이 해당 항목을 재확인하는 답변을 하였으나 대본상 구체적인 추가 설명은 이어지지 않음.\n\n회의 마무리 시 주관자는 오늘 논의된 내용을 회의록으로 정리하여 공유하겠다고 안내함.\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 오늘 논의된 모바일 앱 성능 개선 내용 회의록으로 정리 및 공유 | 윤서진 | - |\n\n## 태그\n#모바일앱성능개선 #앱시작시간단축 #크래시율감소 #메모리사용량절감 #다음분기목표",
-    "authorId": "",
-    "comments": [],
-    "createdAt": "2026-08-21T13:51:37.452Z",
-    "updatedAt": "2026-08-21T15:00:59.481Z"
-  },
-  {
-    "id": "fce13cf5-7598-41bb-9c6e-c900400d44be",
-    "title": "배치테스트 2회차 - 보안 점검 결과/마케팅 캠페인 성과",
-    "date": "2026-08-24",
-    "startTime": "10:00",
-    "endTime": "10:30",
-    "organizer": "서예린",
-    "secretary": "",
-    "attendees": [
-      {
-        "id": "문승현",
-        "name": "문승현",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "남궁민",
-        "name": "남궁민",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "배수지",
-        "name": "배수지",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      }
-    ],
-    "actionItems": [],
-    "agenda": [
-      {
-        "no": 1,
-        "title": "보안 점검 결과",
-        "durationMinutes": 1,
-        "material": "보안-점검-결과.xlsx",
-        "materialPath": "2026-08-24-배치테스트 2회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/보안-점검-결과.xlsx",
-        "materialMdPath": "2026-08-24-배치테스트 2회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/보안-점검-결과.md",
-        "presenter": "문승현"
+        "title": "앱 UI 리뉴얼",
+        "durationMinutes": 5,
+        "material": "앱-UI-리뉴얼.pptx",
+        "materialPath": "2026-08-21-3분기 프로젝트 진행 현황 공유 회의/materials/앱-UI-리뉴얼.pptx",
+        "materialMdPath": "2026-08-21-3분기 프로젝트 진행 현황 공유 회의/materials/앱-UI-리뉴얼.md",
+        "presenter": "김민서",
+        "presentationSummary": "**[발표 내용]**\n앱 UI 리뉴얼을 발표했습니다.\n*   **메인 화면 메뉴 구조 단순화**를 진행하였습니다.\n*   **다크 모드** 기능을 신규 추가하였습니다.\n*   베타 테스트 만족도는 **15% 상승**하였으며, **4분기 초 정식 배포**를 목표로 하고 있습니다.\n\n**[논의 내용]**"
       },
       {
         "no": 2,
-        "title": "마케팅 캠페인 성과",
-        "durationMinutes": 1,
-        "material": "마케팅-캠페인-성과.pptx",
-        "materialPath": "2026-08-24-배치테스트 2회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/마케팅-캠페인-성과.pptx",
-        "materialMdPath": "2026-08-24-배치테스트 2회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/마케팅-캠페인-성과.md",
-        "presenter": "남궁민"
-      }
-    ],
-    "audio": {
-      "fileName": "배치테스트-2회차-보안-점검-결과-마케팅-캠페인-성과.wav",
-      "durationSec": 92.14,
-      "preprocessing": {
-        "vocalIsolation": false,
-        "noiseRemoval": false,
-        "normalize": false
-      },
-      "transcriptSegments": [
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 0,
-          "endSec": 3.8200000000000003,
-          "text": "안녕하세요. 배치 테스트 2회차 회의를 시작하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 5.5,
-          "endSec": 10.36,
-          "text": "오늘은 보안 점검 결과, 마케팅 캠페인 성과 순서로 진행하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 12.74,
-          "endSec": 15.02,
-          "text": "안녕하세요. 문승현입니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 16.76,
-          "endSec": 22.04,
-          "text": "보안 점검 결과 관련해서 말씀드리면 취약점 총 42건 발견,"
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 23.54,
-          "endSec": 25.62,
-          "text": "심각 3건 즉시 패치 완료,"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 25.62,
-          "endSec": 33.3,
-          "text": "중간 15건은 2주 내 조치 예정 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 35.2,
-          "endSec": 41.34,
-          "text": "네. 중간 15건은 2주 내 조치 예정 부분이고, 외부 침투 테스트 통과."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 43.08,
-          "endSec": 44,
-          "text": "감사합니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 45.74,
-          "endSec": 49.94,
-          "text": "다음은 남국민님, 마케팅 캠페인 성과 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 51.400000000000006,
-          "endSec": 54.1,
-          "text": "안녕하세요. 남국민입니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 54.1,
-          "endSec": 57.72,
-          "text": "마케팅 캠페인 성과 관련해서 말씀드리면,"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 58.260000000000005,
-          "endSec": 61.52,
-          "text": "노출 120만회, 클릭률 3.4%,"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 61.52,
-          "endSec": 64.96000000000001,
-          "text": "전환 850건, 레스 4.2배."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 66.82000000000001,
-          "endSec": 71.86,
-          "text": "20대 타겟층 반응이 가장 높은 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 73.72,
-          "endSec": 76.56,
-          "text": "네. 20대 타겟층 반응이 가장 높은 부분이고,"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 77.1,
-          "endSec": 78.78,
-          "text": "다음 캠페인은 리타겟팅 강화."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 78.78,
-          "endSec": 82.12,
-          "text": "모두 수고하셨습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 83.62,
-          "endSec": 86.94,
-          "text": "오늘 논의된 내용은 회의록으로 정리해서 공유 드리겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 88.58,
-          "endSec": 90.28,
-          "text": "이상으로 회의를 마치겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 90.28,
-          "endSec": 92.14,
-          "text": "감사합니다."
-        }
-      ],
-      "speakerMap": {
-        "SPEAKER_02": "문승현",
-        "SPEAKER_00": "배수지",
-        "SPEAKER_01": "남궁민"
-      },
-      "analyzedAt": "2026-08-21T13:54:04.756Z",
-      "audioPath": "2026-08-24-배치테스트 2회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/배치테스트-2회차-보안-점검-결과-마케팅-캠페인-성과.wav",
-      "transcriptPath": "2026-08-24-배치테스트 2회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/배치테스트-2회차-보안-점검-결과-마케팅-캠페인-성과-stt-transcript.txt"
-    },
-    "minutes": "# 배치테스트 2회차 - 보안 점검 결과/마케팅 캠페인 성과\n\n## 회의 기본정보\n- **일시**: 2026-08-24 10:00-10:30\n- **주관자**: 서예린\n- **참석자**: 문승현(발표자), 남궁민(발표자), 배수지\n\n## A/I List (사전 액션 아이템)\n사전 A/I 없음\n\n## Agenda 논의 내용\n\n### 1. 보안 점검 결과 (발표자: 문승현)\n- 보안 취약점 총 42건 발견\n- 심각 등급 3건은 즉시 패치 완료\n- 정도윤 질의: 중간 등급 15건 조치 일정 관련 추가 설명 요청\n- 답변: 중간 등급 15건은 2주 내 조치 예정이며, 외부 침투 테스트는 통과함\n\n### 2. 마케팅 캠페인 성과 (발표자: 남궁민)\n- 노출 120만회, 클릭률 3.4%\n- 전환 850건, 레스(효율 지표) 4.2배 달성\n- 정도윤 질의: 20대 타겟층 반응이 가장 높은 부분에 대한 추가 설명 요청\n- 답변: 20대 타겟층에서 반응이 가장 높았으며, 다음 캠페인은 리타겟팅을 강화할 예정\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 보안 취약점 중 중간 등급 15건 조치 | 문승현 | 2주 내 |\n| 다음 마케팅 캠페인 리타겟팅 강화 적용 | 남궁민 | - |\n| 오늘 논의 내용 회의록으로 정리하여 공유 | 서예린 | - |\n\n## 태그\n#보안점검 #취약점패치 #마케팅캠페인 #캠페인성과 #리타겟팅",
-    "authorId": "",
-    "comments": [],
-    "createdAt": "2026-08-21T13:52:47.626Z",
-    "updatedAt": "2026-08-21T14:18:57.858Z"
-  },
-  {
-    "id": "f762a2dc-8748-4cf5-9824-bf5d801241aa",
-    "title": "배치테스트 3회차 - 데이터 파이프라인 안정화/사내 헬프데스크 통계/물류센터 자동화 파일럿",
-    "date": "2026-08-25",
-    "startTime": "10:00",
-    "endTime": "10:30",
-    "organizer": "배수지",
-    "secretary": "",
-    "attendees": [
-      {
-        "id": "홍지호",
-        "name": "홍지호",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "임하늘",
-        "name": "임하늘",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "노준영",
-        "name": "노준영",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "윤서진",
-        "name": "윤서진",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      },
-      {
-        "id": "한지민",
-        "name": "한지민",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      }
-    ],
-    "actionItems": [],
-    "agenda": [
-      {
-        "no": 1,
-        "title": "데이터 파이프라인 안정화",
-        "durationMinutes": 1,
-        "material": "데이터-파이프라인-안정화.pdf",
-        "materialPath": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/데이터-파이프라인-안정화.pdf",
-        "materialMdPath": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/데이터-파이프라인-안정화.md",
-        "presenter": "홍지호"
-      },
-      {
-        "no": 2,
-        "title": "사내 헬프데스크 통계",
-        "durationMinutes": 1,
-        "material": "사내-헬프데스크-통계.xlsx",
-        "materialPath": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/사내-헬프데스크-통계.xlsx",
-        "materialMdPath": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/사내-헬프데스크-통계.md",
-        "presenter": "임하늘"
+        "title": "SNS/인플루언서 마케팅 캠페인",
+        "durationMinutes": 5,
+        "material": "SNS-인플루언서-마케팅-캠페인.pptx",
+        "materialPath": "2026-08-21-3분기 프로젝트 진행 현황 공유 회의/materials/SNS-인플루언서-마케팅-캠페인.pptx",
+        "materialMdPath": "2026-08-21-3분기 프로젝트 진행 현황 공유 회의/materials/SNS-인플루언서-마케팅-캠페인.md",
+        "presenter": "이수아",
+        "presentationSummary": "[발표 내용]\n발표 자료와 발언 대본 내용이 다릅니다.\nSNS/인플루언서 마케팅 캠페인은 SNS 광고와 인플루언서 협업을 중심으로 진행되었습니다. 그 결과, 앱 다운로드 건수는 전분기 대비 30% 증가했으며, 광고비 대비 전환율 목표치를 상회하는 성과를 달성했습니다.\n\n[논의 내용]"
       },
       {
         "no": 3,
-        "title": "물류센터 자동화 파일럿",
-        "durationMinutes": 1,
-        "material": "물류센터-자동화-파일럿.pptx",
-        "materialPath": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/물류센터-자동화-파일럿.pptx",
-        "materialMdPath": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/물류센터-자동화-파일럿.md",
-        "presenter": "노준영"
+        "title": "온프레미스 → 클라우드 이전",
+        "durationMinutes": 5,
+        "material": "온프레미스-클라우드-이전.pdf",
+        "materialPath": "2026-08-21-3분기 프로젝트 진행 현황 공유 회의/materials/온프레미스-클라우드-이전.pdf",
+        "materialMdPath": "2026-08-21-3분기 프로젝트 진행 현황 공유 회의/materials/온프레미스-클라우드-이전.md",
+        "presenter": "정도윤",
+        "presentationSummary": "**[발표 내용]**\n# 온프레미스-클라우드-이전\n\n*   무중단 이전이 완료됨.\n*   평균 응답 속도가 기존 대비 40% 개선됨.\n*   로그 수집 파이프라인 지연 이슈가 정상화되었음.\n\n**[논의 내용]**\n(질문) 주관자: 이전 과정에서 장애는 없었나요?\n(답변) 발표3-정도윤: 짧은 점검 시간 외에는 서비스 중단 없이 완료했습니다.\n(질문) 참석3-배시온: 클라우드 전환 이후 비용 변화는 어떻게 되나요?\n(답변) 발표3-정도윤: 초기에는 이중 운영 비용이 있었지만, 다음 달부터는 기존 대비 약 15% 절감될 것으로 예상됩니다."
+      },
+      {
+        "no": 4,
+        "title": "고객 문의 대응 프로세스 개선",
+        "durationMinutes": 5,
+        "material": "고객-문의-대응-프로세스-개선.pdf",
+        "materialPath": "2026-08-21-3분기 프로젝트 진행 현황 공유 회의/materials/고객-문의-대응-프로세스-개선.pdf",
+        "materialMdPath": "2026-08-21-3분기 프로젝트 진행 현황 공유 회의/materials/고객-문의-대응-프로세스-개선.md",
+        "presenter": "최하은",
+        "presentationSummary": "**[발표 내용]**\n*   **챗봇 1차 응대 비중 확대:** 고객 문의 처리 과정에서 챗봇의 1차 응대 역할을 확대하여 문의 응대 효율성을 높였습니다.\n*   **상담사 배정 로직 개편:** 기존보다 정교하게 개편된 상담사 배정 로직을 적용함으로써, 고객 문의에 대한 평균 응답 시간을 40% 단축시켰습니다.\n*   **고객 만족도 조사 점수 상승:** 위와 같은 프로세스 개선 노력을 통해 고객 만족도 조사 점수를 전분기 대비 상승시키는 성과를 거두었습니다.\n\n**[논의 내용]**\n(질문) 참석1: 상담사 배정 로직은 구체적으로 어떻게 바뀌었나요?\n(답변) 발표4: (상담사 배정 로직은) 문의 유형별로 전문 상담사를 자동으로 매칭하도록 변경되었습니다.\n(질문) 참석2: 다음 분기 목표 응답 시간은 어느 정도인가요?\n(답변) 발표4: 현재보다 추가로 10% 더 단축하는 것을 목표로 하고 있습니다."
       }
     ],
     "audio": {
-      "fileName": "배치테스트-3회차-데이터-파이프라인-안정화-사내-헬프데스크-통계-물류센터-자동화-파일럿.wav",
-      "durationSec": 120.1,
+      "fileName": "meeting-8speakers-ko.wav",
+      "durationSec": 287.1,
       "preprocessing": {
         "vocalIsolation": false,
         "noiseRemoval": false,
@@ -695,1915 +396,1130 @@
       },
       "transcriptSegments": [
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "SPEAKER_04",
           "startSec": 0,
-          "endSec": 4.18,
-          "text": "안녕하세요. 배치 테스트 3회차 회의를 시작하겠습니다."
+          "endSec": 4.88,
+          "text": "안녕하세요. 오늘 3분기 프로젝트 진행 현황 공유 회의를 시작하겠습니다."
         },
         {
-          "speaker": "SPEAKER_01",
-          "startSec": 5.28,
-          "endSec": 12.6,
-          "text": "오늘은 데이터 파이프라인 안정화, 사내 헬프데스크 통계, 물류센터 자동화 파일럿 순서로 진행하겠습니다."
+          "speaker": "SPEAKER_04",
+          "startSec": 6.12,
+          "endSec": 14.26,
+          "text": "오늘은 신제품 개발팀, 마케팅팀, 인프라팀, 고객지원팀 순서로 발표를 듣고 질의응답 시간을 갖겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
-          "startSec": 14.44,
-          "endSec": 16.86,
-          "text": "안녕하세요. 홍지호입니다."
+          "speaker": "SPEAKER_04",
+          "startSec": 15.5,
+          "endSec": 19.3,
+          "text": "먼저 신제품 개발팀 김민서님, 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_00",
-          "startSec": 17.900000000000002,
-          "endSec": 28.7,
-          "text": "데이터 파이프라인 안정화 관련해서 말씀드리면 배치 실패율 12% 2%로 감소, 평균 지연시간 45분 12분,"
+          "speaker": "SPEAKER_03",
+          "startSec": 21.28,
+          "endSec": 24.400000000000002,
+          "text": "안녕하세요. 신제품 개발팀 김민서입니다."
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 24.94,
+          "endSec": 29.240000000000002,
+          "text": "이번 분기에는 앱 UI 리뉴얼 프로젝트를 진행했습니다."
         },
         {
           "speaker": "SPEAKER_03",
           "startSec": 30,
-          "endSec": 34.92,
-          "text": "실패 시 자동알림체계 신설 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 36.62,
-          "endSec": 43.88,
-          "text": "네. 실패 시 자동알림체계 신설 부분이고, 다음 목표, 실패율 1% 이하."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 45.06,
-          "endSec": 50.96,
-          "text": "감사합니다. 다음은 이만을님, 사내 헬프데스크 통계 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 52.54,
-          "endSec": 54.34,
-          "text": "안녕하세요. 이만을입니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 54.34,
-          "endSec": 62.34,
-          "text": "사내 헬프데스크 통계 관련해서 말씀드리면, 이번 분기문의 620건 접수, 평균 처리시간 3.1시간."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 64.14,
-          "endSec": 70.16,
-          "text": "만족도 82점, 100점 만점 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 71.92,
-          "endSec": 77.96000000000001,
-          "text": "네. 만족도 82점, 100점 만점 부분이고, 반복문의 유형상이 3개 파악."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 77.96,
-          "endSec": 85.25999999999999,
-          "text": "감사합니다. 다음은 노준영님, 물류센터 자동화 파일럿 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_04",
-          "startSec": 86.86,
-          "endSec": 88.38,
-          "text": "안녕하세요. 노준영입니다."
-        },
-        {
-          "speaker": "SPEAKER_04",
-          "startSec": 89.3,
-          "endSec": 97.3,
-          "text": "물류센터 자동화 파일럿 관련해서 말씀드리면, 피킹속도 40% 향상, 오배송률 1.2%, 0.3%로 감소."
+          "endSec": 37.66,
+          "text": "기존 사용자 피드백을 반영해서 메인 화면의 메뉴 구조를 단순화했고, 다크 모드를 새로 추가했습니다."
         },
         {
           "speaker": "SPEAKER_03",
-          "startSec": 97.3,
-          "endSec": 103.42,
-          "text": "투자비 회수 14개월 예상 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_04",
-          "startSec": 105.08,
-          "endSec": 109.2,
-          "text": "네. 투자비 회수 14개월 예상 부분이고, 2호 물류센터 확대 검토 중."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 110.8,
-          "endSec": 112.24,
-          "text": "모두 수고하셨습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 113.3,
-          "endSec": 116.96,
-          "text": "오늘 논의된 내용은 회의록으로 정리해서 공유 드리겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 116.96,
-          "endSec": 120.1,
-          "text": "이상으로 회의를 마치겠습니다."
-        }
-      ],
-      "speakerMap": {
-        "SPEAKER_01": "배수지",
-        "SPEAKER_00": "홍지호",
-        "SPEAKER_03": "윤서진",
-        "SPEAKER_02": "임하늘",
-        "SPEAKER_04": "노준영"
-      },
-      "analyzedAt": "2026-08-21T13:55:41.275Z",
-      "audioPath": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/배치테스트-3회차-데이터-파이프라인-안정화-사내-헬프데스크-통계-물류센터-자동화-파일럿.wav",
-      "transcriptPath": "2026-08-25-배치테스트 3회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/배치테스트-3회차-데이터-파이프라인-안정화-사내-헬프데스크-통계-물류센터-자동화-파일럿-stt-transcript.txt"
-    },
-    "minutes": "# 배치테스트 3회차 - 데이터 파이프라인 안정화/사내 헬프데스크 통계/물류센터 자동화 파일럿\n\n## 회의 기본정보\n- **일시**: 2026-08-25 (화) 10:00 ~ 10:30\n- **주관자**: 배수지\n- **참석자**: 홍지호(발표자), 임하늘(발표자), 노준영(발표자), 윤서진, 한지민\n\n## A/I List (사전 액션 아이템)\n사전에 계획된 A/I 없음.\n\n## Agenda 및 논의 내용\n\n### 1. 데이터 파이프라인 안정화 (발표자: 홍지호)\n- 배치 실패율 12% → 2%로 감소\n- 평균 지연시간 45분 → 12분으로 단축\n- 실패 시 자동 알림체계 신설\n- 질의응답: 자동 알림체계 신설 관련 추가 설명 요청 있었음\n- 다음 목표: 배치 실패율 1% 이하로 개선\n\n### 2. 사내 헬프데스크 통계 (발표자: 임하늘)\n- 이번 분기 문의 620건 접수\n- 평균 처리시간 3.1시간\n- 만족도 82점 (100점 만점)\n- 질의응답: 만족도 점수 관련 추가 설명 요청 있었음\n- 반복 문의 유형 상위 3개 파악됨\n\n### 3. 물류센터 자동화 파일럿 (발표자: 노준영)\n- 피킹 속도 40% 향상\n- 오배송률 1.2% → 0.3%로 감소\n- 질의응답: 투자비 회수 기간 관련 추가 설명 요청 있었음\n- 투자비 회수 14개월 예상\n- 2호 물류센터로 확대 적용 검토 중\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 배치 실패율 1% 이하 달성 추진 | 홍지호 | - |\n| 반복 문의 유형 상위 3개에 대한 개선 방안 마련 | 임하늘 | - |\n| 2호 물류센터 자동화 확대 적용 검토 | 노준영 | - |\n| 회의 내용 회의록으로 정리하여 공유 | 배수지 | - |\n\n## 태그\n#데이터파이프라인 #배치실패율 #헬프데스크통계 #물류센터자동화 #피킹속도 #오배송률 #투자비회수 #배치테스트",
-    "authorId": "",
-    "comments": [],
-    "createdAt": "2026-08-21T13:54:29.022Z",
-    "updatedAt": "2026-08-21T15:01:01.039Z"
-  },
-  {
-    "id": "fce9c7ce-066e-44e5-9abc-63c8cda8b3fc",
-    "title": "배치테스트 4회차 - 물류센터 자동화 파일럿/구독형 요금제 개편안/모바일 앱 성능 개선/신규 채용 현황",
-    "date": "2026-08-26",
-    "startTime": "10:00",
-    "endTime": "10:30",
-    "organizer": "노준영",
-    "secretary": "",
-    "attendees": [
-      {
-        "id": "윤서진",
-        "name": "윤서진",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "한지민",
-        "name": "한지민",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "조은우",
-        "name": "조은우",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "서예린",
-        "name": "서예린",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "문승현",
-        "name": "문승현",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      },
-      {
-        "id": "남궁민",
-        "name": "남궁민",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      }
-    ],
-    "actionItems": [],
-    "agenda": [
-      {
-        "no": 1,
-        "title": "물류센터 자동화 파일럿",
-        "durationMinutes": 1,
-        "material": "물류센터-자동화-파일럿.pptx",
-        "materialPath": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/materials/물류센터-자동화-파일럿.pptx",
-        "materialMdPath": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/materials/물류센터-자동화-파일럿.md",
-        "presenter": "윤서진"
-      },
-      {
-        "no": 2,
-        "title": "구독형 요금제 개편안",
-        "durationMinutes": 1,
-        "material": "구독형-요금제-개편안.pdf",
-        "materialPath": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/materials/구독형-요금제-개편안.pdf",
-        "materialMdPath": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/materials/구독형-요금제-개편안.md",
-        "presenter": "한지민"
-      },
-      {
-        "no": 3,
-        "title": "모바일 앱 성능 개선",
-        "durationMinutes": 1,
-        "material": "모바일-앱-성능-개선.pptx",
-        "materialPath": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/materials/모바일-앱-성능-개선.pptx",
-        "materialMdPath": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/materials/모바일-앱-성능-개선.md",
-        "presenter": "조은우"
-      },
-      {
-        "no": 4,
-        "title": "신규 채용 현황",
-        "durationMinutes": 1,
-        "material": "신규-채용-현황.pdf",
-        "materialPath": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/materials/신규-채용-현황.pdf",
-        "materialMdPath": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/materials/신규-채용-현황.md",
-        "presenter": "서예린"
-      }
-    ],
-    "audio": {
-      "fileName": "배치테스트-4회차-물류센터-자동화-파일럿-구독형-요금제-개편안-모바일-앱-성능-개선-신규-채용-현황.wav",
-      "durationSec": 189.16,
-      "preprocessing": {
-        "vocalIsolation": false,
-        "noiseRemoval": false,
-        "normalize": false
-      },
-      "transcriptSegments": [
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 0,
-          "endSec": 2.9,
-          "text": "안녕하세요. 배치 테스트 4회차 회의를 시작하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 3.9,
-          "endSec": 10.540000000000001,
-          "text": "오늘은 물류센터 자동화 파일럿, 구독형 요금제 개편안, 모바일 앱 성능 개선, 신규 채용 현황 순서로 진행하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 12.26,
-          "endSec": 14.120000000000001,
-          "text": "안녕하세요. 윤서진입니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 15.280000000000001,
-          "endSec": 25.28,
-          "text": "물류센터 자동화 파일럿 관련해서 말씀드리면, 피킹 속도 40% 향상, 오배송률 1.2%, 0.3%로 감소."
-        },
-        {
-          "speaker": "SPEAKER_03",
-          "startSec": 25.28,
-          "endSec": 32.18,
-          "text": "투자비 회수 14개월 예상 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 34.36,
-          "endSec": 39.480000000000004,
-          "text": "네. 투자비 회수 14개월 예상 부분이고, 2호 물류센터 확대 검토 중."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 41.14,
-          "endSec": 46.34,
-          "text": "감사합니다. 다음은 한지민님, 구독형 요금제 개편안 발표 부탁드립니다."
+          "startSec": 39.2,
+          "endSec": 46.14,
+          "text": "베타 테스트 결과 사용자 만족도가 15% 상승했고, 4분기 초에 정식 배포를 목표로 하고 있습니다."
         },
         {
           "speaker": "SPEAKER_05",
-          "startSec": 48,
-          "endSec": 50.06,
-          "text": "안녕하세요. 한지민입니다."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 50.06,
-          "endSec": 59.260000000000005,
-          "text": "구독형 요금제 개편안 관련해서 말씀드리면, 현재 이탈률 6.8%, 목표 4%."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 59.260000000000005,
-          "endSec": 62.540000000000006,
-          "text": "신규 요금 제 3종 설계"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 62.540000000000006,
-          "endSec": 68.64,
-          "text": "예상 매출 증가 약 8% 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 70.52000000000001,
-          "endSec": 76.80000000000001,
-          "text": "네. 예상 매출 증가 약 8% 부분이고, 베타 테스트 10월 진행 예정."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 78.34,
-          "endSec": 78.94,
-          "text": "감사합니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 80.06,
-          "endSec": 83.52,
-          "text": "다음은 조은우님, 모바일 앱 성능 개선 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 85.10000000000001,
-          "endSec": 86.76,
-          "text": "안녕하세요. 조은우입니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 87.76,
-          "endSec": 93.22,
-          "text": "모바일 앱 성능 개선 관련해서 말씀드리면, 앱 시작 시간 3.2초, 1.8초로 단축."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 94.06,
-          "endSec": 97.14,
-          "text": "크래시율 0.8%, 0.2%로 감소."
+          "startSec": 48.2,
+          "endSec": 50.74,
+          "text": "베타 테스트는 몇 명을 대상으로 진행하셨나요?"
         },
         {
           "speaker": "SPEAKER_03",
-          "startSec": 99.02000000000001,
-          "endSec": 104.36,
-          "text": "메모리 사용량 15% 절감 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 104.36,
-          "endSec": 112.06,
-          "text": "네. 메모리 사용량 15% 절감 부분이고, 다음 분기 목표, 시작 시간 1.2초."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 112.06,
-          "endSec": 114.52,
-          "text": "감사합니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 115.52,
-          "endSec": 118.9,
-          "text": "다음은 서예린님, 신규 채용 현황 발표 부탁드립니다."
+          "startSec": 51.86,
+          "endSec": 58.78,
+          "text": "베타 테스트는 사내 직원과 일부 파워 유저를 포함해서 총 200명을 대상으로 진행했습니다."
         },
         {
           "speaker": "SPEAKER_04",
-          "startSec": 118.9,
-          "endSec": 122.74000000000001,
-          "text": "안녕하세요. 서예린입니다."
-        },
-        {
-          "speaker": "SPEAKER_04",
-          "startSec": 123.36,
-          "endSec": 130.34,
-          "text": "신규 채용 현황 관련해서 말씀드리면, 채용 공고 12건, 지원자 340명 접수."
-        },
-        {
-          "speaker": "SPEAKER_04",
-          "startSec": 131.8,
-          "endSec": 135.36,
-          "text": "최종 합격 8명, 평균 채용 소요 26일."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 135.36,
-          "endSec": 142.04000000000002,
-          "text": "백엔드 프론트 직군 경쟁률이 가장 높은 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_04",
-          "startSec": 144.04000000000002,
-          "endSec": 150.20000000000002,
-          "text": "네. 백엔드 프론트 직군 경쟁률이 가장 높은 부분이고, 다음 분기 채용 목표 6명."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 151.62,
-          "endSec": 153.10000000000002,
-          "text": "모두 수고하셨습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 154,
-          "endSec": 156.82000000000002,
-          "text": "오늘 논의된 내용은 회의로그로 정리해서 공유 드리겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 157.82000000000002,
-          "endSec": 159.18,
-          "text": "이상으로 회의를 마치겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 159.18,
-          "endSec": 189.16,
-          "text": "오늘 논의된 내용은 회의를 마치겠습니다."
-        }
-      ],
-      "speakerMap": {
-        "SPEAKER_02": "노준영",
-        "SPEAKER_03": "문승현",
-        "SPEAKER_05": "한지민",
-        "SPEAKER_00": "남궁민",
-        "SPEAKER_01": "조은우",
-        "SPEAKER_04": "서예린"
-      },
-      "analyzedAt": "2026-08-21T13:57:38.444Z",
-      "audioPath": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/audio/배치테스트-4회차-물류센터-자동화-파일럿-구독형-요금제-개편안-모바일-앱-성능-개선-신규-채용-현황.wav",
-      "transcriptPath": "2026-08-26-배치테스트 4회차 - 물류센터 자동화 파일럿_구독형 요금제 개편안_모바일 앱 성능 개선_신규 채용 현황/audio/배치테스트-4회차-물류센터-자동화-파일럿-구독형-요금제-개편안-모바일-앱-성능-개선-신규-채용-현황-stt-transcript.txt"
-    },
-    "minutes": "# 회의록: 배치테스트 4회차 - 물류센터 자동화 파일럿/구독형 요금제 개편안/모바일 앱 성능 개선/신규 채용 현황\n\n## 회의 기본정보\n- **일시**: 2026-08-26 10:00 ~ 10:30\n- **주관자**: 노준영\n- **참석자**: 윤서진(발표자), 한지민(발표자), 조은우(발표자), 서예린(발표자), 문승현, 남궁민\n\n## A/I List (사전 액션 아이템)\n사전 A/I 없음\n\n## Agenda 및 논의 내용\n\n### 1. 물류센터 자동화 파일럿 (발표자: 윤서진)\n- 피킹 속도 40% 향상\n- 오배송률 1.2% → 0.3%로 감소\n- 투자비 회수 14개월 예상\n- 2호 물류센터 확대 검토 중\n- **질의응답**: 투자비 회수 14개월 예상 근거에 대한 추가 설명 요청이 있었음\n\n### 2. 구독형 요금제 개편안 (발표자: 한지민)\n- 현재 이탈률 6.8%, 목표 4%\n- 신규 요금제 3종 설계\n- 예상 매출 증가 약 8%\n- 베타 테스트 10월 진행 예정\n- **질의응답**: 예상 매출 증가 약 8% 산출 근거에 대한 추가 설명 요청이 있었음\n\n### 3. 모바일 앱 성능 개선 (발표자: 조은우)\n- 앱 시작 시간 3.2초 → 1.8초로 단축\n- 크래시율 0.8% → 0.2%로 감소\n- 메모리 사용량 15% 절감\n- 다음 분기 목표: 시작 시간 1.2초\n- **질의응답**: 메모리 사용량 15% 절감 방법에 대한 추가 설명 요청이 있었음\n\n### 4. 신규 채용 현황 (발표자: 서예린)\n- 채용 공고 12건, 지원자 340명 접수\n- 최종 합격 8명, 평균 채용 소요 26일\n- 백엔드/프론트 직군 경쟁률이 가장 높음\n- 다음 분기 채용 목표 6명\n- **질의응답**: 백엔드/프론트 직군 경쟁률이 높은 원인에 대한 추가 설명 요청이 있었음\n\n## 마무리\n주관자가 4건의 발표를 모두 정리하며, 오늘 논의된 내용을 회의로그로 정리하여 공유하겠다고 안내하고 회의를 종료함.\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 오늘 논의된 내용을 회의로그로 정리하여 공유 | 노준영 | - |\n\n## 태그\n\n#배치테스트 #물류센터자동화 #구독형요금제개편 #모바일앱성능개선 #신규채용현황 #투자비회수 #이탈률개선 #크래시율감소",
-    "authorId": "",
-    "comments": [],
-    "createdAt": "2026-08-21T13:56:18.106Z",
-    "updatedAt": "2026-08-21T14:18:57.893Z"
-  },
-  {
-    "id": "0a98fc3e-4362-4815-ba73-df57ce10d210",
-    "title": "배치테스트 5회차 - 모바일 앱 성능 개선/신규 채용 현황/보안 점검 결과/마케팅 캠페인 성과/데이터 파이프라인 안정화",
-    "date": "2026-08-27",
-    "startTime": "10:00",
-    "endTime": "10:30",
-    "organizer": "조은우",
-    "secretary": "",
-    "attendees": [
-      {
-        "id": "서예린",
-        "name": "서예린",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "문승현",
-        "name": "문승현",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "남궁민",
-        "name": "남궁민",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "배수지",
-        "name": "배수지",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "홍지호",
-        "name": "홍지호",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "임하늘",
-        "name": "임하늘",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      },
-      {
-        "id": "노준영",
-        "name": "노준영",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      }
-    ],
-    "actionItems": [],
-    "agenda": [
-      {
-        "no": 1,
-        "title": "모바일 앱 성능 개선",
-        "durationMinutes": 1,
-        "material": "모바일-앱-성능-개선.pptx",
-        "materialPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/materials/모바일-앱-성능-개선.pptx",
-        "materialMdPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/materials/모바일-앱-성능-개선.md",
-        "presenter": "서예린"
-      },
-      {
-        "no": 2,
-        "title": "신규 채용 현황",
-        "durationMinutes": 1,
-        "material": "신규-채용-현황.pdf",
-        "materialPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/materials/신규-채용-현황.pdf",
-        "materialMdPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/materials/신규-채용-현황.md",
-        "presenter": "문승현"
-      },
-      {
-        "no": 3,
-        "title": "보안 점검 결과",
-        "durationMinutes": 1,
-        "material": "보안-점검-결과.xlsx",
-        "materialPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/materials/보안-점검-결과.xlsx",
-        "materialMdPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/materials/보안-점검-결과.md",
-        "presenter": "남궁민"
-      },
-      {
-        "no": 4,
-        "title": "마케팅 캠페인 성과",
-        "durationMinutes": 1,
-        "material": "마케팅-캠페인-성과.pptx",
-        "materialPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/materials/마케팅-캠페인-성과.pptx",
-        "materialMdPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/materials/마케팅-캠페인-성과.md",
-        "presenter": "배수지"
-      },
-      {
-        "no": 5,
-        "title": "데이터 파이프라인 안정화",
-        "durationMinutes": 1,
-        "material": "데이터-파이프라인-안정화.pdf",
-        "materialPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/materials/데이터-파이프라인-안정화.pdf",
-        "materialMdPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/materials/데이터-파이프라인-안정화.md",
-        "presenter": "홍지호"
-      }
-    ],
-    "audio": {
-      "fileName": "배치테스트-5회차-모바일-앱-성능-개선-신규-채용-현황-보안-점검-결과-마케팅-캠페인-성과-데이터-파이프라인-안정화.wav",
-      "durationSec": 199.9,
-      "preprocessing": {
-        "vocalIsolation": false,
-        "noiseRemoval": false,
-        "normalize": false
-      },
-      "transcriptSegments": [
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 0,
-          "endSec": 3.12,
-          "text": "안녕하세요. 배치 테스트 5회차 회의를 시작하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 4.2,
-          "endSec": 12.700000000000001,
-          "text": "오늘은 모바일 앱 성능 개선, 신규 채용 현황, 보안 점검 결과, 마케팅 캠페인 성과, 데이터 파이프라인 안정화 순서로 진행하겠습니다."
+          "startSec": 60,
+          "endSec": 63.1,
+          "text": "정식 배포 일정에 리스크는 없나요?"
         },
         {
           "speaker": "SPEAKER_03",
-          "startSec": 14.66,
-          "endSec": 16.72,
-          "text": "안녕하세요. 서예린입니다."
-        },
-        {
-          "speaker": "SPEAKER_03",
-          "startSec": 18.26,
-          "endSec": 24.86,
-          "text": "모바일 앱 성능 개선 관련해서 말씀드리면, 앱 시작 시간 3.2초, 1.8초로 단축,"
-        },
-        {
-          "speaker": "SPEAKER_03",
-          "startSec": 24.86,
-          "endSec": 29.939999999999998,
-          "text": "크래시율 0.8%, 0.2%로 감소."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 31.86,
-          "endSec": 36.4,
-          "text": "메모리 사용량 15% 절감 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_03",
-          "startSec": 38.14,
-          "endSec": 45.36,
-          "text": "네. 메모리 사용량 15% 절감 부분이고, 다음 분기 목표, 시작 시간 1.2초."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 47.08,
-          "endSec": 52.480000000000004,
-          "text": "감사합니다. 다음은 문승현님, 신규 채용 현황 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 52.48,
-          "endSec": 56.66,
-          "text": "안녕하세요. 문승현입니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 58.339999999999996,
-          "endSec": 65.12,
-          "text": "신규 채용 현황 관련해서 말씀드리면, 채용 공고 12건, 지원자 340명 접수."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 66.75999999999999,
-          "endSec": 70.72,
-          "text": "최종 합격 8명, 평균 채용 소요 26일."
+          "startSec": 64.9,
+          "endSec": 71.58,
+          "text": "현재까지는 큰 리스크는 없지만, 안드로이드 저사양 기기 대응 테스트가 조금 더 필요한 상황입니다."
         },
         {
           "speaker": "SPEAKER_04",
-          "startSec": 72.67999999999999,
-          "endSec": 77.16,
-          "text": "백엔드 프론트 직군 경쟁률이 가장 높은 부분은 좀 더 자세히 설명해 주실 수 있나요?"
+          "startSec": 73.76,
+          "endSec": 74.5,
+          "text": "네, 감사합니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 75.78,
+          "endSec": 79.66,
+          "text": "다음은 마케팅팀 이수아님, 캠페인 성과 발표해 주시죠."
         },
         {
           "speaker": "SPEAKER_00",
-          "startSec": 77.16,
-          "endSec": 85.7,
-          "text": "네. 백엔드 프론트 직군 경쟁률이 가장 높은 부분이고, 다음 분기 채용 목표 6명."
+          "startSec": 79.66,
+          "endSec": 84,
+          "text": "안녕하세요. 마케팅팀 이수아입니다."
         },
         {
-          "speaker": "SPEAKER_01",
-          "startSec": 87.02,
-          "endSec": 92.97999999999999,
-          "text": "감사합니다. 다음은 남국민님, 보안 점검 결과 발표 부탁드립니다."
+          "speaker": "SPEAKER_00",
+          "startSec": 85.14,
+          "endSec": 90.53999999999999,
+          "text": "이번 분기 신규 캠페인은 SNS 광고와 인플루언서 협업을 중심으로 진행했습니다."
         },
         {
-          "speaker": "SPEAKER_02",
-          "startSec": 92.98,
-          "endSec": 96.68,
-          "text": "안녕하세요. 남국민입니다."
+          "speaker": "SPEAKER_00",
+          "startSec": 91.66,
+          "endSec": 99.5,
+          "text": "캠페인 기간 동안 앱 다운로드 수가 전분기 대비 30% 증가했고, 광고비 대비 전환율도 목표치를 상회했습니다."
         },
         {
-          "speaker": "SPEAKER_02",
-          "startSec": 97.94,
-          "endSec": 104.96000000000001,
-          "text": "보안 점검 결과 관련해서 말씀드리면, 취약점 총 42건 발견, 심각 3건 즉시 패치 완료."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 106.7,
-          "endSec": 111.58000000000001,
-          "text": "중간 15건은 2주 내 조치 예정 부분은 좀 더 자세히 설명해 주실 수 있나요?"
+          "speaker": "SPEAKER_00",
+          "startSec": 99.5,
+          "endSec": 104.5,
+          "text": "다음 분기에는 예산을 조금 더 확대해서 진행할 계획입니다."
         },
         {
           "speaker": "SPEAKER_02",
-          "startSec": 111.58,
-          "endSec": 118.14,
-          "text": "네. 중간 15건은 2주 내 조치 예정 부분이고, 외부 침투 테스트 통과."
+          "startSec": 106.5,
+          "endSec": 109.52,
+          "text": "인플루언서 협업은 어떤 기준으로 선정하셨나요?"
         },
         {
-          "speaker": "SPEAKER_01",
-          "startSec": 119.44,
-          "endSec": 120.32,
-          "text": "감사합니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 121.64,
-          "endSec": 125.24,
-          "text": "다음은 배수지님, 마케팅 캠페인 성과 발표 부탁드립니다."
+          "speaker": "SPEAKER_00",
+          "startSec": 111.78,
+          "endSec": 117.5,
+          "text": "팔로워 수보다는 실제 참여율과 우리 타겟 연령대와의 적합성을 우선적으로 고려했습니다."
         },
         {
           "speaker": "SPEAKER_06",
-          "startSec": 126.92,
-          "endSec": 129.04,
-          "text": "안녕하세요. 배수지입니다."
+          "startSec": 119.28,
+          "endSec": 122.26,
+          "text": "다음 분기 예산 확대 규모는 어느 정도인가요?"
         },
         {
-          "speaker": "SPEAKER_06",
-          "startSec": 129.98,
-          "endSec": 140.76,
-          "text": "마케팅 캠페인 성과 관련해서 말씀드리면, 노출 120만에, 클릭률 3.4%, 전환 850건, RS 4.2배."
+          "speaker": "SPEAKER_00",
+          "startSec": 122.26,
+          "endSec": 127.94,
+          "text": "현재 검토 중이지만 약 20% 정도 증액을 계획하고 있습니다."
         },
         {
           "speaker": "SPEAKER_04",
-          "startSec": 141.58,
+          "startSec": 129.78,
+          "endSec": 130.68,
+          "text": "좋은 성과네요."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 131.78,
+          "endSec": 134.66,
+          "text": "이어서 인프라팀 정도윤님 발표 부탁드립니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 136.04000000000002,
+          "endSec": 139.54000000000002,
+          "text": "안녕하세요. 인프라팀 정도윤입니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 140.72,
           "endSec": 145.9,
-          "text": "20대 타겟층 반응이 가장 높은 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_06",
-          "startSec": 147.4,
-          "endSec": 153.46,
-          "text": "네. 20대 타겟층 반응이 가장 높은 부분이고, 다음 캠페인은 리타겟팅 강화."
+          "text": "이번 분기에는 온프레미스 서버를 클라우드로 이전하는 작업을 진행했습니다."
         },
         {
           "speaker": "SPEAKER_01",
-          "startSec": 154.4,
-          "endSec": 160.22000000000003,
-          "text": "감사합니다. 다음은 홍지호님, 데이터 파이프라인 안정화 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 161.92000000000002,
-          "endSec": 164.34,
-          "text": "안녕하세요. 홍지호입니다."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 164.34,
-          "endSec": 172.56,
-          "text": "데이터 파이프라인 안정화 관련해서 말씀드리면, 배치 실패율 12%, 2%로 감소."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 173.24,
-          "endSec": 176.2,
-          "text": "평균 지연 시간 45분, 12분."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 177.56,
-          "endSec": 182.06,
-          "text": "실패 시 자동 알림체계 신설 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 182.06,
-          "endSec": 190.94,
-          "text": "네. 실패 시 자동 알림체계 신설 부분이고, 다음 목표, 실패율 1% 이하."
+          "startSec": 145.9,
+          "endSec": 153.9,
+          "text": "이전 작업은 무중단으로 완료했고, 평균 응답 속도가 기존 대비 40% 개선됐습니다."
         },
         {
           "speaker": "SPEAKER_01",
-          "startSec": 192.14000000000001,
-          "endSec": 193.28,
-          "text": "모두 수고하셨습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 194.26,
-          "endSec": 197.34,
-          "text": "오늘 논의된 내용은 회의로그로 정리해서 공유 드리겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 197.34,
-          "endSec": 199.9,
-          "text": "이상으로 회의를 마치겠습니다."
-        }
-      ],
-      "speakerMap": {
-        "SPEAKER_01": "조은우",
-        "SPEAKER_03": "서예린",
-        "SPEAKER_02": "남궁민",
-        "SPEAKER_00": "문승현",
-        "SPEAKER_04": "노준영",
-        "SPEAKER_06": "배수지",
-        "SPEAKER_05": "홍지호"
-      },
-      "analyzedAt": "2026-08-21T13:59:47.356Z",
-      "audioPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/audio/배치테스트-5회차-모바일-앱-성능-개선-신규-채용-현황-보안-점검-결과-마케팅-캠페인-성과-데이터-파이프라인-안정화.wav",
-      "transcriptPath": "2026-08-27-배치테스트 5회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과_데이터 파이프라인 안정화/audio/배치테스트-5회차-모바일-앱-성능-개선-신규-채용-현황-보안-점검-결과-마케팅-캠페인-성과-데이터-파이프라인-안정화-stt-transcript.txt"
-    },
-    "minutes": "# 배치테스트 5회차 회의록\n\n## 회의 기본정보\n- **제목**: 배치테스트 5회차 - 모바일 앱 성능 개선/신규 채용 현황/보안 점검 결과/마케팅 캠페인 성과/데이터 파이프라인 안정화\n- **일시**: 2026-08-27 (목) 10:00 ~ 10:30\n- **주관자**: 조은우\n- **참석자**: 서예린(발표자), 문승현(발표자), 남궁민(발표자), 배수지(발표자), 홍지호(발표자), 임하늘, 노준영\n\n## A/I List (사전 액션 아이템)\n사전에 계획된 A/I 없음.\n\n## Agenda 논의 내용\n\n### 1. 모바일 앱 성능 개선 (서예린)\n- 앱 시작 시간 3.2초 → 1.8초로 단축\n- 크래시율 0.8% → 0.2%로 감소\n- 메모리 사용량 15% 절감 (참석자 질의 있었음)\n- 다음 분기 목표: 앱 시작 시간 1.2초\n\n### 2. 신규 채용 현황 (문승현)\n- 채용 공고 12건, 지원자 340명 접수\n- 최종 합격 8명, 평균 채용 소요 기간 26일\n- 백엔드·프론트 직군 경쟁률이 가장 높음 (참석자 질의 있었음)\n- 다음 분기 채용 목표: 6명\n\n### 3. 보안 점검 결과 (남궁민)\n- 취약점 총 42건 발견, 이 중 심각 3건은 즉시 패치 완료\n- 중간 등급 15건은 2주 내 조치 예정\n- 외부 침투 테스트 통과\n\n### 4. 마케팅 캠페인 성과 (배수지)\n- 노출 120만, 클릭률 3.4%, 전환 850건, RS(ROAS) 4.2배\n- 20대 타겟층 반응이 가장 높음 (참석자 질의 있었음)\n- 다음 캠페인은 리타겟팅 강화 방향으로 진행 예정\n\n### 5. 데이터 파이프라인 안정화 (홍지호)\n- 배치 실패율 12% → 2%로 감소\n- 평균 지연 시간 45분 → 12분으로 단축\n- 실패 시 자동 알림체계 신설 (참석자 질의 있었음)\n- 다음 목표: 실패율 1% 이하\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 보안 취약점 중간 등급 15건 조치 | 남궁민 | 2주 내 |\n| 앱 시작 시간 1.2초 목표 달성 위한 성능 개선 지속 | 서예린 | 다음 분기 |\n| 신규 채용 목표 6명 채용 진행 | 문승현 | 다음 분기 |\n| 리타겟팅 강화 마케팅 캠페인 진행 | 배수지 | 다음 캠페인 |\n| 데이터 파이프라인 실패율 1% 이하 목표 관리 | 홍지호 | - |\n| 오늘 논의 내용 회의로그로 정리하여 공유 | 조은우 | - |\n\n## 태그\n#배치테스트5회차 #모바일앱성능개선 #신규채용현황 #보안점검결과 #마케팅캠페인성과 #데이터파이프라인안정화 #크래시율감소 #취약점패치 #리타겟팅캠페인",
-    "authorId": "",
-    "comments": [],
-    "createdAt": "2026-08-21T13:58:04.153Z",
-    "updatedAt": "2026-08-21T14:18:57.914Z"
-  },
-  {
-    "id": "b5bc2169-4bca-4adc-b92b-c093a43eaa9f",
-    "title": "배치테스트 6회차 - 보안 점검 결과/마케팅 캠페인 성과",
-    "date": "2026-08-28",
-    "startTime": "10:00",
-    "endTime": "10:30",
-    "organizer": "남궁민",
-    "secretary": "",
-    "attendees": [
-      {
-        "id": "배수지",
-        "name": "배수지",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "홍지호",
-        "name": "홍지호",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "임하늘",
-        "name": "임하늘",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      }
-    ],
-    "actionItems": [],
-    "agenda": [
-      {
-        "no": 1,
-        "title": "보안 점검 결과",
-        "durationMinutes": 1,
-        "material": "보안-점검-결과.xlsx",
-        "materialPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/보안-점검-결과.xlsx",
-        "materialMdPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/보안-점검-결과.md",
-        "presenter": "배수지"
-      },
-      {
-        "no": 2,
-        "title": "마케팅 캠페인 성과",
-        "durationMinutes": 1,
-        "material": "마케팅-캠페인-성과.pptx",
-        "materialPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/마케팅-캠페인-성과.pptx",
-        "materialMdPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/마케팅-캠페인-성과.md",
-        "presenter": "홍지호"
-      }
-    ],
-    "audio": {
-      "fileName": "배치테스트-6회차-보안-점검-결과-마케팅-캠페인-성과.wav",
-      "durationSec": 91.32000000000001,
-      "preprocessing": {
-        "vocalIsolation": false,
-        "noiseRemoval": false,
-        "normalize": false
-      },
-      "transcriptSegments": [
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 0,
-          "endSec": 3.34,
-          "text": "안녕하세요. 배치 테스트 6회차 회의를 시작하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 4.8,
-          "endSec": 9.06,
-          "text": "오늘은 보안 점검 결과, 마케팅 캠페인 성과 순서로 진행하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 11.06,
-          "endSec": 13.18,
-          "text": "안녕하세요. 배수지입니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 14.08,
-          "endSec": 22.04,
-          "text": "보안 점검 결과 관련해서 말씀드리면 취약점 총 42건 발견, 심각 3건 즉시 패치 완료."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 23.36,
-          "endSec": 28.240000000000002,
-          "text": "중간 15건은 2주 내 조치 예정 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 28.24,
-          "endSec": 36.06,
-          "text": "네. 중간 15건은 2주 내 조치 예정 부분이고, 외부 침투 테스트 통과."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 37.12,
-          "endSec": 37.839999999999996,
-          "text": "감사합니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 39.339999999999996,
-          "endSec": 43.04,
-          "text": "다음은 홍지호님. 마케팅 캠페인 성과 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 44.980000000000004,
-          "endSec": 47.4,
-          "text": "안녕하세요. 홍지호입니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 48.480000000000004,
-          "endSec": 51.4,
-          "text": "마케팅 캠페인 성과 관련해서 말씀드리면"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 51.4,
-          "endSec": 60.519999999999996,
-          "text": "노출 120만에 클릭률 3.4%, 전환 850건, 아르스 4.2배."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 61.8,
-          "endSec": 66.22,
-          "text": "20대 타겟층 반응이 가장 높은 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 67.88,
-          "endSec": 74.6,
-          "text": "네. 20대 타겟층 반응이 가장 높은 부분이고, 다음 캠페인은 리타겟팅 강화."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 74.6,
-          "endSec": 77.14,
-          "text": "모두 수고하셨습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 78.46,
-          "endSec": 81.33999999999999,
-          "text": "오늘 논의된 내용은 회의록으로 정리해서 공유 드리겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 82.78,
-          "endSec": 84.25999999999999,
-          "text": "이상으로 회의를 마치겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 84.26,
-          "endSec": 85.98,
-          "text": "자세히 설명해 주실 수 있습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 86.04,
-          "endSec": 86.48,
-          "text": "감사합니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 86.60000000000001,
-          "endSec": 89.9,
-          "text": "오늘 논의된 내용은 hmmm3.2배."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 90.32000000000001,
-          "endSec": 91.32000000000001,
-          "text": "어디까지는?"
-        }
-      ],
-      "speakerMap": {
-        "SPEAKER_02": "남궁민",
-        "SPEAKER_00": "배수지",
-        "SPEAKER_01": "홍지호"
-      },
-      "analyzedAt": "2026-08-21T14:01:52.809Z",
-      "audioPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/배치테스트-6회차-보안-점검-결과-마케팅-캠페인-성과.wav",
-      "transcriptPath": "2026-08-28-배치테스트 6회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/배치테스트-6회차-보안-점검-결과-마케팅-캠페인-성과-stt-transcript.txt"
-    },
-    "minutes": "# 배치테스트 6회차 - 보안 점검 결과/마케팅 캠페인 성과\n\n## 회의 기본정보\n- **제목**: 배치테스트 6회차 - 보안 점검 결과/마케팅 캠페인 성과\n- **일시**: 2026-08-28 10:00-10:30\n- **주관자**: 남궁민\n- **참석자**: 배수지(발표자), 홍지호(발표자), 임하늘\n\n## A/I List (사전 액션 아이템)\n사전에 계획된 A/I List 없음.\n\n## Agenda 논의 내용\n\n### 1. 보안 점검 결과 (발표자: 배수지)\n- 취약점 총 42건 발견\n- 심각도 '심각' 등급 3건은 즉시 패치 완료\n- 중간 위험도 15건은 2주 내 조치 예정\n- 외부 침투 테스트 통과\n- (질의) 주관자가 \"중간 15건 2주 내 조치 예정\" 항목에 대해 추가 설명 요청 → 배수지가 조치 일정과 외부 침투 테스트 통과 결과로 답변\n\n### 2. 마케팅 캠페인 성과 (발표자: 홍지호)\n- 노출 120만 건, 클릭률 3.4%, 전환 850건, ROAS(광고 수익률) 4.2배\n- 20대 타겟층 반응이 가장 높게 나타남\n- 다음 캠페인은 리타겟팅 강화 방향으로 진행 예정\n- (질의) 주관자가 \"20대 타겟층 반응이 가장 높은 부분\"에 대해 추가 설명 요청 → 홍지호가 반응 결과 및 향후 방향(리타겟팅 강화)으로 답변\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 중간 위험도 취약점 15건 조치 | 배수지 | 2주 내 |\n| 리타겟팅 강화 캠페인 기획 | 홍지호 | - |\n| 회의록 정리 및 공유 | 남궁민 | - |\n\n## 태그\n#보안점검 #취약점조치 #침투테스트 #마케팅캠페인 #전환율 #리타겟팅 #배치테스트",
-    "authorId": "",
-    "comments": [],
-    "createdAt": "2026-08-21T14:00:27.005Z",
-    "updatedAt": "2026-08-21T14:18:57.943Z"
-  },
-  {
-    "id": "df667fb9-f54f-4452-9ba9-1880a5948f72",
-    "title": "배치테스트 7회차 - 데이터 파이프라인 안정화/사내 헬프데스크 통계/물류센터 자동화 파일럿",
-    "date": "2026-08-29",
-    "startTime": "10:00",
-    "endTime": "10:30",
-    "organizer": "임하늘",
-    "secretary": "",
-    "attendees": [
-      {
-        "id": "노준영",
-        "name": "노준영",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "윤서진",
-        "name": "윤서진",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "한지민",
-        "name": "한지민",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "조은우",
-        "name": "조은우",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      },
-      {
-        "id": "서예린",
-        "name": "서예린",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      }
-    ],
-    "actionItems": [],
-    "agenda": [
-      {
-        "no": 1,
-        "title": "데이터 파이프라인 안정화",
-        "durationMinutes": 1,
-        "material": "데이터-파이프라인-안정화.pdf",
-        "materialPath": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/데이터-파이프라인-안정화.pdf",
-        "materialMdPath": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/데이터-파이프라인-안정화.md",
-        "presenter": "노준영"
-      },
-      {
-        "no": 2,
-        "title": "사내 헬프데스크 통계",
-        "durationMinutes": 1,
-        "material": "사내-헬프데스크-통계.xlsx",
-        "materialPath": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/사내-헬프데스크-통계.xlsx",
-        "materialMdPath": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/사내-헬프데스크-통계.md",
-        "presenter": "윤서진"
-      },
-      {
-        "no": 3,
-        "title": "물류센터 자동화 파일럿",
-        "durationMinutes": 1,
-        "material": "물류센터-자동화-파일럿.pptx",
-        "materialPath": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/물류센터-자동화-파일럿.pptx",
-        "materialMdPath": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/materials/물류센터-자동화-파일럿.md",
-        "presenter": "한지민"
-      }
-    ],
-    "audio": {
-      "fileName": "배치테스트-7회차-데이터-파이프라인-안정화-사내-헬프데스크-통계-물류센터-자동화-파일럿.wav",
-      "durationSec": 117.14,
-      "preprocessing": {
-        "vocalIsolation": false,
-        "noiseRemoval": false,
-        "normalize": false
-      },
-      "transcriptSegments": [
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 0,
-          "endSec": 3.64,
-          "text": "안녕하세요. 배치 테스트 7회차 회의를 시작하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 4.6000000000000005,
-          "endSec": 10.98,
-          "text": "오늘은 데이터 파이프라인 안정화, 사내 헬프데스크 통계, 물류센터 자동화 파일럿 순서로 진행하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 12.620000000000001,
-          "endSec": 14.14,
-          "text": "안녕하세요. 노준영입니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 15.06,
-          "endSec": 20.14,
-          "text": "데이터 파이프라인 안정화 관련해서 말씀드리면 배치 실패율 12% 2%로 감소."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 20.96,
-          "endSec": 22.88,
-          "text": "평균 지연시간 45분 12분."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 24.42,
-          "endSec": 28.580000000000002,
-          "text": "실패 시 자동 알림체계 신설 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 30,
-          "endSec": 35.18,
-          "text": "네. 실패 시 자동 알림체계 신설 부분이고, 다음 목표, 실패율 1% 이하."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 36.6,
-          "endSec": 41.84,
-          "text": "감사합니다. 다음은 윤서진님, 사내 헬프데스크 통계 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 43.34,
-          "endSec": 45.2,
-          "text": "안녕하세요. 윤서진입니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 46.379999999999995,
-          "endSec": 51.58,
-          "text": "사내 헬프데스크 통계 관련해서 말씀드리면 이번 분기문의 620건 접수."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 52.6,
-          "endSec": 54.72,
-          "text": "평균 처리시간 3.1시간."
+          "startSec": 154.94,
+          "endSec": 162.18,
+          "text": "다만 이전 과정에서 일부 로그 수집 파이프라인의 지연이 있었고, 현재는 모두 정상화된 상태입니다."
         },
         {
           "speaker": "SPEAKER_04",
-          "startSec": 54.72,
-          "endSec": 62.6,
-          "text": "만족도 82점, 100점 만점, 부분은 좀 더 자세히 설명해 주실 수 있나요?"
+          "startSec": 163.78,
+          "endSec": 165.84,
+          "text": "이전 과정에서 장애는 없었나요?"
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 167.72,
+          "endSec": 170.9,
+          "text": "짧은 점검 시간 외에는 서비스 중단 없이 완료했습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 170.9,
+          "endSec": 176.1,
+          "text": "클라우드 전환 이후 비용 변화는 어떻게 되나요?"
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 177.78,
+          "endSec": 185.4,
+          "text": "초기에는 이중 운영 비용이 있었지만, 다음 달부터는 기존 대비 약 15% 절감될 것으로 예상됩니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 187.12,
+          "endSec": 187.58,
+          "text": "감사합니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 189.16,
+          "endSec": 192.22,
+          "text": "마지막으로 고객지원팀 최하은님 발표해 주시죠."
         },
         {
           "speaker": "SPEAKER_02",
-          "startSec": 64.6,
-          "endSec": 71.08,
-          "text": "네. 만족도 82점, 100점 만점, 부분이고, 반복문의 유형 상위 3개 파악."
+          "startSec": 192.22,
+          "endSec": 210.28,
+          "text": "챗봇 1차 응대 비중을 늘리고, 상담사 배정 로직을 개편해서 평균 응답 시간이 40% 단축됐습니다."
         },
         {
-          "speaker": "SPEAKER_01",
-          "startSec": 71.08,
-          "endSec": 78.06,
-          "text": "감사합니다. 다음은 한지민님, 물류센터 자동화 파일럿 발표 부탁드립니다."
+          "speaker": "SPEAKER_02",
+          "startSec": 211.72,
+          "endSec": 215.5,
+          "text": "고객 만족도 조사에서도 전분기 대비 점수가 상승했습니다."
         },
         {
-          "speaker": "SPEAKER_03",
-          "startSec": 79.62,
-          "endSec": 81.67999999999999,
-          "text": "안녕하세요. 한지민입니다."
+          "speaker": "SPEAKER_02",
+          "startSec": 217.1,
+          "endSec": 221.28,
+          "text": "챗봇 응대 비중이 늘면서 고객 불만은 없었나요?"
         },
         {
-          "speaker": "SPEAKER_03",
-          "startSec": 82.92,
-          "endSec": 86.25999999999999,
-          "text": "물류센터 자동화 파일럿 관련해서 말씀드리면,"
+          "speaker": "SPEAKER_02",
+          "startSec": 222.22,
+          "endSec": 229.56,
+          "text": "초반에는 일부 불만이 있었지만, 단순 무늬 위주로 챗봇을 활용하도록 조정한 뒤 개선됐습니다."
         },
         {
-          "speaker": "SPEAKER_03",
-          "startSec": 86.78,
-          "endSec": 89,
-          "text": "피킹 속도 40% 향상,"
+          "speaker": "SPEAKER_06",
+          "startSec": 231.38,
+          "endSec": 235.07999999999998,
+          "text": "상담사 배정 로직은 구체적으로 어떻게 바뀌었나요?"
         },
         {
-          "speaker": "SPEAKER_03",
-          "startSec": 90.14,
-          "endSec": 94.02,
-          "text": "오배송률 1.2%, 0.3%로 감소."
+          "speaker": "SPEAKER_02",
+          "startSec": 236.57999999999998,
+          "endSec": 240.46,
+          "text": "무늬 유형별로 전문 상담사를 자동으로 매칭하도록 변경했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
-          "startSec": 94.02,
-          "endSec": 99.88,
-          "text": "투자비 회수 14개월 예상 부분은 좀 더 자세히 설명해 주실 수 있나요?"
+          "speaker": "SPEAKER_04",
+          "startSec": 242.5,
+          "endSec": 245.26,
+          "text": "다음 분기 목표 응답 시간은 어느 정도인가요?"
         },
         {
-          "speaker": "SPEAKER_03",
-          "startSec": 101.47999999999999,
-          "endSec": 107.16,
-          "text": "네. 투자비 회수 14개월 예상 부분이고, 2호 물류센터 확대 검토 중."
+          "speaker": "SPEAKER_02",
+          "startSec": 246.8,
+          "endSec": 251.2,
+          "text": "현재보다 추가로 10% 더 단축하는 것을 목표로 하고 있습니다."
         },
         {
-          "speaker": "SPEAKER_01",
-          "startSec": 109.03999999999999,
-          "endSec": 110.3,
-          "text": "모두 수고하셨습니다."
+          "speaker": "SPEAKER_04",
+          "startSec": 252.22,
+          "endSec": 255.4,
+          "text": "네, 모든 팀 발표 잘 들었습니다."
         },
         {
-          "speaker": "SPEAKER_01",
-          "startSec": 110.3,
-          "endSec": 114.46,
-          "text": "오늘 논의된 내용은 회의록으로 정리해서 공유 드리겠습니다."
+          "speaker": "SPEAKER_04",
+          "startSec": 256.56,
+          "endSec": 259.86,
+          "text": "오늘 나온 의견들은 회의록에 정리해서 공유하겠습니다."
         },
         {
-          "speaker": "SPEAKER_01",
-          "startSec": 115.46,
-          "endSec": 117.14,
+          "speaker": "SPEAKER_04",
+          "startSec": 261.12,
+          "endSec": 262.64,
+          "text": "다들 수고 많으셨습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 263.74,
+          "endSec": 265.42,
           "text": "이상으로 회의를 마치겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 265.42,
+          "endSec": 266.98,
+          "text": "도 wallet"
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 266.98,
+          "endSec": 268.38,
+          "text": "다르셨기"
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 268.38,
+          "endSec": 270.86,
+          "text": "자동화"
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 270.86,
+          "endSec": 272.94,
+          "text": "service"
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 273.16,
+          "endSec": 275.90000000000003,
+          "text": "카드"
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 275.90000000000003,
+          "endSec": 276.84000000000003,
+          "text": "그리고"
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 276.94,
+          "endSec": 282.44,
+          "text": "project"
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 282.44,
+          "endSec": 286.78000000000003,
+          "text": "bro Global"
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 286.8,
+          "endSec": 287.1,
+          "text": "역사"
         }
       ],
       "speakerMap": {
-        "SPEAKER_01": "임하늘",
-        "SPEAKER_00": "노준영",
-        "SPEAKER_02": "윤서진",
-        "SPEAKER_04": "서예린",
-        "SPEAKER_03": "한지민"
+        "SPEAKER_04": "미등록 화자 1",
+        "SPEAKER_03": "미등록 화자 2",
+        "SPEAKER_05": "미등록 화자 3",
+        "SPEAKER_00": "미등록 화자 4",
+        "SPEAKER_02": "미등록 화자 5",
+        "SPEAKER_06": "미등록 화자 6",
+        "SPEAKER_01": "미등록 화자 7"
       },
-      "analyzedAt": "2026-08-21T14:03:27.277Z",
-      "audioPath": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/배치테스트-7회차-데이터-파이프라인-안정화-사내-헬프데스크-통계-물류센터-자동화-파일럿.wav",
-      "transcriptPath": "2026-08-29-배치테스트 7회차 - 데이터 파이프라인 안정화_사내 헬프데스크 통계_물류센터 자동화 파일럿/audio/배치테스트-7회차-데이터-파이프라인-안정화-사내-헬프데스크-통계-물류센터-자동화-파일럿-stt-transcript.txt"
+      "analyzedAt": "2026-08-25T13:42:20.867Z",
+      "audioPath": "2026-08-21-3분기 프로젝트 진행 현황 공유 회의/audio/meeting-8speakers-ko.wav",
+      "transcriptPath": "2026-08-21-3분기 프로젝트 진행 현황 공유 회의/audio/3분기-프로젝트-진행-현황-공유-회의-stt-transcript.txt"
     },
-    "minutes": "# 배치테스트 7회차 - 데이터 파이프라인 안정화/사내 헬프데스크 통계/물류센터 자동화 파일럿\n\n## 회의 기본정보\n- **제목**: 배치테스트 7회차 - 데이터 파이프라인 안정화/사내 헬프데스크 통계/물류센터 자동화 파일럿\n- **일시**: 2026-08-29 10:00-10:30\n- **주관자**: 임하늘\n- **참석자**: 노준영(발표자), 윤서진(발표자), 한지민(발표자), 조은우, 서예린\n\n## A/I List (사전 액션 아이템)\n- 사전 A/I 없음\n\n## Agenda 논의 내용\n\n### 1. 데이터 파이프라인 안정화 (발표자: 노준영)\n- 배치 실패율 12% → 2%로 감소\n- 평균 지연시간 45분 → 12분으로 단축\n- 실패 시 자동 알림체계 신설(질의응답을 통해 상세 설명)\n- 다음 목표: 실패율 1% 이하 달성\n\n### 2. 사내 헬프데스크 통계 (발표자: 윤서진)\n- 이번 분기 문의 620건 접수\n- 평균 처리시간 3.1시간\n- 만족도 82점(100점 만점) — 세부 내용에 대한 질의 있었음\n- 반복 문의 유형 상위 3개 파악 완료\n\n### 3. 물류센터 자동화 파일럿 (발표자: 한지민)\n- 피킹 속도 40% 향상\n- 오배송률 1.2% → 0.3%로 감소\n- 투자비 회수 14개월 예상(질의응답을 통해 상세 설명)\n- 2호 물류센터 확대 적용 검토 중\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 회의 논의 내용 회의록으로 정리 및 공유 | 임하늘 | - |\n| 배치 실패율 1% 이하 달성 목표 추진 | 노준영 | - |\n| 2호 물류센터 자동화 확대 적용 검토 | 한지민 | - |\n\n## 태그\n#배치테스트 #데이터파이프라인안정화 #헬프데스크통계 #물류센터자동화 #실패율감소 #피킹속도향상 #고객만족도",
+    "minutes": "# 3분기 프로젝트 진행 현황 공유 회의록\n\n**일시:** 2026-08-21 (화) 10:00-10:30\n**주관자:** 박지훈\n**참석자:** 김민서, 이수아, 정도윤, 최하은, 강태양, 오유진, 배시온\n\n---\n\n### 🚀 A/I List (사전 액션 아이템)\n*   (사전 계획된 액션 아이템 없음)\n\n---\n\n### 1. 앱 UI 리뉴얼 (김민서)\n\n앱 UI 리뉴얼 현황을 공유했습니다. 주요 진행 내용은 다음과 같습니다.\n\n*   **핵심 개선 사항:** 메인 화면 메뉴 구조를 단순화하고, 신규 기능인 다크 모드를 추가했습니다.\n*   **성과:** 베타 테스트를 진행한 결과, 사용자 만족도가 전분기 대비 15% 상승하는 성과를 거두었습니다.\n*   **향후 계획:** 4분기 초 정식 배포를 목표로 하고 있습니다.\n*   **주요 이슈:** 현재까지 큰 리스크는 없으나, 안드로이드 저사양 기기 대응 테스트가 추가적으로 필요한 상황입니다.\n\n### 2. SNS/인플루언서 마케팅 캠페인 (이수아)\n\n이번 분기 마케팅 캠페인의 성과와 다음 분기 계획을 공유했습니다.\n\n*   **캠페인 개요:** SNS 광고와 인플루언서 협업을 중심으로 캠페인을 진행했습니다. 인플루언서 선정 시 팔로워 수보다는 실제 참여율과 타겟 연령대와의 적합성을 중점으로 고려했습니다.\n*   **성과:** 캠페인 기간 동안 앱 다운로드 수가 전분기 대비 30% 증가했으며, 광고비 대비 전환율 목표치를 성공적으로 상회하는 성과를 달성했습니다.\n*   **향후 계획:** 다음 분기에는 마케팅 예산을 약 20% 증액하여 캠페인을 확대할 계획입니다.\n\n### 3. 온프레미스 → 클라우드 이전 (정도윤)\n\n시스템 인프라의 온프레미스 클라우드 이전 작업 결과를 발표했습니다.\n\n*   **전환 완료:** 온프레미스 서버를 클라우드로의 이전 작업이 무중단으로 성공적으로 완료되었습니다.\n*   **기술적 개선:** 이전 완료 후 평균 응답 속도가 기존 대비 40% 개선되었고, 기존에 발생했던 로그 수집 파이프라인 지연 이슈도 정상화되었습니다.\n*   **재정적 효과:** 초기에는 이중 운영 비용이 발생했으나, 다음 달부터는 기존 대비 약 15%의 비용 절감이 예상됩니다.\n\n### 4. 고객 문의 대응 프로세스 개선 (최하은)\n\n고객 문의 대응 프로세스 개선 성과를 공유하고 향후 목표를 논의했습니다.\n\n*   **주요 개선 사항:**\n    *   **챗봇 역할 확대:** 챗봇의 1차 응대 비중을 확대하여 문의 응대 효율성을 높였습니다.\n    *   **상담사 매칭 로직 개편:** 상담사 배정 로직을 문의 유형별 전문 상담사 자동 매칭 방식으로 개편했습니다.\n*   **성과:** 위의 프로세스 개선을 통해 고객 문의에 대한 평균 응답 시간을 40% 단축시켰고, 고객 만족도 조사 점수 역시 전분기 대비 상승하는 성과를 거두었습니다.\n*   **향후 목표:** 다음 분기에는 현재보다 추가로 10% 더 응답 시간을 단축하는 것을 목표로 하고 있습니다.\n\n---\n\n### ✨ 할일 (Action Items)\n\n| 할일 | 담당자 | 납기 |\n| :--- | :--- | :--- |\n| 앱 UI 리뉴얼: 안드로이드 저사양 기기 대응 테스트 보완 | 김민서 | - |\n| 앱 UI 리뉴얼: 4분기 초 정식 배포 준비 | 김민서 | 4분기 초 |\n| 마케팅: 다음 분기 마케팅 예산 증액 검토 및 반영 | 이수아 | - |\n| 인프라: 클라우드 이전 비용 절감 효과 반영 (15% 절감) | 정도윤 | 다음 달 |\n| 고객지원: 다음 분기 평균 응답 시간 10% 추가 단축 목표 달성 | 최하은 | 차분기 |\n\n---\n## 태그\n3분기현황 UI리뉴얼 마케팅전략 클라우드이전 프로세스개선 서비스효율화 성과공유",
     "authorId": "",
     "comments": [],
-    "createdAt": "2026-08-21T14:02:17.039Z",
-    "updatedAt": "2026-08-21T14:18:57.960Z"
+    "createdAt": "2026-08-25T13:41:37.472Z",
+    "updatedAt": "2026-08-25T13:57:19.931Z"
   },
   {
-    "id": "15fef666-7a2c-4747-a01c-1228605ff5d1",
-    "title": "배치테스트 8회차 - 물류센터 자동화 파일럿",
-    "date": "2026-08-30",
+    "id": "557924b8-a07e-4eff-b831-b19fe78bb35c",
+    "title": "결제 모듈 개발 현황 점검",
+    "date": "2026-08-22",
     "startTime": "10:00",
     "endTime": "10:30",
     "organizer": "한지민",
     "secretary": "",
     "attendees": [
       {
+        "id": "한지민",
+        "name": "한지민",
+        "role": "PM",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      },
+      {
         "id": "조은우",
         "name": "조은우",
-        "role": "",
+        "role": "백엔드팀",
         "isKeyAttendee": true,
         "isPresenter": true
-      },
-      {
-        "id": "서예린",
-        "name": "서예린",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
       }
     ],
     "actionItems": [],
     "agenda": [
       {
         "no": 1,
-        "title": "물류센터 자동화 파일럿",
-        "durationMinutes": 1,
-        "material": "물류센터-자동화-파일럿.pptx",
-        "materialPath": "2026-08-30-배치테스트 8회차 - 물류센터 자동화 파일럿/materials/물류센터-자동화-파일럿.pptx",
-        "materialMdPath": "2026-08-30-배치테스트 8회차 - 물류센터 자동화 파일럿/materials/물류센터-자동화-파일럿.md",
-        "presenter": "조은우"
-      }
-    ],
-    "audio": {
-      "fileName": "배치테스트-8회차-물류센터-자동화-파일럿.wav",
-      "durationSec": 46.760000000000005,
-      "preprocessing": {
-        "vocalIsolation": false,
-        "noiseRemoval": false,
-        "normalize": false
-      },
-      "transcriptSegments": [
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 0,
-          "endSec": 4,
-          "text": "안녕하세요. 배치 테스트 8회차 회의를 시작하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 5.42,
-          "endSec": 9.16,
-          "text": "오늘은 물류센터 자동화 파일럿 순서로 진행하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 11.200000000000001,
-          "endSec": 12.88,
-          "text": "안녕하세요. 조은우입니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 13.86,
-          "endSec": 18.62,
-          "text": "물류센터 자동화 파일럿 관련해서 말씀드리면 피킹속도 40% 향상,"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 19.52,
-          "endSec": 22.580000000000002,
-          "text": "오배송률 1.2%, 0.3%로 감소."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 24.34,
-          "endSec": 28.76,
-          "text": "투자비 회수 14개월 예상 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 30,
-          "endSec": 35.28,
-          "text": "네. 투자비 회수 14개월 예상 부분이고, 2호 물류센터 확대 검토 중."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 36.9,
-          "endSec": 38.32,
-          "text": "모두 수고하셨습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 39.56,
-          "endSec": 43.5,
-          "text": "오늘 논의된 내용은 회의로그로 정리해서 공유 드리겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 44.9,
-          "endSec": 46.760000000000005,
-          "text": "이상으로 회의를 마치겠습니다."
-        }
-      ],
-      "speakerMap": {
-        "SPEAKER_01": "한지민",
-        "SPEAKER_00": "조은우"
-      },
-      "analyzedAt": "2026-08-21T14:04:45.629Z",
-      "audioPath": "2026-08-30-배치테스트 8회차 - 물류센터 자동화 파일럿/audio/배치테스트-8회차-물류센터-자동화-파일럿.wav",
-      "transcriptPath": "2026-08-30-배치테스트 8회차 - 물류센터 자동화 파일럿/audio/배치테스트-8회차-물류센터-자동화-파일럿-stt-transcript.txt"
-    },
-    "minutes": "# 배치테스트 8회차 - 물류센터 자동화 파일럿 회의록\n\n## 회의 기본정보\n- **제목**: 배치테스트 8회차 - 물류센터 자동화 파일럿\n- **일시**: 2026-08-30 10:00-10:30\n- **주관자**: 한지민\n- **참석자**: 조은우(발표자), 서예린\n\n## A/I List (사전 액션 아이템)\n사전에 계획된 A/I 없음.\n\n## Agenda 논의 내용\n\n### 1. 물류센터 자동화 파일럿 (발표자: 조은우)\n조은우가 물류센터 자동화 파일럿 추진 현황을 보고함.\n- 피킹속도 40% 향상\n- 오배송률 1.2% → 0.3%로 감소\n- 투자비 회수 14개월 예상\n- 2호 물류센터 확대 적용 검토 중\n\n한지민이 투자비 회수 14개월 예상 산정 근거에 대해 추가 설명을 요청했고, 조은우는 해당 수치(14개월)를 재확인하며 2호 물류센터 확대 검토 계획을 이어서 보고함.\n\n## 할일\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 회의 논의 내용 회의로그로 정리하여 공유 | 한지민 | - |\n\n## 태그\n#물류센터자동화 #파일럿 #피킹속도 #오배송률 #투자비회수 #배치테스트",
-    "authorId": "",
-    "comments": [],
-    "createdAt": "2026-08-21T14:04:00.093Z",
-    "updatedAt": "2026-08-21T14:18:57.968Z"
-  },
-  {
-    "id": "da3609e5-c4ea-4a05-977c-0a37ef2861e6",
-    "title": "배치테스트 9회차 - 모바일 앱 성능 개선/신규 채용 현황/보안 점검 결과/마케팅 캠페인 성과",
-    "date": "2026-08-31",
-    "startTime": "10:00",
-    "endTime": "10:30",
-    "organizer": "문승현",
-    "secretary": "",
-    "attendees": [
-      {
-        "id": "남궁민",
-        "name": "남궁민",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "배수지",
-        "name": "배수지",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "홍지호",
-        "name": "홍지호",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "임하늘",
-        "name": "임하늘",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "노준영",
-        "name": "노준영",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      },
-      {
-        "id": "윤서진",
-        "name": "윤서진",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      }
-    ],
-    "actionItems": [],
-    "agenda": [
-      {
-        "no": 1,
-        "title": "모바일 앱 성능 개선",
-        "durationMinutes": 1,
-        "material": "모바일-앱-성능-개선.pptx",
-        "materialPath": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/materials/모바일-앱-성능-개선.pptx",
-        "materialMdPath": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/materials/모바일-앱-성능-개선.md",
-        "presenter": "남궁민"
-      },
-      {
-        "no": 2,
-        "title": "신규 채용 현황",
-        "durationMinutes": 1,
-        "material": "신규-채용-현황.pdf",
-        "materialPath": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/materials/신규-채용-현황.pdf",
-        "materialMdPath": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/materials/신규-채용-현황.md",
-        "presenter": "배수지"
-      },
-      {
-        "no": 3,
-        "title": "보안 점검 결과",
-        "durationMinutes": 1,
-        "material": "보안-점검-결과.xlsx",
-        "materialPath": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/materials/보안-점검-결과.xlsx",
-        "materialMdPath": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/materials/보안-점검-결과.md",
-        "presenter": "홍지호"
-      },
-      {
-        "no": 4,
-        "title": "마케팅 캠페인 성과",
-        "durationMinutes": 1,
-        "material": "마케팅-캠페인-성과.pptx",
-        "materialPath": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/materials/마케팅-캠페인-성과.pptx",
-        "materialMdPath": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/materials/마케팅-캠페인-성과.md",
-        "presenter": "임하늘"
-      }
-    ],
-    "audio": {
-      "fileName": "배치테스트-9회차-모바일-앱-성능-개선-신규-채용-현황-보안-점검-결과-마케팅-캠페인-성과.wav",
-      "durationSec": 169.68,
-      "preprocessing": {
-        "vocalIsolation": false,
-        "noiseRemoval": false,
-        "normalize": false
-      },
-      "transcriptSegments": [
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 0,
-          "endSec": 4.28,
-          "text": "안녕하세요. 배치 테스트 9회차 회의를 시작하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 6.140000000000001,
-          "endSec": 15.4,
-          "text": "오늘은 모바일 앱 성능 개선, 신규 채용 현황, 보안 점검 결과, 마케팅 캠페인 성과 순서로 진행하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 17.900000000000002,
-          "endSec": 19.78,
-          "text": "안녕하세요. 남국민입니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 21.14,
-          "endSec": 26.92,
-          "text": "모바일 앱 성능 개선 관련해서 말씀드리면 앱 시작 시간 3.2초, 1.8초로 단축,"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 26.92,
-          "endSec": 31.340000000000003,
-          "text": "크래시율 0.8%, 0.2%로 감소."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 33.06,
-          "endSec": 37.06,
-          "text": "메모리 사용량 15% 절감 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 38.64,
-          "endSec": 44.92,
-          "text": "네. 메모리 사용량 15% 절감 부분이고, 다음 분기 목표, 시작 시간 1.2초."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 46.82000000000001,
-          "endSec": 47.540000000000006,
-          "text": "감사합니다."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 49.480000000000004,
-          "endSec": 53.72,
-          "text": "다음은 배수지님, 신규 채용 현황 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 53.72,
-          "endSec": 58.16,
-          "text": "안녕하세요. 배수지입니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 59.1,
-          "endSec": 60.72,
-          "text": "신규 채용 현황 관련해서 말씀드리면,"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 61.879999999999995,
-          "endSec": 70.14,
-          "text": "채용 공고 12건, 지원자 340명 접수, 최종 합격 8명, 평균 채용 소요 26일."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 71.28,
-          "endSec": 76.84,
-          "text": "백엔드 프론트 직군 경쟁률이 가장 높은 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 76.84,
-          "endSec": 85.16,
-          "text": "네. 백엔드 프론트 직군 경쟁률이 가장 높은 부분이고, 다음 분기 채용 목표 6명."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 85.16,
-          "endSec": 87.1,
-          "text": "감사합니다."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 88.53999999999999,
-          "endSec": 93.5,
-          "text": "다음은 홍지호님, 보안 점검 결과 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_03",
-          "startSec": 95.32,
-          "endSec": 98.22,
-          "text": "안녕하세요. 홍지호입니다."
-        },
-        {
-          "speaker": "SPEAKER_03",
-          "startSec": 99.25999999999999,
-          "endSec": 108.1,
-          "text": "보안 점검 결과 관련해서 말씀드리면, 취약점 총 42건 발견, 심각 3건 즉시 패치 완료."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 108.1,
-          "endSec": 113.66,
-          "text": "중간 15건은 2주 내 조치 예정 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_03",
-          "startSec": 115.17999999999999,
-          "endSec": 122.03999999999999,
-          "text": "네. 중간 15건은 2주 내 조치 예정 부분이고, 외부 침투 테스트 통과."
-        },
-        {
-          "speaker": "SPEAKER_03",
-          "startSec": 123.53999999999999,
-          "endSec": 124.03999999999999,
-          "text": "감사합니다."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 124.04,
-          "endSec": 130.04000000000002,
-          "text": "다음은 이만흘님, 마케팅 캠페인 성과 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_04",
-          "startSec": 132.24,
-          "endSec": 134.04000000000002,
-          "text": "안녕하세요. 이만흘입니다."
-        },
-        {
-          "speaker": "SPEAKER_04",
-          "startSec": 135.42000000000002,
-          "endSec": 144.04000000000002,
-          "text": "마케팅 캠페인 성과 관련해서 말씀드리면, 노출 120만에 클릭률 3.4%, 전환 850건, RS 4.2배."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 145.92000000000002,
-          "endSec": 150.82,
-          "text": "20대 타겟층 반응이 가장 높은 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_04",
-          "startSec": 150.82,
-          "endSec": 157.79999999999998,
-          "text": "네. 20대 타겟층 반응이 가장 높은 부분이고, 다음 캠페인은 리타겟팅 강화."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 159.18,
-          "endSec": 159.82,
-          "text": "모두 수고하셨습니다."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 162.28,
-          "endSec": 165.98,
-          "text": "오늘 논의된 내용은 회의로그로 정리해서 공유 드리겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_05",
-          "startSec": 167.82,
-          "endSec": 169.68,
-          "text": "이상으로 회의를 마치겠습니다."
-        }
-      ],
-      "speakerMap": {
-        "SPEAKER_05": "미등록 화자 1",
-        "SPEAKER_01": "미등록 화자 2",
-        "SPEAKER_02": "미등록 화자 3",
-        "SPEAKER_00": "정도윤",
-        "SPEAKER_03": "미등록 화자 4",
-        "SPEAKER_04": "미등록 화자 5"
-      },
-      "analyzedAt": "2026-08-21T14:06:38.267Z",
-      "audioPath": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/audio/배치테스트-9회차-모바일-앱-성능-개선-신규-채용-현황-보안-점검-결과-마케팅-캠페인-성과.wav",
-      "transcriptPath": "2026-08-31-배치테스트 9회차 - 모바일 앱 성능 개선_신규 채용 현황_보안 점검 결과_마케팅 캠페인 성과/audio/배치테스트-9회차-모바일-앱-성능-개선-신규-채용-현황-보안-점검-결과-마케팅-캠페인-성과-stt-transcript.txt"
-    },
-    "minutes": "# 회의록\n\n## 회의 기본정보\n- **제목:** 배치테스트 9회차 - 모바일 앱 성능 개선/신규 채용 현황/보안 점검 결과/마케팅 캠페인 성과\n- **일시:** 2026-08-31 10:00 ~ 10:30\n- **주관자:** 문승현\n\n## 참석자\n- 남궁민 (발표자 - 모바일 앱 성능 개선)\n- 배수지 (발표자 - 신규 채용 현황)\n- 홍지호 (발표자 - 보안 점검 결과)\n- 임하늘 (발표자 - 마케팅 캠페인 성과)\n- 노준영\n- 윤서진\n\n## A/I List (사전 액션 아이템)\n사전 A/I 없음\n\n## 안건별 논의 내용\n\n### 1. 모바일 앱 성능 개선 (발표자: 남궁민)\n- 앱 시작 시간: 3.2초 → 1.8초로 단축\n- 크래시율: 0.8% → 0.2%로 감소\n- 메모리 사용량 15% 절감\n- 다음 분기 목표: 시작 시간 1.2초\n- 참석자로부터 \"메모리 사용량 15% 절감\" 관련 추가 설명 요청이 있었으나, 답변 내용은 대본에 기록되지 않음\n\n### 2. 신규 채용 현황 (발표자: 배수지)\n- 채용 공고 12건, 지원자 340명 접수, 최종 합격 8명\n- 평균 채용 소요 기간 26일\n- 백엔드·프론트 직군 경쟁률이 가장 높음\n- 다음 분기 채용 목표: 6명\n- 참석자로부터 \"백엔드·프론트 직군 경쟁률\" 관련 추가 설명 요청이 있었으나, 답변 내용은 대본에 기록되지 않음\n\n### 3. 보안 점검 결과 (발표자: 홍지호)\n- 취약점 총 42건 발견, 심각 3건은 즉시 패치 완료\n- 중간 등급 15건은 2주 내 조치 예정\n- 외부 침투 테스트 통과\n- 참석자로부터 \"중간 15건 2주 내 조치 예정\" 관련 추가 설명 요청이 있었으나, 답변 내용은 대본에 기록되지 않음\n\n### 4. 마케팅 캠페인 성과 (발표자: 임하늘)\n- 노출 120만 건, 클릭률 3.4%, 전환 850건, ROAS 4.2배\n- 20대 타겟층 반응이 가장 높음\n- 다음 캠페인은 리타겟팅 강화 방향으로 진행 예정\n- 참석자로부터 \"20대 타겟층 반응\" 관련 추가 설명 요청이 있었으나, 답변 내용은 대본에 기록되지 않음\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 앱 시작 시간 1.2초 단축 목표 달성 | 남궁민 | 다음 분기 |\n| 채용 목표 6명 달성 | 배수지 | 다음 분기 |\n| 보안 취약점 중간 등급 15건 조치 | 홍지호 | 2주 내 |\n| 리타겟팅 강화 마케팅 캠페인 진행 | 임하늘 | - |\n| 논의 내용 회의로그 정리 및 공유 | 문승현 | - |\n\n## 태그\n#배치테스트 #모바일앱성능개선 #신규채용현황 #보안점검결과 #마케팅캠페인성과 #크래시율감소 #채용목표 #리타겟팅",
-    "authorId": "",
-    "comments": [],
-    "createdAt": "2026-08-21T14:05:10.669Z",
-    "updatedAt": "2026-08-21T14:24:14.560Z"
-  },
-  {
-    "id": "9548d33e-053d-4a0f-973c-b419ed666129",
-    "title": "배치테스트 10회차 - 보안 점검 결과/마케팅 캠페인 성과",
-    "date": "2026-08-31",
-    "startTime": "10:00",
-    "endTime": "10:30",
-    "organizer": "홍지호",
-    "secretary": "",
-    "attendees": [
-      {
-        "id": "임하늘",
-        "name": "임하늘",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "노준영",
-        "name": "노준영",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "윤서진",
-        "name": "윤서진",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      }
-    ],
-    "actionItems": [],
-    "agenda": [
-      {
-        "no": 1,
-        "title": "보안 점검 결과",
-        "durationMinutes": 1,
-        "material": "보안-점검-결과.xlsx",
-        "materialPath": "2026-08-32-배치테스트 10회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/보안-점검-결과.xlsx",
-        "materialMdPath": "2026-08-32-배치테스트 10회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/보안-점검-결과.md",
-        "presenter": "임하늘"
-      },
-      {
-        "no": 2,
-        "title": "마케팅 캠페인 성과",
-        "durationMinutes": 1,
-        "material": "마케팅-캠페인-성과.pptx",
-        "materialPath": "2026-08-32-배치테스트 10회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/마케팅-캠페인-성과.pptx",
-        "materialMdPath": "2026-08-32-배치테스트 10회차 - 보안 점검 결과_마케팅 캠페인 성과/materials/마케팅-캠페인-성과.md",
-        "presenter": "노준영"
-      }
-    ],
-    "audio": {
-      "fileName": "배치테스트-10회차-보안-점검-결과-마케팅-캠페인-성과.wav",
-      "durationSec": 82.82,
-      "preprocessing": {
-        "vocalIsolation": false,
-        "noiseRemoval": false,
-        "normalize": false
-      },
-      "transcriptSegments": [
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 0,
-          "endSec": 4.64,
-          "text": "안녕하세요. 배치 테스트 10회차 회의를 시작하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 5.9,
-          "endSec": 11.34,
-          "text": "오늘은 보안 점검 결과, 마케팅 캠페인 성과 순서로 진행하겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 13.24,
-          "endSec": 15.06,
-          "text": "안녕하세요. 이만흘입니다."
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 15.860000000000001,
-          "endSec": 22.78,
-          "text": "보안 점검 결과 관련해서 말씀드리면 취약점 총 42건 발견, 심각 3건 즉시 패치 완료."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 23.400000000000002,
-          "endSec": 29.32,
-          "text": "중간 15건은 2주 내 조치 예정 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_02",
-          "startSec": 30,
-          "endSec": 36.36,
-          "text": "네. 중간 15건은 2주 내 조치 예정 부분이고, 외부 침투 테스트 통과."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 37.480000000000004,
-          "endSec": 44.22,
-          "text": "감사합니다. 다음은 노준영님, 마케팅 캠페인 성과 발표 부탁드립니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 45.88,
-          "endSec": 47.42,
-          "text": "안녕하세요. 노준영입니다."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 48.34,
-          "endSec": 56.64,
-          "text": "마케팅 캠페인 성과 관련해서 말씀드리면 노출 120만회, 클릭률 3.4%, 전환 850건, ROAS 4.2배."
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 56.64,
-          "endSec": 63.08,
-          "text": "20대 타겟층 반응이 가장 높은 부분은 좀 더 자세히 설명해 주실 수 있나요?"
-        },
-        {
-          "speaker": "SPEAKER_00",
-          "startSec": 64.72,
-          "endSec": 69.34,
-          "text": "네. 20대 타겟층 반응이 가장 높은 부분이고, 다음 캠페인은 리타겟팅 강화."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 70.64,
-          "endSec": 72.5,
-          "text": "모두 수고하셨습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 72.5,
-          "endSec": 77.82,
-          "text": "오늘 논의된 내용은 회의록으로 정리해서 공유 드리겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 77.82,
-          "endSec": 81.16,
-          "text": "이상으로 회의를 마치겠습니다."
-        },
-        {
-          "speaker": "SPEAKER_01",
-          "startSec": 81.82,
-          "endSec": 82.82,
-          "text": "감사합니다."
-        }
-      ],
-      "speakerMap": {
-        "SPEAKER_01": "미등록 화자 1",
-        "SPEAKER_02": "미등록 화자 2",
-        "SPEAKER_00": "미등록 화자 3"
-      },
-      "analyzedAt": "2026-08-21T14:08:18.974Z",
-      "audioPath": "2026-08-32-배치테스트 10회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/배치테스트-10회차-보안-점검-결과-마케팅-캠페인-성과.wav",
-      "transcriptPath": "2026-08-32-배치테스트 10회차 - 보안 점검 결과_마케팅 캠페인 성과/audio/배치테스트-10회차-보안-점검-결과-마케팅-캠페인-성과-stt-transcript.txt"
-    },
-    "minutes": "# 배치테스트 10회차 - 보안 점검 결과/마케팅 캠페인 성과 회의록\n\n## 회의 기본정보\n- **제목**: 배치테스트 10회차 - 보안 점검 결과/마케팅 캠페인 성과\n- **일시**: 2026-08-32 10:00~10:30\n- **주관자**: 홍지호\n- **참석자**: 임하늘(발표자), 노준영(발표자), 윤서진\n\n## A/I List (사전 계획된 액션 아이템)\n사전 A/I 없음\n\n## Agenda 및 논의 내용\n\n### 1. 보안 점검 결과 (발표자: 임하늘)\n- 취약점 총 42건 발견, 이 중 심각 3건은 즉시 패치 완료\n- 중간 등급 15건은 2주 내 조치 예정\n- 외부 침투 테스트 통과\n- 참석자 질의: 중간 15건 조치 예정 건에 대한 추가 설명 요청 → 2주 내 조치 예정이며 외부 침투 테스트는 이미 통과했다는 답변\n\n### 2. 마케팅 캠페인 성과 (발표자: 노준영)\n- 노출 120만회, 클릭률 3.4%, 전환 850건, ROAS 4.2배 달성\n- 20대 타겟층 반응이 가장 높은 것으로 확인\n- 참석자 질의: 20대 타겟층 반응 관련 추가 설명 요청 → 20대 타겟층 반응이 가장 높음을 재확인, 다음 캠페인은 리타겟팅 강화 방향으로 진행 예정\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 취약점(중간 등급) 15건 조치 | 임하늘 | 2주 내 |\n| 다음 마케팅 캠페인 리타겟팅 강화 진행 | 노준영 | - |\n| 회의 논의 내용 회의록으로 정리하여 공유 | 홍지호 | - |\n\n## 태그\n#보안점검 #취약점패치 #침투테스트 #마케팅캠페인 #ROAS #타겟층분석 #리타겟팅 #배치테스트",
-    "authorId": "",
-    "comments": [],
-    "createdAt": "2026-08-21T14:07:14.160Z",
-    "updatedAt": "2026-08-21T14:24:24.087Z"
-  },
-  {
-    "id": "a374f0ea-bd76-4468-90d2-f1db201989c7",
-    "title": "실험 1번째",
-    "date": "2026-08-24",
-    "startTime": "22:00",
-    "endTime": "22:29",
-    "organizer": "신헌종",
-    "secretary": "김성민",
-    "attendees": [
-      {
-        "id": "973ab4a5-8d5b-47c8-a19c-9681fcadc813",
-        "name": "김규리",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "f7dc966c-207c-4869-8524-f3e0501513a4",
-        "name": "한동환",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": true
-      },
-      {
-        "id": "96281917-c7d5-4472-a689-21c2da7f4ba2",
-        "name": "문일화",
-        "role": "",
-        "isKeyAttendee": true,
-        "isPresenter": false
-      }
-    ],
-    "actionItems": [],
-    "agenda": [
-      {
-        "no": 1,
-        "title": "logic BM 현황",
-        "durationMinutes": 10,
-        "material": "AI 반도체 기술 및 산업 동향.pdf",
-        "materialPath": "2026-08-24-실험 1번째/materials/AI 반도체 기술 및 산업 동향.pdf",
-        "materialMdPath": "2026-08-24-실험 1번째/materials/AI 반도체 기술 및 산업 동향.md",
-        "presenter": "김규리",
-        "presentationSummary": "[발표 정보]와 [참석자 라벨](발표1: 김규리, 발표2: 한동환, 참석1: 문일화, 주관자: 신헌종)을 기준으로 [회의 전체 발언 대본]을 확인했습니다.\n\n제공된 대본에는 \"미등록 화자 1\"이 결제 모듈 개발 완료 및 테스트 일정에 대해 이야기하는 내용만 있으며, 이는 \"logic BM 현황\" 발표(김규리)나 참석자 라벨에 해당하는 발언과 전혀 일치하지 않습니다. 발표 자료(AI 반도체 기술 및 산업 동향) 역시 대본 내용과 주제가 겹치지 않습니다.\n\n즉, 이 발표와 실제로 관련된 구간을 대본에서 찾을 수 없었습니다. 추측해서 내용을 만들어낼 수 없으므로, 정리할 (질문)/(답변)/(의견)/(할일) 항목이 없습니다.\n\n관련 구간이 포함된 정확한 회의 대본을 다시 확인해 주시면 정리를 진행하겠습니다."
-      },
-      {
-        "no": 2,
-        "title": "Project status",
-        "durationMinutes": 10,
-        "material": "AI Art Magazine 2607_s.pdf",
-        "materialPath": "2026-08-24-실험 1번째/materials/AI Art Magazine 2607_s.pdf",
-        "materialMdPath": "2026-08-24-실험 1번째/materials/AI Art Magazine 2607_s.md",
-        "presenter": "한동환"
+        "title": "결제 모듈 개발 진행 상황",
+        "durationMinutes": 5,
+        "material": "결제-모듈-개발-진행-상황.pdf",
+        "materialPath": "2026-08-22-결제 모듈 개발 현황 점검/materials/결제-모듈-개발-진행-상황.pdf",
+        "materialMdPath": "2026-08-22-결제 모듈 개발 현황 점검/materials/결제-모듈-개발-진행-상황.md",
+        "presenter": "조은우",
+        "presentationSummary": "**[발표 내용]**\n*   지난주 결제 모듈 개발을 완료했습니다.\n*   이번 주부터는 테스트를 진행할 예정입니다.\n*   결제 연동 QA 일정 조율이 필요합니다.\n\n**[논의 내용]**\n(질문) 주관자: Do you think we can finish testing by Friday?\n(답변) 발표1: 네. 금요일까지 충분히 마무리할 수 있을 것 같습니다. 추가 인력도 필요 없을 것 같아요."
       }
     ],
     "audio": {
       "fileName": "diarize-2speaker-ko-en.wav",
       "durationSec": 34.34,
       "preprocessing": {
-        "vocalIsolation": true,
-        "noiseRemoval": true,
-        "normalize": true
+        "vocalIsolation": false,
+        "noiseRemoval": false,
+        "normalize": false
       },
       "transcriptSegments": [
         {
-          "speaker": "미등록 화자 1",
+          "speaker": "SPEAKER_01",
           "startSec": 0,
-          "endSec": 2.82,
-          "text": "Good morning, everyone. Let's start today's meeting."
+          "endSec": 7.22,
+          "text": "Good morning everyone. Let's start today's meeting. First, let's review last week's progress on the project."
         },
         {
-          "speaker": "미등록 화자 1",
-          "startSec": 3.8200000000000003,
-          "endSec": 7.18,
-          "text": "First, let's review last week's progress on the project."
+          "speaker": "SPEAKER_00",
+          "startSec": 8.18,
+          "endSec": 15.14,
+          "text": "네. 지난주에는 결제 모듈 개발을 완료했고, 이번 주부터는 테스트를 진행할 예정입니다."
         },
         {
-          "speaker": "미등록 화자 1",
-          "startSec": 8.120000000000001,
-          "endSec": 11.74,
-          "text": "네. 지난주에는 결제 모듈 개발을 완료했고,"
-        },
-        {
-          "speaker": "미등록 화자 1",
-          "startSec": 12.01,
-          "endSec": 15.15,
-          "text": "이번 주부터는 테스트를 진행할 예정입니다."
-        },
-        {
-          "speaker": "미등록 화자 1",
-          "startSec": 16.09,
-          "endSec": 20.21,
+          "speaker": "SPEAKER_01",
+          "startSec": 16.06,
+          "endSec": 20.2,
           "text": "That sounds great. Do you think we can finish testing by Friday?"
         },
         {
-          "speaker": "미등록 화자 1",
-          "startSec": 21.17,
-          "endSec": 25.130000000000003,
-          "text": "네. 금요일까지 충분히 마무리할 수 있을 것 같습니다."
+          "speaker": "SPEAKER_00",
+          "startSec": 21.2,
+          "endSec": 28.42,
+          "text": "네. 금요일까지 충분히 마무리할 수 있을 것 같습니다. 추가 인력도 필요 없을 것 같아요."
         },
         {
-          "speaker": "미등록 화자 1",
-          "startSec": 25.42,
-          "endSec": 28.44,
-          "text": "추가 인력도 필요 없을 것 같아요"
-        },
-        {
-          "speaker": "미등록 화자 1",
-          "startSec": 28.44,
-          "endSec": 31.480000000000004,
-          "text": "Perfect, thank you for the update"
-        },
-        {
-          "speaker": "미등록 화자 1",
-          "startSec": 31.480000000000004,
+          "speaker": "SPEAKER_01",
+          "startSec": 28.42,
           "endSec": 34.34,
-          "text": "Let's move on to the next agenda item"
+          "text": "Perfect. Thank you for the update. Let's move on to the next agenda item."
         }
       ],
       "speakerMap": {
-        "미등록 화자 1": "미등록 화자 1"
+        "SPEAKER_01": "미등록 화자 1",
+        "SPEAKER_00": "미등록 화자 2"
       },
-      "analyzedAt": "2026-08-24T13:39:07.551Z",
-      "audioPath": "2026-08-24-실험 1번째/audio/diarize-2speaker-ko-en.wav",
-      "transcriptPath": "2026-08-24-실험 1번째/audio/diarize-2speaker-ko-en-stt-transcript.txt"
+      "analyzedAt": "2026-08-25T13:43:47.419Z",
+      "audioPath": "2026-08-22-결제 모듈 개발 현황 점검/audio/diarize-2speaker-ko-en.wav",
+      "transcriptPath": "2026-08-22-결제 모듈 개발 현황 점검/audio/결제-모듈-개발-현황-점검-stt-transcript.txt"
     },
-    "minutes": "파일 쓰기 권한이 없어 저장하지 못했습니다. 대신 아래에 회의록 전체 내용을 바로 보여드립니다.\n\n---\n\n# 회의록 - 실험 1번째\n\n## 회의 기본정보\n\n| 항목 | 내용 |\n|------|------|\n| 제목 | 실험 1번째 |\n| 일시 | 2026-08-24 22:00 ~ 22:29 |\n| 주관자 | 신헌종 |\n| 참석자 | 김규리 (발표자), 한동환 (발표자), 문일화 |\n\n## 사전 A/I List\n\n사전에 계획된 A/I(Action Item)는 없습니다.\n\n## Agenda 논의 내용\n\n### 1. logic BM 현황 (발표자: 김규리, 10분)\n\n제공된 발표 자료(AI 반도체 기술 및 산업 동향)와 참석자 라벨(발표1: 김규리 등)을 기준으로 회의 전체 발언 대본을 확인하였으나, 대본에는 \"미등록 화자 1\"이 결제 모듈 개발 및 테스트 일정에 대해 언급하는 내용만 존재하며, 이는 \"logic BM 현황\" 발표 주제나 참석자 라벨과 일치하지 않습니다. 따라서 본 안건과 실제로 대응되는 발언 구간을 찾을 수 없어, 추측성 정리 없이 논의 내용을 기재하지 않습니다. 정확한 회의 대본이 추가로 확인되면 별도로 보완이 필요합니다.\n\n### 2. Project status (발표자: 한동환, 10분)\n\n본 안건에 대해서는 별도의 발표별 정리가 제공되지 않아, 발언 대본을 직접 근거로 요약합니다. (단, 해당 구간의 발언자는 대본상 \"미등록 화자 1\"로만 표시되어 있어 특정 참석자로 단정하지 않습니다.)\n\n- 지난주 진행 상황 리뷰 결과, 결제 모듈 개발이 완료되었음을 확인함.\n- 이번 주부터 결제 모듈에 대한 테스트를 진행할 예정임.\n- 금요일까지 테스트를 충분히 마무리할 수 있을 것으로 예상되며, 추가 인력 투입은 필요하지 않을 것으로 판단됨.\n\n## 할일\n\n| 할일 | 담당자 | 납기 |\n|------|--------|------|\n| 결제 모듈 테스트 진행 및 완료 | 미등록 화자 1 | 금요일 |\n| \"logic BM 현황\" 안건과 실제로 일치하는 회의 대본 구간 재확인 필요 | - | - |\n\n## 태그\n\n#실험1번째 #logicBM현황 #프로젝트현황 #결제모듈 #테스트일정\n\n---\n\n파일로 저장을 원하시면 저장 경로에 대한 쓰기 권한을 승인해 주시거나, 원하시는 다른 경로를 알려주세요.",
-    "authorId": "d3515e17-60e6-4137-a1ee-a315d6ce1c9d",
+    "minutes": "# 회의록: 결제 모듈 개발 현황 점검\n\n**일시:** 2026-08-22 (토) 10:00 – 10:30\n**장소:** (지정되지 않음)\n**작성자:** 회의 진행자 도우미\n**참석자:** 한지민 (PM), 조은우 (백엔드팀)\n\n---\n\n### 💡 사전 액션 아이템 (A/I List)\n*   없음 (회의 시작 전 사전 계획된 액션 아이템은 없습니다.)\n\n---\n\n### 📝 논의 내용 요약\n\n**1. 결제 모듈 개발 진행 상황 (발표자: 조은우)**\n조은우 발표자는 결제 모듈 개발 현황을 보고하며, 개발 단계가 순조롭게 진행되었음을 공유했습니다.\n*   **진행 현황:** 지난주에 결제 모듈 개발을 성공적으로 완료했습니다.\n*   **향후 계획:** 금주부터 본격적인 테스트(Testing)를 진행할 예정이며, 최종적으로 금요일까지 테스트를 마무리할 수 있을 것으로 예상되었습니다.\n*   **주요 논의 사항:** 남은 일정에 맞춰 결제 연동 QA(Quality Assurance) 일정을 조율하는 것이 핵심 과제로 논의되었습니다.\n\n---\n\n### ✨ 할일 (Action Items)\n\n| 할일 | 담당자 | 납기 |\n| :--- | :--- | :--- |\n| 결제 연동 QA 일정 조율 및 확정 | (미정) | - |\n| 결제 모듈 테스트 금요일까지 완료 | (조은우) | - |\n\n---\n\n## 태그\n결제모듈개발 개발현황 테스트진행 QA일정 백엔드개발 PM체크업",
+    "authorId": "",
     "comments": [],
-    "createdAt": "2026-08-24T13:42:42.020Z",
-    "updatedAt": "2026-08-24T13:42:42.020Z"
+    "createdAt": "2026-08-25T13:43:28.862Z",
+    "updatedAt": "2026-08-25T13:57:20.153Z"
+  },
+  {
+    "id": "154abe5a-fdbf-41bd-8efd-b237dfbbbea8",
+    "title": "4분기 실행 현황 점검 회의",
+    "date": "2026-08-23",
+    "startTime": "10:00",
+    "endTime": "10:30",
+    "organizer": "김도현",
+    "secretary": "정하은",
+    "attendees": [
+      {
+        "id": "박서연",
+        "name": "박서연",
+        "role": "백엔드팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "이준호",
+        "name": "이준호",
+        "role": "고객지원팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "최유나",
+        "name": "최유나",
+        "role": "인프라팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "정하은",
+        "name": "정하은",
+        "role": "간사",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      },
+      {
+        "id": "강민재",
+        "name": "강민재",
+        "role": "참석자",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "AI 코드리뷰 파일럿",
+        "durationMinutes": 5,
+        "material": "AI-코드리뷰-파일럿.pptx",
+        "materialPath": "2026-08-23-4분기 실행 현황 점검 회의/materials/AI-코드리뷰-파일럿.pptx",
+        "materialMdPath": "2026-08-23-4분기 실행 현황 점검 회의/materials/AI-코드리뷰-파일럿.md",
+        "presenter": "박서연",
+        "presentationSummary": "**[발표 내용]**\nAI 코드리뷰 파일럿을 진행했으며, 주요 내용은 다음과 같습니다.\n*   **적용 개요:** 8월 한 달간 백엔드팀 12명을 대상으로 PR 340건에 AI 코드리뷰 어시스턴트를 적용했습니다.\n*   **주요 성과:**\n    *   리뷰 대기시간을 18시간에서 6시간으로 단축했습니다.\n    *   스타일 지적의 72%를 자동으로 처리할 수 있었습니다.\n*   **추가 성과 (오타뮤은):** 현재 오타뮤은은 9% 정도이며, 특히 보안 관련 오타에 민감하여 9월부터는 해당 기능을 더 튜닝할 계획입니다.\n\n**[논의 내용]**\n(질문) 미등록 화자 2: 혹시 오타뮤은 어느 정도인가요?\n(답변) 미등록 화자 2: 현재 오타뮤은은 9% 정도이고, 특히 보안 관련 오타에 민감해서 9월부터는 이를 좀 더 튜닝할 계획입니다."
+      },
+      {
+        "no": 2,
+        "title": "고객 지원 프로세스 개선",
+        "durationMinutes": 5,
+        "material": "고객-지원-프로세스-개선.pdf",
+        "materialPath": "2026-08-23-4분기 실행 현황 점검 회의/materials/고객-지원-프로세스-개선.pdf",
+        "materialMdPath": "2026-08-23-4분기 실행 현황 점검 회의/materials/고객-지원-프로세스-개선.md",
+        "presenter": "이준호",
+        "presentationSummary": "**[발표 내용]**\n고객 지원 프로세스 개선 발표는 다음 세 가지 핵심 개선 사항을 포함합니다:\n*   **1차 응대 챗봇 도입:** 이를 통해 고객의 평균 응답 시간이 단축되었습니다.\n*   **상담사 배정 로직 개편:** 상담사 배정 체계를 개선했습니다.\n*   **고객 만족도 조사 점수 상승:** 전반적인 고객 만족도 조사 점수 상승이라는 성과를 거두었습니다.\n\n**[논의 내용]**\n(해당 주제와 관련된 논의 내용은 없습니다.)"
+      },
+      {
+        "no": 3,
+        "title": "인프라 비용 집행",
+        "durationMinutes": 5,
+        "material": "인프라-비용-집행.pdf",
+        "materialPath": "2026-08-23-4분기 실행 현황 점검 회의/materials/인프라-비용-집행.pdf",
+        "materialMdPath": "2026-08-23-4분기 실행 현황 점검 회의/materials/인프라-비용-집행.md",
+        "presenter": "최유나",
+        "presentationSummary": "**발표 자료와 발언 대본 내용이 다릅니다.**\n\n[발표 내용]\n*   클라우드 비용 전분기 대비 최적화를 목표로 함.\n*   예약 인스턴스 전환을 통해 비용 절감이 이루어질 예정임.\n*   다음 분기 예산안 초안을 공유할 계획임.\n\n[논의 내용]"
+      }
+    ],
+    "audio": {
+      "fileName": "meeting-3presenter-2attendee-ko.wav",
+      "durationSec": 162.86,
+      "preprocessing": {
+        "vocalIsolation": false,
+        "noiseRemoval": false,
+        "normalize": false
+      },
+      "transcriptSegments": [
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 0,
+          "endSec": 4.36,
+          "text": "안녕하세요. 오늘 3분기 실행 현황 점검 회의를 시작하겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 5.58,
+          "endSec": 11.5,
+          "text": "Artificial Intelligence 코드리뷰 파일럿, 고객 지원 프로세스 개선, 인프라 비용 집행 순서로 진행하겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 12.780000000000001,
+          "endSec": 15.08,
+          "text": "먼저 박서연님 발표 부탁드립니다."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 17.1,
+          "endSec": 19.72,
+          "text": "안녕하세요. 백엔드팀 박서연입니다."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 21.3,
+          "endSec": 24.740000000000002,
+          "text": "이번 분기에 Artificial Intelligence 코드리뷰 어시스턴트 파일럿을 진행했습니다."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 24.74,
+          "endSec": 35.099999999999994,
+          "text": "8월 한 달간 백엔드팀 12명을 대상으로 PR340건에 적용했고, 리뷰 대기시간이 18시간에서 6시간으로 줄었습니다."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 36.78,
+          "endSec": 39.739999999999995,
+          "text": "스타일 지적의 72%는 자동으로 처리됐습니다."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 42.32,
+          "endSec": 44.019999999999996,
+          "text": "혹시 오타뮤은 어느 정도인가요?"
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 46.18,
+          "endSec": 53.739999999999995,
+          "text": "현재 오타뮤은 9% 정도이고, 특히 보안 관련 오타이 민감해서 9월부터는 누를 좀 더 튜닝할 계획입니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 54.74,
+          "endSec": 56.6,
+          "text": "네, 감사합니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 57.84,
+          "endSec": 61.86,
+          "text": "다음은 이준호님, 고객 지원 프로세스 개선안 발표해 주세요."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 63.06,
+          "endSec": 66.48,
+          "text": "안녕하세요. Copper Seed팀 이준호입니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 67.44,
+          "endSec": 74.76,
+          "text": "현재 평균 최초 응답시간이 4.2시간인데, 반보문의가 전체 티켓의 41%를 차지하고 있습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 76,
+          "endSec": 82.82000000000001,
+          "text": "자동응답챗봇과 티켓 자동 라우팅을 도입해서 응답시간을 1.5시간까지 줄이는 게 목표입니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 82.82,
+          "endSec": 86.25999999999999,
+          "text": "챗봇은 언제쯤 배포되나요?"
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 88.02,
+          "endSec": 90.83999999999999,
+          "text": "10월 중에 1차 배포를 목표로 하고 있습니다."
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 92.47999999999999,
+          "endSec": 94.91999999999999,
+          "text": "반복 문의 비중이 생각보다 높네요."
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 96.02,
+          "endSec": 99.82,
+          "text": "챗봇 도입되면 저희 쪽 문의도 좀 줄어들 것 같아 기대됩니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 99.82,
+          "endSec": 104.82,
+          "text": "네, 배포 이후의 효과를 다시 공유 드리겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 106.82,
+          "endSec": 107.86,
+          "text": "좋습니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 109,
+          "endSec": 112.88,
+          "text": "마지막으로 최윤아님, 인프라 비용 현황 발표 부탁드립니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 112.88,
+          "endSec": 116.38,
+          "text": "인프라 팀 최윤아입니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 117.66,
+          "endSec": 125.94,
+          "text": "3분기 인프라 예산은 6,900만원이고, 현재까지 6,550만원을 집행해서 집행률은 95%입니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 127.16,
+          "endSec": 133.85999999999999,
+          "text": "클라우드 서버는 94%, (Register) Clock DriverN 트래픽은 121%로 예산을 초과했습니다."
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 133.86,
+          "endSec": 138.26000000000002,
+          "text": "(Register) Clock DriverN 비용이 왜 초과됐나요?"
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 139.64000000000001,
+          "endSec": 145,
+          "text": "8월에 프로모션 트래픽이 급증해서 (Register) Clock DriverN 비용이 예산보다 많이 나갔습니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 146.18,
+          "endSec": 151.86,
+          "text": "백업DR 쪽은 리전 이전이 지연되면서 집행률이 68%로 낮게 나온 상황입니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 151.86,
+          "endSec": 155.96,
+          "text": "네, 모두 수고하셨습니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 157,
+          "endSec": 159.86,
+          "text": "오늘 논의된 내용은 회의록으로 정리해서 공유 드리겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 161.8,
+          "endSec": 162.86,
+          "text": "이상으로 회의를 마치겠습니다."
+        }
+      ],
+      "speakerMap": {
+        "SPEAKER_01": "미등록 화자 1",
+        "SPEAKER_02": "미등록 화자 2",
+        "SPEAKER_04": "미등록 화자 3",
+        "SPEAKER_03": "미등록 화자 4",
+        "SPEAKER_00": "미등록 화자 5"
+      },
+      "analyzedAt": "2026-08-25T13:44:37.140Z",
+      "audioPath": "2026-08-23-4분기 실행 현황 점검 회의/audio/meeting-3presenter-2attendee-ko.wav",
+      "transcriptPath": "2026-08-23-4분기 실행 현황 점검 회의/audio/4분기-실행-현황-점검-회의-stt-transcript.txt"
+    },
+    "minutes": "# 4분기 실행 현황 점검 회의 회의록\n\n**일시:** 2026-08-23 (일) 10:00-10:30\n**주관자:** 김도현\n**참석자:** 박서연, 이준호, 최유나, 정하은, 강민재\n\n---\n\n### ✅ 사전 액션 아이템 (A/I List)\n\n*   현재 진행된 사전 액션 아이템은 없습니다.\n\n---\n\n### 📝 안건별 주요 논의 및 결정 사항\n\n#### 1. AI 코드리뷰 파일럿 현황 (발표자: 박서연)\n*   **실행 개요:** 8월 한 달간 백엔드팀 12명을 대상으로 PR 340건에 AI 코드리뷰 어시스턴트를 파일럿 적용했습니다.\n*   **주요 성과:**\n    *   리뷰 대기 시간이 기존 18시간에서 6시간으로 대폭 단축되었습니다.\n    *   스타일 지적 항목 중 72%를 자동으로 처리할 수 있었습니다.\n*   **추가 점검 및 계획:** 현재 '오타뮤은' 수준은 9%로 측정되었으며, 특히 보안 관련 오타에 민감한 부분이 확인되었습니다. 이에 따라 9월부터 보안 취약 오타 방지 기능을 더욱 정교하게 튜닝할 계획입니다.\n\n#### 2. 고객 지원 프로세스 개선 현황 (발표자: 이준호)\n*   **핵심 개선 사항:** 고객 지원 프로세스를 개선하기 위해 세 가지 영역에 집중했습니다.\n    *   **1차 응대 챗봇 도입:** 챗봇 도입을 통해 고객의 평균 최초 응답 시간을 단축시키는 것을 목표로 합니다.\n    *   **상담사 배정 로직 개편:** 상담사 배정 체계를 개선하여 효율성을 높였습니다.\n    *   **만족도 제고:** 전반적인 고객 만족도 조사 점수 상승이라는 성과를 거두었습니다.\n*   **진행 계획:** 자동응답 챗봇과 티켓 자동 라우팅 시스템을 도입하여 응답시간을 1.5시간까지 줄이는 것을 목표로 합니다. 챗봇은 10월 중 1차 배포를 목표로 진행할 예정입니다.\n\n#### 3. 인프라 비용 집행 현황 (발표자: 최유나)\n*   **예산 집행 현황:** 3분기 인프라 예산은 6,900만원이며, 현재 6,550만원을 집행하여 집행률은 95%입니다.\n*   **비용 초과 요인:** 'Clock DriverN' 트래픽 비용이 121%로 예산을 초과했습니다. 이는 8월 프로모션 트래픽 급증에 따른 것이었습니다.\n*   **비용 최적화 방안:**\n    *   장기적으로 클라우드 비용 전반의 최적화를 목표로 합니다.\n    *   예약 인스턴스 전환 등을 통해 비용 절감을 이룰 계획입니다.\n    *   다만, 백업DR 쪽은 리전 이전 작업 지연으로 인해 집행률이 68%로 낮게 나온 상황입니다.\n*   **향후 계획:** 다음 분기 예산안 초안을 공유하고 비용 집행 계획을 논의할 예정입니다.\n\n---\n\n### ✅ 할일\n\n| 할일 | 담당자 | 납기 |\n| :--- | :--- | :--- |\n| 9월부터 오타뮤은 보안 관련 오타 기능 튜닝 진행 | 박서연 | 9월 |\n| 고객 지원 챗봇 1차 배포 진행 | 이준호 | 10월 중 |\n| 다음 분기 인프라 예산안 초안 공유 및 검토 | 최유나 | - |\n\n### ## 태그\n#실행현황점검 #AI코드리뷰 #고객지원프로세스 #인프라비용 #프로세스개선 #파일럿테스트 #백엔드개발 #챗봇도입 #분기점검 #클라우드비용",
+    "authorId": "",
+    "comments": [],
+    "createdAt": "2026-08-25T13:44:10.107Z",
+    "updatedAt": "2026-08-25T13:57:20.221Z"
+  },
+  {
+    "id": "d7cf26f9-f274-4e2a-9582-8549c6faf53c",
+    "title": "4분기 프로젝트 진행 현황 공유 회의",
+    "date": "2026-08-24",
+    "startTime": "10:00",
+    "endTime": "10:30",
+    "organizer": "박지훈",
+    "secretary": "오유진",
+    "attendees": [
+      {
+        "id": "김민서",
+        "name": "김민서",
+        "role": "신제품개발팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "이수아",
+        "name": "이수아",
+        "role": "마케팅팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "정도윤",
+        "name": "정도윤",
+        "role": "인프라팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "최하은",
+        "name": "최하은",
+        "role": "고객지원팀",
+        "isKeyAttendee": true,
+        "isPresenter": true
+      },
+      {
+        "id": "강태양",
+        "name": "강태양",
+        "role": "참석자",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      },
+      {
+        "id": "오유진",
+        "name": "오유진",
+        "role": "간사",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      },
+      {
+        "id": "배시온",
+        "name": "배시온",
+        "role": "참석자",
+        "isKeyAttendee": true,
+        "isPresenter": false
+      }
+    ],
+    "actionItems": [],
+    "agenda": [
+      {
+        "no": 1,
+        "title": "앱 UI 리뉴얼",
+        "durationMinutes": 5,
+        "material": "앱-UI-리뉴얼.pptx",
+        "materialPath": "2026-08-24-4분기 프로젝트 진행 현황 공유 회의/materials/앱-UI-리뉴얼.pptx",
+        "materialMdPath": "2026-08-24-4분기 프로젝트 진행 현황 공유 회의/materials/앱-UI-리뉴얼.md",
+        "presenter": "김민서",
+        "presentationSummary": "**[발표 내용]**\n*   **메인 화면 메뉴 구조 단순화:** 메인 화면의 메뉴 구조를 단순화하여 사용자 경험을 개선합니다.\n*   **다크 모드 신규 추가:** 사용자 편의성을 높이기 위해 다크 모드를 신규로 추가할 예정입니다.\n*   **배포 목표 및 만족도:** 베타 테스트 만족도가 15% 상승하였으며, 4분기 초 정식 배포를 목표로 합니다.\n\n**[논의 내용]**\n(정보 없음)"
+      },
+      {
+        "no": 2,
+        "title": "SNS/인플루언서 마케팅 캠페인",
+        "durationMinutes": 5,
+        "material": "SNS-인플루언서-마케팅-캠페인.pptx",
+        "materialPath": "2026-08-24-4분기 프로젝트 진행 현황 공유 회의/materials/SNS-인플루언서-마케팅-캠페인.pptx",
+        "materialMdPath": "2026-08-24-4분기 프로젝트 진행 현황 공유 회의/materials/SNS-인플루언서-마케팅-캠페인.md",
+        "presenter": "이수아",
+        "presentationSummary": "**[발표 내용]**\n*   **캠페인 개요:** SNS 광고와 인플루언서 협업을 중심으로 진행되는 마케팅 캠페인입니다.\n*   **주요 성과:** 앱 다운로드 건수가 전 분기 대비 30% 증가했으며, 광고비 대비 전환율 목표치를 성공적으로 상회했습니다.\n\n**[논의 내용]**"
+      },
+      {
+        "no": 3,
+        "title": "온프레미스 → 클라우드 이전",
+        "durationMinutes": 5,
+        "material": "온프레미스-클라우드-이전.pdf",
+        "materialPath": "2026-08-24-4분기 프로젝트 진행 현황 공유 회의/materials/온프레미스-클라우드-이전.pdf",
+        "materialMdPath": "2026-08-24-4분기 프로젝트 진행 현황 공유 회의/materials/온프레미스-클라우드-이전.md",
+        "presenter": "정도윤",
+        "presentationSummary": "**[발표 내용]**\n**온프레미스 → 클라우드 이전**\n*   **이전 결과:** 무중단으로 이전 작업을 완료했습니다.\n*   **성능 개선:** 평균 응답 속도가 기존 대비 40% 개선되었습니다.\n*   **기술 이슈:** 이전 과정 중 발생했던 로그 수집 파이프라인 지연 이슈는 정상화 완료했습니다.\n\n**[논의 내용]**\n(질문) 주관자: 이전 과정에서 장애는 없었나요?\n(답변) 발표3: 짧은 점검 시간 외에는 서비스 중단 없이 완료했습니다.\n(질문) 참석3: 클라우드 전환 이후 비용 변화는 어떻게 되나요?\n(답변) 발표3: 초기에는 이중 운영 비용이 있었지만, 다음 달부터는 기존 대비 약 15% 절감될 것으로 예상됩니다."
+      },
+      {
+        "no": 4,
+        "title": "고객 문의 대응 프로세스 개선",
+        "durationMinutes": 5,
+        "material": "고객-문의-대응-프로세스-개선.pdf",
+        "materialPath": "2026-08-24-4분기 프로젝트 진행 현황 공유 회의/materials/고객-문의-대응-프로세스-개선.pdf",
+        "materialMdPath": "2026-08-24-4분기 프로젝트 진행 현황 공유 회의/materials/고객-문의-대응-프로세스-개선.md",
+        "presenter": "최하은",
+        "presentationSummary": "**[발표 내용]**\n고객 문의 대응 프로세스 개선의 주요 성과는 다음과 같습니다.\n1. **챗봇 활용 확대:** 챗봇이 1차 응대하는 비중을 늘려 프로세스를 개선했습니다.\n2. **응답 시간 단축:** 상담사 배정 로직을 개편하여 고객 문의에 대한 평균 응답 시간을 기존 대비 40% 단축했습니다.\n3. **고객 만족도 개선:** 프로세스 개선 결과, 고객 만족도 조사 점수가 전분기 대비 상승하는 성과를 거두었습니다.\n\n**[논의 내용]**\n(질문) 발표1: 챗봇 응대 비중 증가와 관련하여 고객 불만 발생 여부에 대해 질문했습니다.\n(답변) 발표4 최하은: 초반에 일부 불만은 있었으나, 고객이 단순 문의 위주로 챗봇을 활용하도록 조정하고 최적화한 이후 개선되었습니다.\n(질문) 발표1: 상담사 배정 로직이 구체적으로 어떻게 바뀌었는지 질문했습니다.\n(답변) 발표4 최하은: 문의의 무늬(유형)별로 전문 상담사가 자동으로 매칭되도록 로직을 변경했습니다.\n(질문) 발표1: 다음 분기의 목표 응답 시간을 문의했습니다.\n(답변) 발표4 최하은: 현재 수준보다 추가로 10% 더 응답 시간을 단축하는 것을 목표로 하고 있습니다."
+      }
+    ],
+    "audio": {
+      "fileName": "meeting-8speakers-ko.wav",
+      "durationSec": 290.86,
+      "preprocessing": {
+        "vocalIsolation": false,
+        "noiseRemoval": false,
+        "normalize": false
+      },
+      "transcriptSegments": [
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 0,
+          "endSec": 4.88,
+          "text": "안녕하세요. 오늘 3분기 프로젝트 진행 현황 공유 회의를 시작하겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 6.12,
+          "endSec": 14.26,
+          "text": "오늘은 신제품 개발팀, 마케팅팀, 인프라팀, 고객지원팀 순서로 발표를 듣고 질의응답 시간을 갖겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 15.5,
+          "endSec": 19.3,
+          "text": "먼저 신제품 개발팀 김민서님, 발표 부탁드립니다."
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 21.28,
+          "endSec": 24.400000000000002,
+          "text": "안녕하세요. 신제품 개발팀 김민서입니다."
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 24.94,
+          "endSec": 29.240000000000002,
+          "text": "이번 분기에는 앱 UI 리뉴얼 프로젝트를 진행했습니다."
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 30,
+          "endSec": 37.66,
+          "text": "기존 사용자 피드백을 반영해서 메인 화면의 메뉴 구조를 단순화했고, 다크 모드를 새로 추가했습니다."
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 39.2,
+          "endSec": 46.14,
+          "text": "베타 테스트 결과 사용자 만족도가 15% 상승했고, 4분기 초에 정식 배포를 목표로 하고 있습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 48.2,
+          "endSec": 50.74,
+          "text": "베타 테스트는 몇 명을 대상으로 진행하셨나요?"
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 51.86,
+          "endSec": 58.78,
+          "text": "베타 테스트는 사내 직원과 일부 파워 유저를 포함해서 총 200명을 대상으로 진행했습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 60,
+          "endSec": 63.1,
+          "text": "정식 배포 일정에 리스크는 없나요?"
+        },
+        {
+          "speaker": "SPEAKER_03",
+          "startSec": 64.9,
+          "endSec": 71.58,
+          "text": "현재까지는 큰 리스크는 없지만, 안드로이드 저사양 기기 대응 테스트가 조금 더 필요한 상황입니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 73.76,
+          "endSec": 74.5,
+          "text": "네, 감사합니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 75.78,
+          "endSec": 79.66,
+          "text": "다음은 마케팅팀 이수아님, 캠페인 성과 발표해 주시죠."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 79.66,
+          "endSec": 84,
+          "text": "안녕하세요. 마케팅팀 이수아입니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 85.14,
+          "endSec": 90.53999999999999,
+          "text": "이번 분기 신규 캠페인은 SNS 광고와 인플루언서 협업을 중심으로 진행했습니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 91.66,
+          "endSec": 99.5,
+          "text": "캠페인 기간 동안 앱 다운로드 수가 전분기 대비 30% 증가했고, 광고비 대비 전환율도 목표치를 상회했습니다."
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 99.5,
+          "endSec": 104.5,
+          "text": "다음 분기에는 예산을 조금 더 확대해서 진행할 계획입니다."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 106.5,
+          "endSec": 109.52,
+          "text": "인플루언서 협업은 어떤 기준으로 선정하셨나요?"
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 111.78,
+          "endSec": 117.5,
+          "text": "팔로워 수보다는 실제 참여율과 우리 타겟 연령대와의 적합성을 우선적으로 고려했습니다."
+        },
+        {
+          "speaker": "SPEAKER_06",
+          "startSec": 119.28,
+          "endSec": 122.26,
+          "text": "다음 분기 예산 확대 규모는 어느 정도인가요?"
+        },
+        {
+          "speaker": "SPEAKER_00",
+          "startSec": 122.26,
+          "endSec": 127.94,
+          "text": "현재 검토 중이지만 약 20% 정도 증액을 계획하고 있습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 129.78,
+          "endSec": 130.68,
+          "text": "좋은 성과네요."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 131.78,
+          "endSec": 134.66,
+          "text": "이어서 인프라팀 정도윤님 발표 부탁드립니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 136.04000000000002,
+          "endSec": 139.54000000000002,
+          "text": "안녕하세요. 인프라팀 정도윤입니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 140.72,
+          "endSec": 145.9,
+          "text": "이번 분기에는 온프레미스 서버를 클라우드로 이전하는 작업을 진행했습니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 145.9,
+          "endSec": 153.9,
+          "text": "이전 작업은 무중단으로 완료했고, 평균 응답 속도가 기존 대비 40% 개선됐습니다."
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 154.94,
+          "endSec": 162.18,
+          "text": "다만 이전 과정에서 일부 로그 수집 파이프라인의 지연이 있었고, 현재는 모두 정상화된 상태입니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 163.78,
+          "endSec": 165.84,
+          "text": "이전 과정에서 장애는 없었나요?"
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 167.72,
+          "endSec": 170.9,
+          "text": "짧은 점검 시간 외에는 서비스 중단 없이 완료했습니다."
+        },
+        {
+          "speaker": "SPEAKER_05",
+          "startSec": 170.9,
+          "endSec": 176.1,
+          "text": "클라우드 전환 이후 비용 변화는 어떻게 되나요?"
+        },
+        {
+          "speaker": "SPEAKER_01",
+          "startSec": 177.78,
+          "endSec": 185.4,
+          "text": "초기에는 이중 운영 비용이 있었지만, 다음 달부터는 기존 대비 약 15% 절감될 것으로 예상됩니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 187.12,
+          "endSec": 187.58,
+          "text": "감사합니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 189.16,
+          "endSec": 192.22,
+          "text": "마지막으로 고객지원팀 최하은님 발표해 주시죠."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 192.22,
+          "endSec": 210.28,
+          "text": "챗봇 1차 응대 비중을 늘리고, 상담사 배정 로직을 개편해서 평균 응답 시간이 40% 단축됐습니다."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 211.72,
+          "endSec": 215.5,
+          "text": "고객 만족도 조사에서도 전분기 대비 점수가 상승했습니다."
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 217.1,
+          "endSec": 221.28,
+          "text": "챗봇 응대 비중이 늘면서 고객 불만은 없었나요?"
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 222.22,
+          "endSec": 229.56,
+          "text": "초반에는 일부 불만이 있었지만, 단순 무늬 위주로 챗봇을 활용하도록 조정한 뒤 개선됐습니다."
+        },
+        {
+          "speaker": "SPEAKER_06",
+          "startSec": 231.38,
+          "endSec": 235.07999999999998,
+          "text": "상담사 배정 로직은 구체적으로 어떻게 바뀌었나요?"
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 236.57999999999998,
+          "endSec": 240.46,
+          "text": "무늬 유형별로 전문 상담사를 자동으로 매칭하도록 변경했습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 242.5,
+          "endSec": 245.26,
+          "text": "다음 분기 목표 응답 시간은 어느 정도인가요?"
+        },
+        {
+          "speaker": "SPEAKER_02",
+          "startSec": 246.8,
+          "endSec": 251.2,
+          "text": "현재보다 추가로 10% 더 단축하는 것을 목표로 하고 있습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 252.22,
+          "endSec": 255.4,
+          "text": "네, 모든 팀 발표 잘 들었습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 256.56,
+          "endSec": 259.86,
+          "text": "오늘 나온 의견들은 회의록에 정리해서 공유하겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 261.12,
+          "endSec": 262.64,
+          "text": "다들 수고 많으셨습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 263.74,
+          "endSec": 265.42,
+          "text": "이상으로 회의를 마치겠습니다."
+        },
+        {
+          "speaker": "SPEAKER_04",
+          "startSec": 265.42,
+          "endSec": 290.86,
+          "text": "네, 오늘은 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 매일 flow를 șt 3개 translated by"
+        }
+      ],
+      "speakerMap": {
+        "SPEAKER_04": "미등록 화자 1",
+        "SPEAKER_03": "미등록 화자 2",
+        "SPEAKER_05": "미등록 화자 3",
+        "SPEAKER_00": "미등록 화자 4",
+        "SPEAKER_02": "미등록 화자 5",
+        "SPEAKER_06": "미등록 화자 6",
+        "SPEAKER_01": "미등록 화자 7"
+      },
+      "analyzedAt": "2026-08-25T13:46:06.238Z",
+      "audioPath": "2026-08-24-4분기 프로젝트 진행 현황 공유 회의/audio/meeting-8speakers-ko.wav",
+      "transcriptPath": "2026-08-24-4분기 프로젝트 진행 현황 공유 회의/audio/4분기-프로젝트-진행-현황-공유-회의-stt-transcript.txt"
+    },
+    "minutes": "# 4분기 프로젝트 진행 현황 공유 회의록\n\n**일시:** 2026-08-24 (월) 10:00 - 10:30\n**참석자:** 강태양, 배시온, 오유진 (간사)\n**발표자:** 김민서 (신제품개발팀), 이수아 (마케팅팀), 정도윤 (인프라팀), 최하은 (고객지원팀)\n**주관자:** 박지훈\n\n---\n\n### 🎯 사전 액션 아이템 (A/I List)\n*본 회의 시작 전 계획된 사전 액션 아이템은 없습니다.*\n\n---\n\n### 📝 논의 내용 요약 및 결정 사항\n\n#### 1. 앱 UI 리뉴얼 (발표자: 김민서)\n*   **주요 성과:** 앱 사용자 경험 개선을 목표로 메인 화면의 메뉴 구조를 단순화하고, 사용자 편의 기능을 위해 다크 모드를 신규로 추가했습니다.\n*   **성과 및 목표:** 베타 테스트 결과 사용자 만족도가 15% 상승하는 성과를 거두었습니다. 4분기 초 정식 배포를 목표로 프로젝트를 추진합니다.\n*   **향후 조치:** 안드로이드 저사양 기기에 대한 추가 테스트가 필요하다는 의견이 있었습니다.\n\n#### 2. SNS/인플루언서 마케팅 캠페인 (발표자: 이수아)\n*   **주요 성과:** 이번 분기 마케팅 캠페인은 SNS 광고 및 인플루언서 협업을 중심으로 진행되었습니다. 그 결과, 앱 다운로드 수가 전 분기 대비 30% 증가했으며, 광고비 대비 전환율 목표치를 상회했습니다.\n*   **다음 계획:** 다음 분기 마케팅 예산을 확대할 계획이며, 팔로워 수보다는 실제 참여율과 타겟 연령대와의 적합성을 중심으로 인플루언서를 선정했습니다.\n\n#### 3. 온프레미스 → 클라우드 이전 (발표자: 정도윤)\n*   **이전 결과:** 온프레미스 서버를 클라우드로의 이전 작업을 무중단으로 성공적으로 완료했습니다.\n*   **성능 개선:** 이전 작업 후 평균 응답 속도가 기존 대비 40% 개선되는 효과를 보였습니다.\n*   **기술 안정화:** 이전 과정 중 발생했던 로그 수집 파이프라인 지연 이슈는 현재 정상화되었으며, 서비스 중단 없이 완료되었습니다.\n*   **재무 전망:** 초기에는 이중 운영 비용이 발생했으나, 다음 달부터는 기존 운영 비용 대비 약 15%의 비용 절감이 예상됩니다.\n\n#### 4. 고객 문의 대응 프로세스 개선 (발표자: 최하은)\n*   **주요 성과:** 고객 문의 대응 프로세스 개선을 통해 고객 만족도 조사 점수가 전분기 대비 상승했습니다.\n*   **세부 개선 내용:**\n    *   **챗봇 활용 확대:** 챗봇이 1차 응대하는 비중을 늘렸습니다. 초기에는 일부 불만이 있었으나, 단순 문의 유형 위주로 활용하도록 고객을 최적화한 후 개선되었습니다.\n    *   **응답 시간 단축:** 상담사 배정 로직을 문의 유형별(무늬)로 자동 매칭되도록 개편하여, 고객 문의에 대한 평균 응답 시간을 기존 대비 40% 단축했습니다.\n*   **다음 목표:** 현재 수준의 응답 시간을 넘어, 다음 분기에는 추가적으로 10% 더 응답 시간을 단축하는 것을 목표로 설정했습니다.\n\n---\n\n### 📋 할일\n\n| 할일 | 담당자 | 납기 |\n| :--- | :--- | :--- |\n| 앱 UI 리뉴얼 (다크 모드 등) 4분기 초 정식 배포 준비 및 안드로이드 저사양 기기 대응 테스트 수행 | 김민서 (신제품개발팀) | - |\n| 마케팅 캠페인 예산 증액 계획 수립 및 실행 | 이수아 (마케팅팀) | - |\n| 클라우드 이전 후 비용 절감 추이 모니터링 및 분석 | 정도윤 (인프라팀) | - |\n| 고객 문의 대응 프로세스 개선을 통한 응답 시간 추가 10% 단축 목표 수립 및 적용 | 최하은 (고객지원팀) | - |\n\n---\n## 태그\n#프로젝트현황 #앱UI리뉴얼 #마케팅캠페인 #클라우드이전 #고객경험개선 #프로세스개선 #4분기계획 #서비스안정화",
+    "authorId": "",
+    "comments": [],
+    "createdAt": "2026-08-25T13:45:26.135Z",
+    "updatedAt": "2026-08-25T13:57:20.274Z"
   }
 ]

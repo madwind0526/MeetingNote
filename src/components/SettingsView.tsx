@@ -9,6 +9,7 @@ import {
   Image,
   KeyRound,
   Mic,
+  MessageSquare,
   Monitor,
   Settings2,
   ShieldCheck,
@@ -276,6 +277,25 @@ export function SettingsView({
             );
           })}
         </div>
+
+        <div className="field full" style={{ marginTop: 12 }}>
+          <label className="settings-section-title" htmlFor="settings-system-message">
+            <MessageSquare size={16} />
+            System Message
+          </label>
+          <span className="field-hint">
+            질문·회의록 작성·발표 내용 정리 등 모든 LLM 요청에 공통으로 적용되는 지침입니다. 어조나 정리 방식을 지정할 수 있습니다.
+          </span>
+          <textarea
+            id="settings-system-message"
+            onChange={(event) => onUpdate("systemMessage", event.target.value)}
+            placeholder={
+              "당신은 핵심만 정리하는 실무형 회의록 작성자입니다.\n발표 자료와 대본을 바탕으로 결정사항과 액션아이템 중심으로 간결하게 기록하세요.\n배경 설명은 최소화하고, 결론과 담당자·기한이 드러나도록 정리하세요."
+            }
+            rows={4}
+            value={settings.systemMessage}
+          />
+        </div>
       </section>
 
       <section className="settings-section">
@@ -409,6 +429,25 @@ export function SettingsView({
               value={settings.vadOffset}
             />
             VAD offset (발화 종료 민감도)
+          </label>
+        </div>
+
+        <p className="settings-section-desc" style={{ marginTop: 12 }}>
+          무음 임계값 - 이 값보다 조용한 구간은 STT에 보내지 않아 없는 말을 만들어내는 환각을 방지합니다. WhisperX 외의 모든 프로바이더에도
+          적용됩니다.
+        </p>
+        <div className="field" style={{ display: "flex", gap: 24 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              max={0.5}
+              min={0}
+              onChange={(event) => onUpdate("silenceThreshold", Number(event.target.value))}
+              step={0.001}
+              style={{ width: 72, flexShrink: 0 }}
+              type="number"
+              value={settings.silenceThreshold}
+            />
+            무음 임계값 (환각 방지)
           </label>
         </div>
       </section>

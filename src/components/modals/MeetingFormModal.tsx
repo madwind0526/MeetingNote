@@ -1,7 +1,10 @@
 import { useRef, useState } from "react";
-import { Bot, FileInput, FileText, FolderOpen, Maximize2, Mic, Paperclip, Plus, Trash2, Upload } from "lucide-react";
+import { Bot, Eye, FileInput, FileText, FolderOpen, Maximize2, Mic, Paperclip, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ModalShell } from "./ModalShell";
 import { AudioAnalysisModal } from "./AudioAnalysisModal";
+import { MdViewerModal } from "./MdViewerModal";
 import { PresentationSummaryModal } from "./PresentationSummaryModal";
 import { TranscriptModal } from "./TranscriptModal";
 import type {
@@ -41,6 +44,7 @@ interface MeetingFormModalProps {
   llmProvider: LlmProviderId;
   ollamaConfig: OllamaConfig;
   sttProvider: SttProviderId;
+  silenceThreshold: number;
   // Threaded down to AudioAnalysisModal's word-correction popup so a newly registered 수정 사전
   // entry updates this same shared cache instead of writing to the server behind its back (see
   // App.tsx's `dictionary` state, loaded once per session and otherwise never refetched).
@@ -126,6 +130,7 @@ export function MeetingFormModal({
   llmProvider,
   ollamaConfig,
   sttProvider,
+  silenceThreshold,
   dictionary,
   onDictionaryChange,
   onClose,
@@ -137,6 +142,8 @@ export function MeetingFormModal({
   const [isLoadingExistingAudio, setIsLoadingExistingAudio] = useState(false);
   const [existingAudioLoadError, setExistingAudioLoadError] = useState("");
   const [showTranscriptPopup, setShowTranscriptPopup] = useState(false);
+  const [mdViewerTarget, setMdViewerTarget] = useState<{ path: string; title: string } | null>(null);
+  const [showMinutesPreview, setShowMinutesPreview] = useState(false);
   const [isGeneratingMinutes, setIsGeneratingMinutes] = useState(false);
   const [minutesError, setMinutesError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -755,7 +762,7 @@ export function MeetingFormModal({
                         {item.materialMdPath && (
                           <button
                             className="row-icon-button"
-                            onClick={() => handleOpenMaterial(item.materialMdPath!)}
+                            onClick={() => setMdViewerTarget({ path: item.materialMdPath!, title: item.material || "Markdown 변환본" })}
                             title="Markdown 변환본 열기"
                             type="button"
                           >
@@ -856,7 +863,7 @@ export function MeetingFormModal({
                         {item.materialMdPath && (
                           <button
                             className="row-icon-button"
-                            onClick={() => handleOpenMaterial(item.materialMdPath!)}
+                            onClick={() => setMdViewerTarget({ path: item.materialMdPath!, title: item.material || "Markdown 변환본" })}
                             title="Markdown 변환본 열기"
                             type="button"
                           >
@@ -973,14 +980,35 @@ export function MeetingFormModal({
         </div>
 
         <div className="field full">
-          <label htmlFor="meeting-minutes">회의록</label>
-          <textarea
-            id="meeting-minutes"
-            onChange={(event) => updateField("minutes", event.target.value)}
-            placeholder="회의록 작성 버튼을 누르거나 직접 입력하세요"
-            rows={8}
-            value={draft.minutes}
-          />
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <label htmlFor="meeting-minutes">회의록</label>
+            <button
+              className="ghost-action"
+              onClick={() => setShowMinutesPreview((current) => !current)}
+              style={{ width: "fit-content", marginLeft: "auto" }}
+              type="button"
+            >
+              {showMinutesPreview ? <Pencil size={14} /> : <Eye size={14} />}
+              {showMinutesPreview ? "편집" : "미리보기"}
+            </button>
+          </div>
+          {showMinutesPreview ? (
+            <div className="meeting-minutes-body markdown-body">
+              {draft.minutes.trim() ? (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{draft.minutes}</ReactMarkdown>
+              ) : (
+                "회의록이 아직 작성되지 않았습니다."
+              )}
+            </div>
+          ) : (
+            <textarea
+              id="meeting-minutes"
+              onChange={(event) => updateField("minutes", event.target.value)}
+              placeholder="회의록 작성 버튼을 누르거나 직접 입력하세요"
+              rows={8}
+              value={draft.minutes}
+            />
+          )}
         </div>
       </ModalShell>
 
@@ -996,6 +1024,7 @@ export function MeetingFormModal({
           onComplete={handleAudioComplete}
           onDictionaryChange={onDictionaryChange}
           onRecordingFinalized={handleRecordingFinalized}
+          silenceThreshold={silenceThreshold}
           source={audioSourceMode === "recording" ? { kind: "recording" } : { kind: "file", file: pendingAudioFile as File }}
           sttProvider={sttProvider}
         />
@@ -1007,6 +1036,10 @@ export function MeetingFormModal({
           onClose={() => setShowTranscriptPopup(false)}
           title={`STT 대본 - ${draft.title.trim() || "제목 없음"}`}
         />
+      )}
+
+      {mdViewerTarget && (
+        <MdViewerModal onClose={() => setMdViewerTarget(null)} path={mdViewerTarget.path} title={mdViewerTarget.title} />
       )}
 
       {summaryTargetNo !== null &&

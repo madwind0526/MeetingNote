@@ -60,7 +60,17 @@ function parseSegmentLine(line) {
   };
 }
 
-export async function checkLocalWhisperAvailable() {
+// deep=false (the default) only checks whether the expected install exists on disk - no
+// subprocess spawn, since `whisper -h` loads the whole whisper package (including torch) just to
+// print help text, which is slow enough that running it automatically on every Settings open was
+// a real contributor to a sluggish-feeling UI. deep=true runs the full spawn-based check, for the
+// user's explicit "지금 확인" action.
+export async function checkLocalWhisperAvailable(deep = false) {
+  if (!deep) {
+    const installed = existsSync(DEFAULT_WHISPER_EXE) || Boolean(process.env.MEETINGNOTE_WHISPER_CLI);
+    return { available: installed, version: null };
+  }
+
   try {
     const command = whisperCommand();
     const result = await runCommand(command, ["-h"], { timeoutMs: CHECK_TIMEOUT_MS });

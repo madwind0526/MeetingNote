@@ -2,10 +2,40 @@
 
 ## Current Wave
 
-- **Wave:** B8
-- **Status:** Done - **트랙 A + 트랙 B(B1~B7) 전체 완료**
+- **Wave:** C1
+- **Status:** Done - **오디오 분석 UI 통합 + 1시간 회의 대응 + 사전 치환 버그 수정**
 - **Cache Status:** CLEAN
-- **Last Checkpoint (B8):** `127.0.0.1:5185` 브라우저 접속에서도 설정의 `탐색기 방식` 메뉴가 보이고, 기본 모드는 Playwright `File chooser`, 내장 모드는 Vite `/api/file-navigator/*` fallback 모달로 새 회의록 `회의 음성 파일` 선택이 동작하도록 수정. `npm run build` 통과.
+- **Last Checkpoint (C1, 2026-08-25):** 대규모 단일 세션. 주요 항목:
+  - **오디오 분석 팝업 통합**: 파일 업로드/PC 소리 녹음이 동일한 UI(전처리·엔진·모델·대본 불러오기·
+    화자별 편집)를 쓰도록 통합. 녹음은 팝업이 뜨자마자가 아니라 "분석 시작" 클릭 시점에만 실제 녹음
+    시작(`systemAudioCapture.ts`의 `startRecording()` 분리). 대본 파일 불러오기(`parseTranscriptText`,
+    구분자 무관 파서) + 발언 단위 화자 재배정 드롭다운 추가. 대본 줄 클릭 시 파형에서 해당 구간 하이라이트.
+  - **MD 뷰어**: 첨부 자료의 .md 변환본과 회의록을 외부 앱 대신 앱 내 팝업(`MdViewerModal`,
+    react-markdown)으로 열도록 변경. 회의록 편집 화면에 편집/미리보기 토글 추가.
+  - **1시간 회의 대응**: Anthropic `max_tokens` 1024→8192, Ollama `num_ctx` 명시적 8192 설정(둘 다
+    긴 회의록에서 조용히 잘리거나 앞부분이 잘리는 문제였음). B5(발표 내용 정리)가 전체 대본 대신
+    Agenda 순서+발표 시간으로 추정한 구간만 윈도잉해서 보내도록 변경(`windowTranscriptForAgendaItem`,
+    최대 8000자 캡). B5 출력 포맷을 `[발표 내용]`(자료 우선, 대본은 보조) + `[논의 내용]`
+    ((의견)/(질문)/(답변)/(참고), 발표자 기준 명확히 정의)으로 재작성.
+  - **STT 환각 방지**: 무음 구간(RMS 임계값, Settings에서 조정 가능·기본 0.004)은 STT 호출 자체를
+    건너뛰어 Whisper의 무음 환각(예: "다음 영상에서 만나요") 방지.
+  - **사전(약어/수정) 치환 버그 3단계 수정**: 단순 substring 매치(`CD`가 `CDN` 안에서 매치) →
+    `\p{L}` 경계로 고쳤더니 한글 조사 붙는 정상 케이스(`AI를`)까지 막힘 → 스크립트 인식 경계 +
+    한글 조사 허용 목록으로 해결. 추가로 엔트리를 순차 적용하면 한 엔트리의 치환 결과를 다른 엔트리가
+    또 매치하는 연쇄 버그(`에이아이`→`AI (Artificial Intelligence)`의 "AI"를 별도 `AI` 엔트리가 재매치)가
+    있어, 전체 엔트리를 원본 텍스트 기준으로만 매치 수집 후 단일 패스로 재조립하도록 재설계. 상세는
+    `knowledge/trouble-shooting.md`.
+  - **Settings**: System Message 필드 신규(모든 LLM 호출에 공통 프리펜드, `server/llm.mjs`의
+    `resolveSystemPrompt`), 무음 임계값 필드, CPU/GPU·VAD onset/offset 섹션 재배치, 상태 확인을
+    "설치 여부만(파일 존재 체크)" 기본 + "설치 여부 확인" 버튼(페이지 헤더로 이동, 로딩 상태 표시)으로
+    분리 - Claude CLI/Whisper CLI/WhisperX를 매번 spawn해서 확인하던 것이 초기 로딩 지연의 실제 원인
+    중 하나였음.
+  - **시작 성능**: git 기반 Build Version 계산(매 요청마다 `git status --porcelain` 등 3개 subprocess
+    spawn) 제거, `package.json`의 `version`을 그대로 사용하는 수동 버전으로 전환.
+  - **샘플 데이터**: 기존 등록 회의록/음성 프로필 전체 초기화 후, 실제 파이프라인(자료 업로드→MD
+    변환→오디오 등록→STT(Whisper CLI)→B5(Ollama)→B6(Ollama)) 전체를 5회 실행해 샘플 회의록 5건 생성
+    (`tools/e2e/generate-5-samples.mjs`, 기존 test-audio 샘플 오디오 재사용).
+  - `npx tsc -b` 매 변경 후 클린 통과. 커밋/푸시는 `data/attachments`(신규 5건 폴더) 포함해서 별도 진행.
 - **Last Checkpoint:** 오디오 보관 정책(B7) 완료 - roadmap 전제를 재확인 후 정정한 Wave. roadmap은
   "화자별로 분리된 오디오 파일을 완료 후 삭제"를 가정했는데, 실제 코드를 추적해보니 그런 파일은 애초에
   존재하지 않았다(`AudioAnalysisModal`의 "화자별 파형"은 `speakerMasks`로 하나의 공유 오디오 버퍼를
@@ -70,6 +100,8 @@
 | B5 | 발표별 내용 정리(질문/답변/의견/할일 구조화, LLM이 전체 대본에서 관련 구간 탐색) | Done |
 | B6 | 전체 회의록 합성 + 할일 통합 표(기존 "회의록 작성" 버튼 개선) | Done |
 | B7 | 오디오 보관 정책(원본 녹음 보관 - roadmap 전제 재확인 후 범위 정정) | Done |
+| B8 | 내장 파일 탐색기(OS 탐색기 차단 환경용), 약어 사전 675개 확장, 필터 모달 개편, 계정 신청/활성화 토글 | Done |
+| C1 | 오디오 분석 UI 통합, MD 뷰어, 1시간 회의 대응(토큰/윈도잉), STT 환각 방지, 사전 치환 버그 수정, Settings 정리, 시작 성능, 샘플 회의록 5건 재생성 | Done |
 
 ## Session Notes
 

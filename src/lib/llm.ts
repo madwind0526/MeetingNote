@@ -16,9 +16,19 @@ export interface LlmStatus {
   ollama: { available: boolean; models: string[] };
 }
 
-export async function fetchLlmStatus(ollamaBaseUrl?: string): Promise<LlmStatus> {
-  const query = ollamaBaseUrl ? `?ollamaBaseUrl=${encodeURIComponent(ollamaBaseUrl)}` : "";
-  const response = await fetch(`/api/llm/status${query}`);
+// deep=false (the default) only checks whether Claude CLI/Whisper/WhisperX are installed on disk -
+// deep=true additionally spawns them to confirm they actually run, which is slow enough that it
+// should only happen for the user's explicit "지금 확인" action, not automatically.
+export async function fetchLlmStatus(ollamaBaseUrl?: string, deep = false): Promise<LlmStatus> {
+  const params = new URLSearchParams();
+  if (ollamaBaseUrl) {
+    params.set("ollamaBaseUrl", ollamaBaseUrl);
+  }
+  if (deep) {
+    params.set("deep", "true");
+  }
+  const query = params.toString();
+  const response = await fetch(`/api/llm/status${query ? `?${query}` : ""}`);
 
   return parseJsonResponse<LlmStatus>(response);
 }
@@ -116,8 +126,8 @@ export interface SttStatus {
   localWhisperX: { available: boolean; version: string | null };
 }
 
-export async function fetchSttStatus(): Promise<SttStatus> {
-  const response = await fetch("/api/stt/status");
+export async function fetchSttStatus(deep = false): Promise<SttStatus> {
+  const response = await fetch(`/api/stt/status${deep ? "?deep=true" : ""}`);
 
   return parseJsonResponse<SttStatus>(response);
 }

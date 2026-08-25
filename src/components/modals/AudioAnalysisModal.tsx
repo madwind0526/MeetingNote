@@ -23,6 +23,10 @@ interface AudioAnalysisModalProps {
   // have no agenda rows yet.
   agenda?: { no: number; durationMinutes: number; presenter: string }[];
   sttProvider: SttProviderId;
+  // Settings' 무음 임계값 (silenceThreshold) - see useChunkedAudioAnalysis's
+  // DEFAULT_SILENCE_RMS_THRESHOLD. Optional so a caller that hasn't threaded it through yet still
+  // falls back to that default.
+  silenceThreshold?: number;
   // The word-correction popup (수정 사전 등록) reads/writes through this shared cache - see
   // MeetingFormModal/App.tsx - instead of fetching its own copy, which would silently diverge
   // from whatever the Dictionary modal has open in the same session and risk one clobbering the
@@ -241,6 +245,7 @@ export function AudioAnalysisModal({
   attendeeNames,
   agenda,
   sttProvider,
+  silenceThreshold,
   dictionary,
   onDictionaryChange,
   onClose,
@@ -958,7 +963,8 @@ export function AudioAnalysisModal({
       fileName: activeFile.name,
       attendeeNames,
       agenda,
-      preprocessing: { vocalIsolation, noiseRemoval, normalize }
+      preprocessing: { vocalIsolation, noiseRemoval, normalize },
+      silenceThreshold
     });
   }
 
@@ -981,7 +987,8 @@ export function AudioAnalysisModal({
       fileName: "recording.wav",
       attendeeNames,
       agenda,
-      preprocessing: { vocalIsolation, noiseRemoval, normalize }
+      preprocessing: { vocalIsolation, noiseRemoval, normalize },
+      silenceThreshold
     });
   }
 
