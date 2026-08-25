@@ -120,7 +120,12 @@ CPU 전용으로만 사용할 경우에는 아래처럼 설치할 수 있습니�
 Whisper CLI는 `ffmpeg.exe`가 필요하고, WhisperX/pyannote/torchcodec은 Windows에서 FFmpeg DLL을 찾을 수 있어야 합니다. 일반 static build보다 shared build를 권장합니다.
 
 1. <https://www.gyan.dev/ffmpeg/builds/> 접속
-2. `release builds`에서 `ffmpeg-release-full-shared.7z` 다운로드
+2. **주의**: 페이지 위쪽 `release builds`의 `ffmpeg-release-full-shared.7z`는 항상 "그 시점의 최신
+   버전"을 가리키는 롤링 링크입니다(예: 지금 받으면 7.1.1이 아니라 9.0.1이 나옴) - 이 프로젝트가
+   기본으로 가정하는 경로(`ffmpeg-7.1.1-full_build-shared`)와 버전이 어긋나므로, 페이지 아래쪽
+   `release-archive` 섹션에서 **`ffmpeg-7.1.1-full_build-shared.zip`**(버전이 고정된 아카이브 빌드,
+   확장자도 `.7z`가 아니라 `.zip`)을 받아야 합니다. 다른 버전을 쓰고 싶다면 아래 3~4단계의 경로/버전
+   전체를 그 버전으로 맞추거나, `MEETINGNOTE_FFMPEG_BIN` 환경 변수로 실제 설치 경로를 지정하면 됩니다.
 3. 예를 들어 아래 경로로 압축 해제
 
 ```text
