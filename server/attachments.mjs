@@ -7,7 +7,10 @@ import { convertMaterialToMarkdown } from "./converters/toMarkdown.mjs";
 
 export const PROJECT_ROOT = process.cwd();
 const DEFAULT_ATTACHMENTS_RELATIVE_DIR = "data/attachments";
-export const MAX_ATTACHMENT_BYTES = 50 * 1024 * 1024;
+// 16kHz mono 16-bit WAV (this app's fixed decode/encode rate, see src/lib/audio.ts) runs about
+// 1.92MB/min raw - 50MB capped out at ~26 minutes, well short of the 1-hour meetings this app is
+// meant to handle. 200MB covers ~104 minutes of raw audio with room to spare.
+export const MAX_ATTACHMENT_BYTES = 200 * 1024 * 1024;
 const VALID_KINDS = new Set(["materials", "audio"]);
 
 // Copies attached files into <base>/<meeting folder label>/<kind>/<file name> so Explorer shows

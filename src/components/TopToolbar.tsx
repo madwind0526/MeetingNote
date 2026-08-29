@@ -1,4 +1,4 @@
-import { GitBranch, LayoutGrid, LogOut, Moon, NotebookText, Search, Settings, Sun, Table2 } from "lucide-react";
+import { GitBranch, LayoutGrid, LogOut, Moon, NotebookText, RefreshCw, Search, Settings, Sun, Table2 } from "lucide-react";
 import type { ViewMode } from "../types/domain";
 
 interface TopToolbarProps {
@@ -10,6 +10,7 @@ interface TopToolbarProps {
   onOpenSettings: () => void;
   onQueryChange: (query: string) => void;
   onLogout: () => void;
+  onRefresh: () => void;
   onTitleClick: () => void;
   onToggleTheme: () => void;
   onViewChange: (view: ViewMode) => void;
@@ -31,6 +32,7 @@ export function TopToolbar({
   onOpenSettings,
   onQueryChange,
   onLogout,
+  onRefresh,
   onTitleClick,
   onToggleTheme,
   onViewChange,
@@ -70,6 +72,9 @@ export function TopToolbar({
           </button>
         ))}
         <div className="toolbar-divider" />
+        <button className="icon-button" onClick={onRefresh} title="새로고침 (외부에서 변경된 회의록 다시 불러오기)" type="button">
+          <RefreshCw size={20} />
+        </button>
         <button className={settingsActive ? "icon-button active" : "icon-button"} onClick={onOpenSettings} title="설정" type="button">
           <Settings size={20} />
         </button>

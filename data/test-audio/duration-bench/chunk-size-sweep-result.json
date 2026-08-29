@@ -1,0 +1,47 @@
+[
+  {
+    "chunkSizeSec": 15,
+    "chunkCount": 16,
+    "totalProcessingSec": 284.3,
+    "avgPerChunkSec": 17.8,
+    "realtimeMultiplier": 0.83,
+    "totalSegments": 33,
+    "failures": 0
+  },
+  {
+    "chunkSizeSec": 30,
+    "chunkCount": 8,
+    "totalProcessingSec": 150.2,
+    "avgPerChunkSec": 18.8,
+    "realtimeMultiplier": 1.58,
+    "totalSegments": 41,
+    "failures": 0
+  },
+  {
+    "chunkSizeSec": 60,
+    "chunkCount": 4,
+    "totalProcessingSec": 88.7,
+    "avgPerChunkSec": 22.2,
+    "realtimeMultiplier": 2.67,
+    "totalSegments": 46,
+    "failures": 0
+  },
+  {
+    "chunkSizeSec": 120,
+    "chunkCount": 2,
+    "totalProcessingSec": 48.4,
+    "avgPerChunkSec": 24.2,
+    "realtimeMultiplier": 4.9,
+    "totalSegments": 38,
+    "failures": 0
+  },
+  {
+    "chunkSizeSec": 237,
+    "chunkCount": 2,
+    "totalProcessingSec": 48.5,
+    "avgPerChunkSec": 24.2,
+    "realtimeMultiplier": 4.89,
+    "totalSegments": 38,
+    "failures": 0
+  }
+]

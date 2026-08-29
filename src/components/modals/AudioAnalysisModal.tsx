@@ -11,6 +11,7 @@ import { UNREGISTERED_SPEAKER_PREFIX } from "../../lib/speakerSessionLinking";
 import { isSystemAudioCaptureSupported, startSystemAudioCapture } from "../../lib/systemAudioCapture";
 import type { SystemAudioCapture } from "../../lib/systemAudioCapture";
 import { useChunkedAudioAnalysis } from "../../hooks/useChunkedAudioAnalysis";
+import type { ChunkMinutesOverrides } from "../../hooks/useChunkedAudioAnalysis";
 import { LiveWaveform } from "../LiveWaveform";
 
 type AudioSource = { kind: "file"; file: File } | { kind: "recording" };
@@ -27,6 +28,10 @@ interface AudioAnalysisModalProps {
   // DEFAULT_SILENCE_RMS_THRESHOLD. Optional so a caller that hasn't threaded it through yet still
   // falls back to that default.
   silenceThreshold?: number;
+  // Settings' 회의 길이별 STT 청크 크기 fields, already parsed to numbers (see
+  // useChunkedAudioAnalysis's parseChunkMinutesSetting) - optional per-tier so a caller that
+  // hasn't threaded it through, or a blank field, falls back to pickChunkSizeBounds's own default.
+  chunkMinutesOverrides?: ChunkMinutesOverrides;
   // The word-correction popup (수정 사전 등록) reads/writes through this shared cache - see
   // MeetingFormModal/App.tsx - instead of fetching its own copy, which would silently diverge
   // from whatever the Dictionary modal has open in the same session and risk one clobbering the
@@ -246,6 +251,7 @@ export function AudioAnalysisModal({
   agenda,
   sttProvider,
   silenceThreshold,
+  chunkMinutesOverrides,
   dictionary,
   onDictionaryChange,
   onClose,
@@ -964,7 +970,8 @@ export function AudioAnalysisModal({
       attendeeNames,
       agenda,
       preprocessing: { vocalIsolation, noiseRemoval, normalize },
-      silenceThreshold
+      silenceThreshold,
+      chunkMinutesOverrides
     });
   }
 
@@ -988,7 +995,8 @@ export function AudioAnalysisModal({
       attendeeNames,
       agenda,
       preprocessing: { vocalIsolation, noiseRemoval, normalize },
-      silenceThreshold
+      silenceThreshold,
+      chunkMinutesOverrides
     });
   }
 

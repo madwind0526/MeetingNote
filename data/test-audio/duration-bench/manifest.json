@@ -1,0 +1,29 @@
+{
+  "baseDurationSec": 237.072,
+  "targets": [
+    {
+      "minutes": 5,
+      "copies": 1,
+      "fileName": "duration-5min.wav",
+      "actualDurationSec": 237.1
+    },
+    {
+      "minutes": 10,
+      "copies": 2,
+      "fileName": "duration-10min.wav",
+      "actualDurationSec": 474.1
+    },
+    {
+      "minutes": 30,
+      "copies": 6,
+      "fileName": "duration-30min.wav",
+      "actualDurationSec": 1422.4
+    },
+    {
+      "minutes": 60,
+      "copies": 12,
+      "fileName": "duration-60min.wav",
+      "actualDurationSec": 2844.9
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "audioFile": "diarize-2speaker-ko-en.wav",
+  "audioDurationSec": 35.16,
+  "device": "cuda",
+  "whisperCli": {
+    "tiny": {
+      "ok": true,
+      "elapsedSec": 16.4,
+      "segmentCount": 0
+    },
+    "base": {
+      "ok": true,
+      "elapsedSec": 15.9,
+      "segmentCount": 0
+    },
+    "small": {
+      "ok": true,
+      "elapsedSec": 20.9,
+      "segmentCount": 0
+    },
+    "medium": {
+      "ok": true,
+      "elapsedSec": 33.7,
+      "segmentCount": 0
+    },
+    "large-v3": {
+      "ok": true,
+      "elapsedSec": 53.2,
+      "segmentCount": 0
+    },
+    "large-v3-turbo": {
+      "ok": true,
+      "elapsedSec": 18.6,
+      "segmentCount": 0
+    }
+  },
+  "whisperX": {
+    "tiny": {
+      "ok": true,
+      "elapsedSec": 24.1,
+      "segmentCount": 0
+    },
+    "base": {
+      "ok": true,
+      "elapsedSec": 22.5,
+      "segmentCount": 0
+    },
+    "small": {
+      "ok": true,
+      "elapsedSec": 22.4,
+      "segmentCount": 0
+    },
+    "medium": {
+      "ok": true,
+      "elapsedSec": 23.5,
+      "segmentCount": 0
+    },
+    "large-v3": {
+      "ok": true,
+      "elapsedSec": 25,
+      "segmentCount": 0
+    }
+  }
+}

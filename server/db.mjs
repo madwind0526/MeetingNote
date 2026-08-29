@@ -1,10 +1,16 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { EventEmitter } from "node:events";
 
 const ROOT = process.cwd();
 const DB_PATH = path.join(ROOT, "data/db/meetings.json");
 const SEED_PATH = path.join(ROOT, "data/seed/meetings.sample.json");
+
+// Fires whenever meetings.json is written, regardless of which function or caller triggered it
+// (in-app save, DB import, or an external script hitting the API directly) - the SSE route in
+// vite.config.mts relays this to connected clients so open windows refresh without polling.
+export const meetingsEvents = new EventEmitter();
 
 async function ensureDb() {
   try {
@@ -32,6 +38,7 @@ export async function readMeetings() {
   // consistent without rewriting the underlying file until the record is next saved.
   return meetings.map((meeting) => ({
     ...meeting,
+    location: meeting.location ?? "",
     secretary: meeting.secretary ?? "",
     authorId: meeting.authorId ?? "",
     comments: Array.isArray(meeting.comments) ? meeting.comments : []
@@ -41,6 +48,7 @@ export async function readMeetings() {
 async function writeMeetings(meetings) {
   await mkdir(path.dirname(DB_PATH), { recursive: true });
   await writeFile(DB_PATH, JSON.stringify(meetings, null, 2), "utf8");
+  meetingsEvents.emit("changed");
 }
 
 function normalizeAttendee(draft) {
@@ -164,6 +172,7 @@ export function normalizeMeeting(draft) {
     date: clampToNearestValidDate(source.date ?? ""),
     startTime: source.startTime ?? "",
     endTime: source.endTime ?? "",
+    location: source.location ?? "",
     organizer: source.organizer ?? "",
     secretary: source.secretary ?? "",
     attendees: Array.isArray(source.attendees) ? source.attendees.map((attendee) => normalizeAttendee(attendee)) : [],

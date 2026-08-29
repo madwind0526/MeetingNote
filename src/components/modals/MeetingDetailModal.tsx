@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Calendar, Clock, Download, FileText, FolderOpen, MessageSquare, Pause, Pencil, Play, Send, Trash2, User, Users, X } from "lucide-react";
+import { Calendar, Clock, Download, FileText, FolderOpen, MapPin, MessageSquare, Pause, Pencil, Play, Send, Trash2, User, Users, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ModalShell } from "./ModalShell";
@@ -195,6 +195,12 @@ export function MeetingDetailModal({
             <Clock size={14} /> 시간
           </dt>
           <dd>{formatTimeRange(meeting.startTime, meeting.endTime)}</dd>
+        </div>
+        <div className="meeting-detail-row">
+          <dt>
+            <MapPin size={14} /> 장소
+          </dt>
+          <dd>{meeting.location || "-"}</dd>
         </div>
         <div className="meeting-detail-row">
           <dt>

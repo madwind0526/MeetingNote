@@ -450,6 +450,49 @@ export function SettingsView({
             무음 임계값 (환각 방지)
           </label>
         </div>
+
+        <p className="settings-section-desc" style={{ marginTop: 12 }}>
+          회의 길이별 STT 청크 크기 - 오디오를 몇 분 단위로 잘라서 STT를 호출할지 결정합니다. 회의가 길수록 큰 청크가
+          유리합니다(모델 로딩 등 청크당 고정 비용이 덜 반복됨). 비워두면 괄호 안 기본값을 사용합니다.
+        </p>
+        <div className="field" style={{ display: "flex", gap: 24 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              min={1}
+              onChange={(event) => onUpdate("chunkMinutesShort", event.target.value)}
+              placeholder="1"
+              step={1}
+              style={{ width: 60, flexShrink: 0 }}
+              type="number"
+              value={settings.chunkMinutesShort}
+            />
+            10분 미만 회의 (기본 1분)
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              min={1}
+              onChange={(event) => onUpdate("chunkMinutesMedium", event.target.value)}
+              placeholder="2"
+              step={1}
+              style={{ width: 60, flexShrink: 0 }}
+              type="number"
+              value={settings.chunkMinutesMedium}
+            />
+            10~30분 회의 (기본 2분)
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              min={1}
+              onChange={(event) => onUpdate("chunkMinutesLong", event.target.value)}
+              placeholder="5"
+              step={1}
+              style={{ width: 60, flexShrink: 0 }}
+              type="number"
+              value={settings.chunkMinutesLong}
+            />
+            30분 이상 회의 (기본 5분)
+          </label>
+        </div>
       </section>
 
       <section className="settings-section">

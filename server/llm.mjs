@@ -262,9 +262,13 @@ export function buildMinutesPrompt(meeting) {
   const sections = [];
 
   sections.push(
-    ["[회의 기본정보]", `제목: ${source.title || "-"}`, `일시: ${source.date || "-"} ${source.startTime || ""}-${source.endTime || ""}`, `주관자: ${source.organizer || "-"}`].join(
-      "\n"
-    )
+    [
+      "[회의 기본정보]",
+      `제목: ${source.title || "-"}`,
+      `일시: ${source.date || "-"} ${source.startTime || ""}-${source.endTime || ""}`,
+      `장소: ${source.location || "-"}`,
+      `주관자: ${source.organizer || "-"}`
+    ].join("\n")
   );
 
   const attendeeLines = attendees.length
@@ -296,7 +300,16 @@ export function buildMinutesPrompt(meeting) {
     sections.push(["[발표별 정리 - B5에서 이미 구조화된 내용, 우선 근거로 사용]", ...summaryLines].join("\n"));
   }
 
-  if (audio && Array.isArray(audio.transcriptSegments) && audio.transcriptSegments.length) {
+  // Once every agenda item has a B5 summary, the full transcript is redundant (B5 already
+  // extracted everything relevant per agenda item) and actively harmful for a long meeting - it
+  // can run tens of thousands of characters and blow past a local model's context window
+  // (observed directly: a 47-minute meeting's ~18,000-character transcript pushed the resulting
+  // minutes down to under half the length of a 24-minute meeting's, despite having twice the
+  // source material). Falls back to the full transcript when any agenda item still lacks a
+  // summary (B5 not run, or run only partially) so B6 still has something to work from for those.
+  const allAgendaItemsSummarized = agenda.length > 0 && summarizedAgendaItems.length === agenda.length;
+
+  if (audio && Array.isArray(audio.transcriptSegments) && audio.transcriptSegments.length && !allAgendaItemsSummarized) {
     const speakerMap = audio.speakerMap && typeof audio.speakerMap === "object" ? audio.speakerMap : {};
     const grouped = new Map();
 

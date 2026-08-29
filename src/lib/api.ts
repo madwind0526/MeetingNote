@@ -52,6 +52,16 @@ export async function fetchMeetings(): Promise<Meeting[]> {
   return payload.meetings;
 }
 
+// Notifies `onChanged` whenever meetings.json is written on the server, whatever the source (this
+// window's own save, another window, an import, an external script hitting the API directly) - see
+// server/db.mjs's meetingsEvents. The browser's EventSource retries the connection on its own if
+// it drops, so this doesn't need its own reconnect logic. Returns a cleanup function to close it.
+export function subscribeToMeetingsChanges(onChanged: () => void): () => void {
+  const source = new EventSource("/api/meetings-events");
+  source.onmessage = () => onChanged();
+  return () => source.close();
+}
+
 // `presetId` lets MeetingFormModal keep the same client-generated id it already used while
 // uploading attachments during this create session (see cloneDraft's folderId), so the meeting
 // record ends up owning the exact folder those files were already copied into.

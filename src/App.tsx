@@ -58,8 +58,10 @@ import {
   fetchMeetings,
   resetMeetingsRequest,
   saveLogoImage,
+  subscribeToMeetingsChanges,
   updateMeetingRequest
 } from "./lib/api";
+import { parseChunkMinutesSetting } from "./hooks/useChunkedAudioAnalysis";
 import type { ImportSummary } from "./lib/api";
 import { loadSettings, loadSettingsFile, saveSettings } from "./lib/settings";
 import { setSettingsMirror } from "./lib/settingsMirror";
@@ -195,6 +197,22 @@ export function App() {
     };
   }, []);
 
+  // Refreshes the meeting list whenever the server actually writes meetings.json - event-driven
+  // (via SSE, see server/db.mjs's meetingsEvents + subscribeToMeetingsChanges), not a timer, so
+  // there's no polling overhead and no delay. In-app saves already merge their own result into
+  // `meetings` directly, so this mostly matters for changes this window didn't cause itself: an
+  // import, another window, or an external script hitting the API directly (e.g. the e2e test
+  // tooling under tools/e2e/).
+  useEffect(() => {
+    const unsubscribe = subscribeToMeetingsChanges(() => {
+      fetchMeetings()
+        .then((loaded) => setMeetings(loaded))
+        .catch(() => {});
+    });
+
+    return unsubscribe;
+  }, []);
+
   // Claude CLI / Whisper CLI / WhisperX status checks each spawn a real subprocess - only worth
   // paying that cost when Settings (the only screen that shows this status) is actually open,
   // not on every app launch.
@@ -319,6 +337,18 @@ export function App() {
   // Based on the full, unfiltered meeting set (not visibleMeetings) so the Connection range filter
   // and Mesh view's own node degrees never disagree with each other and so opening/clearing the
   // filter can never create a feedback loop that shrinks its own upper bound.
+  // Settings' 회의 길이별 STT 청크 크기 fields are blank-allowed strings (see AppSettings) - parsed
+  // here once so both MeetingFormModal instances pass the same already-resolved overrides down to
+  // useChunkedAudioAnalysis's pickChunkSizeBounds instead of each re-parsing the raw strings.
+  const chunkMinutesOverrides = useMemo(
+    () => ({
+      shortMinutes: parseChunkMinutesSetting(settings.chunkMinutesShort),
+      mediumMinutes: parseChunkMinutesSetting(settings.chunkMinutesMedium),
+      longMinutes: parseChunkMinutesSetting(settings.chunkMinutesLong)
+    }),
+    [settings.chunkMinutesShort, settings.chunkMinutesMedium, settings.chunkMinutesLong]
+  );
+
   const connectionCounts = useMemo(() => computeMeetingConnectionCounts(meetings), [meetings]);
   const maxConnectionCount = useMemo(() => Math.max(0, ...Array.from(connectionCounts.values())), [connectionCounts]);
 
@@ -629,6 +659,7 @@ export function App() {
         onLogout={handleLogout}
         onOpenSettings={handleOpenSettings}
         onQueryChange={setQuery}
+        onRefresh={() => void handleRefresh()}
         onTitleClick={() => {
           setSettingsDraft(null);
           setShowSettings(false);
@@ -776,6 +807,7 @@ export function App() {
 
       {formModal?.mode === "create" && (
         <MeetingFormModal
+          chunkMinutesOverrides={chunkMinutesOverrides}
           dictionary={dictionary}
           llmProvider={activeLlmProvider}
           mode="create"
@@ -790,6 +822,7 @@ export function App() {
 
       {formModal?.mode === "edit" && (
         <MeetingFormModal
+          chunkMinutesOverrides={chunkMinutesOverrides}
           dictionary={dictionary}
           initial={formModal.meeting}
           llmProvider={activeLlmProvider}

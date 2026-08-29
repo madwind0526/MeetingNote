@@ -11,11 +11,21 @@ import type { SystemAudioCapture } from "../lib/systemAudioCapture";
 // the same WaveformCanvas it feeds.
 const BUCKET_COUNT = 900;
 
-// Chunk boundary targeting - see src/lib/audio.ts's findQuietCutSample. TARGET is the plain
-// fixed-duration fallback, MIN/MAX bound the search window for a quieter (word-boundary-safe) cut.
-const TARGET_CHUNK_MS = 15000;
-const MIN_CHUNK_MS = 12000;
-const MAX_CHUNK_MS = 20000;
+// Chunk boundary targeting - see src/lib/audio.ts's findQuietCutSample. Chunk size now scales with
+// (estimated) total meeting length instead of a single fixed value: a real chunk-size sweep
+// (tools/e2e/chunk-size-sweep.mjs, tools/e2e/word-count-verify.mjs) found that processing speed
+// keeps improving all the way out to 6-minute chunks with no measurable transcript loss (per-chunk
+// STT cost is dominated by a roughly fixed model-load overhead, not audio length - WhisperX took
+// ~22-25s per call across every model size on a 35s clip, barely moving with model size). But a
+// short meeting doesn't need a giant chunk to see that win, and every chunk delays when its
+// transcript appears (worse for live-recording UX, and it caps how fine-grained "분석 중" progress
+// can look) - so pick the smallest chunk size whose overhead-amortization win is already realized
+// for the meeting's length, rather than always taking the biggest.
+const SHORT_MEETING_THRESHOLD_SEC = 600; // 10분
+const MEDIUM_MEETING_THRESHOLD_SEC = 1800; // 30분
+const SHORT_CHUNK_TARGET_MS = 60000; // 10분 미만 회의 -> 1분 청크
+const MEDIUM_CHUNK_TARGET_MS = 120000; // 10~30분 회의 -> 2분 청크
+const LONG_CHUNK_TARGET_MS = 300000; // 30분 이상 회의 -> 5분 청크
 const QUIET_CHECK_INTERVAL_MS = 300;
 const QUIET_AMPLITUDE_THRESHOLD = 0.02;
 // Below this, a chunk is treated as having no speech at all and is never sent to STT (see
@@ -28,6 +38,48 @@ const QUIET_AMPLITUDE_THRESHOLD = 0.02;
 // chunk has speech at all, so the two don't need to match.
 const DEFAULT_SILENCE_RMS_THRESHOLD = 0.004;
 
+interface ChunkSizeBounds {
+  targetMs: number;
+  minMs: number;
+  maxMs: number;
+}
+
+// Settings' 회의 길이별 STT 청크 크기 fields are free-form strings that can be left blank (the input
+// shows the built-in default as a placeholder rather than holding it as a live value) - this turns
+// one of those strings into a positive minute count, or undefined if blank/not a usable number, so
+// pickChunkSizeBounds can fall back to its own default for that tier.
+export function parseChunkMinutesSetting(value: string | undefined): number | undefined {
+  const parsed = Number(value);
+  return value && Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+export interface ChunkMinutesOverrides {
+  shortMinutes?: number;
+  mediumMinutes?: number;
+  longMinutes?: number;
+}
+
+// Bounds each ±25% around target, the same ratio the old fixed 60s/45s/75s scheme used - MIN/MAX
+// bound findQuietCutSample's word-boundary-safe search window, not a hard chunk-length limit.
+function pickChunkSizeBounds(totalDurationSec: number, overrides?: ChunkMinutesOverrides): ChunkSizeBounds {
+  const shortMs = (overrides?.shortMinutes ?? SHORT_CHUNK_TARGET_MS / 60000) * 60000;
+  const mediumMs = (overrides?.mediumMinutes ?? MEDIUM_CHUNK_TARGET_MS / 60000) * 60000;
+  const longMs = (overrides?.longMinutes ?? LONG_CHUNK_TARGET_MS / 60000) * 60000;
+  const targetMs = totalDurationSec >= MEDIUM_MEETING_THRESHOLD_SEC ? longMs : totalDurationSec >= SHORT_MEETING_THRESHOLD_SEC ? mediumMs : shortMs;
+  return { targetMs, minMs: Math.round(targetMs * 0.75), maxMs: Math.round(targetMs * 1.25) };
+}
+
+// Recording mode has no known total duration up front (unlike file mode, which reads it straight
+// off the decoded buffer) - Agenda's per-item 예상 소요 시간 is the only length estimate available
+// before the meeting actually happens, so its sum stands in for "total duration". No agenda rows
+// (or none with a duration) falls back to the shortest tier, matching the old always-60s behavior.
+function estimateAgendaDurationSec(agenda?: { durationMinutes: number }[]): number {
+  if (!agenda || agenda.length === 0) {
+    return 0;
+  }
+  return agenda.reduce((sum, item) => sum + (item.durationMinutes || 0), 0) * 60;
+}
+
 export interface ChunkedAnalysisOptions {
   provider: SttProviderId;
   model: string;
@@ -36,6 +88,7 @@ export interface ChunkedAnalysisOptions {
   agenda?: { no: number; durationMinutes: number; presenter: string }[];
   preprocessing: { vocalIsolation: boolean; noiseRemoval: boolean; normalize: boolean };
   silenceThreshold?: number;
+  chunkMinutesOverrides?: ChunkMinutesOverrides;
 }
 
 function concatFloat32(chunks: Float32Array[]): Float32Array {
@@ -64,11 +117,12 @@ function isAnalyserQuiet(analyser: AnalyserNode, buffer: Uint8Array<ArrayBuffer>
 }
 
 // Shared engine behind AudioAnalysisModal's chunked/progressive analysis for both the file-upload
-// and live-recording entry points. Splits audio into ~15s windows, runs each through the existing
-// per-file STT+diarization job pipeline (transcribeAudioRequest, unchanged), and merges results in
-// as each chunk finishes instead of waiting for the whole clip. Cross-chunk "미등록 화자" identity
-// is kept consistent via reconcileUnregisteredSpeakers (registered/named speakers already stay
-// consistent on their own via the server's persistent voice-profile registry).
+// and live-recording entry points. Splits audio into windows sized by pickChunkSizeBounds (1/2/5분
+// depending on meeting length), runs each through the existing per-file STT+diarization job
+// pipeline (transcribeAudioRequest, unchanged), and merges results in as each chunk finishes
+// instead of waiting for the whole clip. Cross-chunk "미등록 화자" identity is kept consistent via
+// reconcileUnregisteredSpeakers (registered/named speakers already stay consistent on their own via
+// the server's persistent voice-profile registry).
 export function useChunkedAudioAnalysis() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeProgress, setAnalyzeProgress] = useState(0);
@@ -244,9 +298,10 @@ export function useChunkedAudioAnalysis() {
       const mono = mixDownToMono(sourceAudioBuffer);
       const sampleRate = sourceAudioBuffer.sampleRate;
       const totalSamples = mono.length;
-      const minSamples = Math.round((MIN_CHUNK_MS / 1000) * sampleRate);
-      const targetSamples = Math.round((TARGET_CHUNK_MS / 1000) * sampleRate);
-      const maxSamples = Math.round((MAX_CHUNK_MS / 1000) * sampleRate);
+      const { targetMs, minMs, maxMs } = pickChunkSizeBounds(totalSamples / sampleRate, options.chunkMinutesOverrides);
+      const minSamples = Math.round((minMs / 1000) * sampleRate);
+      const targetSamples = Math.round((targetMs / 1000) * sampleRate);
+      const maxSamples = Math.round((maxMs / 1000) * sampleRate);
 
       try {
         let cursor = 0;
@@ -320,6 +375,7 @@ export function useChunkedAudioAnalysis() {
       setIsAnalyzing(true);
       activeOptionsRef.current = options;
 
+      const { minMs, maxMs } = pickChunkSizeBounds(estimateAgendaDurationSec(options.agenda), options.chunkMinutesOverrides);
       const quietBuffer = new Uint8Array(new ArrayBuffer(capture.analyser.fftSize));
       let lastRotateAt = performance.now();
 
@@ -329,10 +385,10 @@ export function useChunkedAudioAnalysis() {
         }
 
         const elapsed = performance.now() - lastRotateAt;
-        if (elapsed < MIN_CHUNK_MS) {
+        if (elapsed < minMs) {
           return;
         }
-        if (elapsed < MAX_CHUNK_MS && !isAnalyserQuiet(capture.analyser, quietBuffer)) {
+        if (elapsed < maxMs && !isAnalyserQuiet(capture.analyser, quietBuffer)) {
           return;
         }
 

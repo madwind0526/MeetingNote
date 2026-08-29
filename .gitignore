@@ -8,6 +8,14 @@ data/audio/*
 !data/audio/.gitkeep
 exports/
 imports/
+# Raw benchmark/duration-test audio (multi-hundred-MB, some over GitHub's 100MB hard limit) - the
+# derived results (JSON, transcripts) from these stay tracked; only the source WAVs are excluded.
+data/test-audio/duration-bench/*.wav
+data/attachments/2026-08-26-(4분) 회의록/audio/duration-5min.wav
+data/attachments/2026-08-26-(8분) 회의록/audio/duration-10min.wav
+data/attachments/2026-08-26-(24분) 회의록/audio/duration-30min.wav
+data/attachments/2026-08-26-(47분) 회의록/audio/duration-60min.wav
+data/attachments/2026-08-26-(71분) 회의록/audio/duration-71min.wav
 *.tsbuildinfo
 *.log
 tmp_*

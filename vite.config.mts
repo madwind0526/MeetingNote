@@ -15,7 +15,8 @@ import {
   addMeetingComment,
   deleteMeetingComment,
   bulkUpsertMeetings,
-  resetToSeed
+  resetToSeed,
+  meetingsEvents
 } from "./server/db.mjs";
 import { readMembers, createMember, updateMember, disableMember, verifyLogin, toPublicMember } from "./server/members.mjs";
 import { readBoardPosts, writeBoardPosts } from "./server/board.mjs";
@@ -528,6 +529,35 @@ export default defineConfig(() => {
       {
         name: "meetingnote-api",
         configureServer(server) {
+          // Server-Sent Events channel so open windows refresh automatically whenever
+          // meetings.json changes - covers in-app saves (which already update their own local
+          // state directly, so this is a harmless redundant refresh for them) and, more
+          // importantly, changes from outside this window entirely (an import, another window, a
+          // script hitting the API directly) that the app has no other way to learn about. A
+          // distinct path (not nested under /api/meetings) so it can't be shadowed by that
+          // handler's own segment-based routing below.
+          server.middlewares.use("/api/meetings-events", (request, response) => {
+            if (!requireTrusted(request, response)) {
+              return;
+            }
+
+            response.writeHead(200, {
+              "Content-Type": "text/event-stream",
+              "Cache-Control": "no-cache",
+              Connection: "keep-alive"
+            });
+            response.write(":ok\n\n");
+
+            const onChanged = () => {
+              response.write("data: changed\n\n");
+            };
+            meetingsEvents.on("changed", onChanged);
+
+            request.on("close", () => {
+              meetingsEvents.off("changed", onChanged);
+            });
+          });
+
           server.middlewares.use("/api/meetings", async (request, response) => {
             try {
               if (!requireTrusted(request, response)) {
@@ -906,7 +936,11 @@ export default defineConfig(() => {
                 return;
               }
 
-              const body = JSON.parse(await readRequestBody(request, MAX_ATTACHMENT_BYTES + ONE_MB)) as {
+              // MAX_ATTACHMENT_BYTES caps the DECODED file size (checked again in saveAttachment) -
+              // the request body itself is base64 text plus a little JSON overhead, and base64
+              // inflates the decoded size by 4/3, so the raw-body cap has to be scaled up to match
+              // or large-but-legal attachments get killed here before ever reaching that check.
+              const body = JSON.parse(await readRequestBody(request, Math.ceil((MAX_ATTACHMENT_BYTES * 4) / 3) + ONE_MB)) as {
                 meetingTitle?: string;
                 kind?: string;
                 fileName?: string;

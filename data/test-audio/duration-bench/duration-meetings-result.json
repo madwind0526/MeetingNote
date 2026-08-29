@@ -1,0 +1,16 @@
+[
+  {
+    "ok": true,
+    "title": "(71분) 회의록",
+    "targetMinutes": 71,
+    "actualDurationMin": 71,
+    "chunkCount": 15,
+    "segmentCount": 844,
+    "speakerLabelCount": 6,
+    "sttElapsedMin": 9.3,
+    "b5ElapsedSec": 42.4,
+    "b6ElapsedSec": 17.3,
+    "minutesLength": 1658,
+    "totalElapsedMin": 10.2
+  }
+]

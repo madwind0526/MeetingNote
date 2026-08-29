@@ -107,6 +107,7 @@ export interface Meeting {
   date: string;
   startTime: string;
   endTime: string;
+  location: string;
   organizer: string;
   secretary: string;
   attendees: Attendee[];
@@ -127,6 +128,7 @@ export const emptyMeetingDraft: MeetingDraft = {
   date: "",
   startTime: "",
   endTime: "",
+  location: "",
   organizer: "",
   secretary: "",
   attendees: [],
@@ -520,6 +522,13 @@ export interface AppSettings {
   // entirely instead of being sent to STT - see useChunkedAudioAnalysis's SILENCE_RMS_THRESHOLD
   // default. Prevents Whisper-style hallucinated text on near-silent audio.
   silenceThreshold: number;
+  // Per-meeting-length STT chunk size override (minutes), as free-form strings so the Settings
+  // inputs can sit empty with a placeholder showing the built-in default instead of always holding
+  // a live number - see useChunkedAudioAnalysis.ts's pickChunkSizeBounds, which parses these and
+  // falls back to 1/2/5 minutes on empty/invalid input. Tiers: <10분, 10~30분, >=30분.
+  chunkMinutesShort: string;
+  chunkMinutesMedium: string;
+  chunkMinutesLong: string;
   // Custom persona/style instruction prepended before this app's own system prompt for every LLM
   // call (query/회의록 작성/발표 내용 정리) - see server/llm.mjs's resolveSystemPrompt. Empty string
   // means "no custom message" (just this app's own system prompt, unchanged).
@@ -541,6 +550,9 @@ export const defaultSettings: AppSettings = {
   vadOnset: 0.3,
   vadOffset: 0.2,
   silenceThreshold: 0.004,
+  chunkMinutesShort: "",
+  chunkMinutesMedium: "",
+  chunkMinutesLong: "",
   systemMessage: ""
 };
 

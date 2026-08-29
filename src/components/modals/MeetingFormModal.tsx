@@ -31,6 +31,7 @@ import type { OllamaConfig } from "../../lib/llm";
 import { fetchAttachmentAsFile, importMeetingsRequest, inferImportFormat, openAttachment, uploadAttachment } from "../../lib/api";
 import { pickFileWithConfiguredPicker } from "../../lib/filePicker";
 import { isSystemAudioCaptureSupported } from "../../lib/systemAudioCapture";
+import type { ChunkMinutesOverrides } from "../../hooks/useChunkedAudioAnalysis";
 import { formatTranscriptText, transcriptFileNameFromAudio } from "../../lib/transcript";
 import type { DictionaryState } from "../../lib/dictionary";
 
@@ -45,6 +46,7 @@ interface MeetingFormModalProps {
   ollamaConfig: OllamaConfig;
   sttProvider: SttProviderId;
   silenceThreshold: number;
+  chunkMinutesOverrides?: ChunkMinutesOverrides;
   // Threaded down to AudioAnalysisModal's word-correction popup so a newly registered 수정 사전
   // entry updates this same shared cache instead of writing to the server behind its back (see
   // App.tsx's `dictionary` state, loaded once per session and otherwise never refetched).
@@ -71,6 +73,7 @@ function cloneDraft(initial?: Meeting): MeetingDraft {
     date: initial.date,
     startTime: initial.startTime,
     endTime: initial.endTime,
+    location: initial.location,
     organizer: initial.organizer,
     secretary: initial.secretary,
     attendees: initial.attendees.map((attendee) => ({ ...attendee })),
@@ -113,6 +116,35 @@ function clampToNearestValidDate(value: string): string {
   return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
+// Native <input type="time"> renders 12-hour with 오전/오후 on Windows regardless of the `lang`
+// attribute (tried and confirmed not to force 24-hour formatting), and a <select>-based picker
+// (tried next) felt clunky to click through - a plain typed "HH:MM" text field sidesteps both:
+// no native picker at all, just digits. Strips non-digits and re-inserts the colon after the 2nd
+// digit as the user types, so "1430" becomes "14:30" without them typing the colon themselves.
+// Clamps each half to a valid range (0-23 / 0-59) as soon as its 2 digits are complete - matches
+// clampToNearestValidDate's approach for the date field - so "2500"/"2390" can't be typed at all;
+// they land on "23:00"/"23:59" instead of passing through as nonsense.
+function normalizeTimeInput(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 4);
+  if (digits.length <= 2) {
+    return digits.length === 2 ? String(Math.min(23, Number(digits))).padStart(2, "0") : digits;
+  }
+
+  const hour = String(Math.min(23, Number(digits.slice(0, 2)))).padStart(2, "0");
+  const minuteDigits = digits.slice(2);
+  const minute = minuteDigits.length === 2 ? String(Math.min(59, Number(minuteDigits))).padStart(2, "0") : minuteDigits;
+  return `${hour}:${minute}`;
+}
+
+function TimeField({ id, label, onChange, value }: { id: string; label: string; onChange: (next: string) => void; value: string }) {
+  return (
+    <div className="field">
+      <label htmlFor={id}>{label}</label>
+      <input id={id} inputMode="numeric" onChange={(event) => onChange(normalizeTimeInput(event.target.value))} placeholder="HH:MM" value={value} />
+    </div>
+  );
+}
+
 function renumber<T extends { no: number }>(items: T[]): T[] {
   return items.map((item, index) => ({ ...item, no: index + 1 }));
 }
@@ -131,6 +163,7 @@ export function MeetingFormModal({
   ollamaConfig,
   sttProvider,
   silenceThreshold,
+  chunkMinutesOverrides,
   dictionary,
   onDictionaryChange,
   onClose,
@@ -584,27 +617,22 @@ export function MeetingFormModal({
             />
           </div>
           <div className="field">
-            <label>상태</label>
-            <span className={`status-badge ${status}`}>{meetingStatusLabels[status]}</span>
-          </div>
-          <div className="field">
-            <label htmlFor="meeting-start-time">시작 시간</label>
+            <label htmlFor="meeting-location">회의 장소</label>
             <input
-              id="meeting-start-time"
-              onChange={(event) => updateField("startTime", event.target.value)}
-              type="time"
-              value={draft.startTime}
+              id="meeting-location"
+              onChange={(event) => updateField("location", event.target.value)}
+              placeholder="회의 장소를 입력하세요"
+              value={draft.location}
             />
           </div>
-          <div className="field">
-            <label htmlFor="meeting-end-time">종료 시간</label>
-            <input
-              id="meeting-end-time"
-              onChange={(event) => updateField("endTime", event.target.value)}
-              type="time"
-              value={draft.endTime}
-            />
-          </div>
+          <TimeField id="meeting-start-time" label="시작 시간" onChange={(next) => updateField("startTime", next)} value={draft.startTime} />
+          <TimeField id="meeting-end-time" label="종료 시간" onChange={(next) => updateField("endTime", next)} value={draft.endTime} />
+          {mode === "edit" && (
+            <div className="field">
+              <label>상태</label>
+              <span className={`status-badge ${status}`}>{meetingStatusLabels[status]}</span>
+            </div>
+          )}
           <div className="field">
             <label htmlFor="meeting-organizer">주관자</label>
             <input
@@ -1016,6 +1044,7 @@ export function MeetingFormModal({
         <AudioAnalysisModal
           agenda={draft.agenda}
           attendeeNames={audioAttendeeNames()}
+          chunkMinutesOverrides={chunkMinutesOverrides}
           dictionary={dictionary}
           onClose={() => {
             setShowAudioAnalysis(false);
