@@ -6,6 +6,29 @@
 
 ---
 
+## `f38b3f6` — 2026-08-31 — feat: fix pyannote embedding bugs, tune speaker-match threshold, add voice profile management
+
+- `pyannote/embedding` 게이트 모델 접근 오류를 완전히 해결. HuggingFace 액세스 승인 문제가 아니라 코드 버그
+  2건이었음: `Model.from_pretrained(..., use_auth_token=...)`가 설치된 `pyannote.audio` 버전에서는
+  `token=`으로 파라미터명이 바뀌어 `**kwargs`로 조용히 무시되고 토큰이 아예 전달되지 않던 문제(`token=`으로
+  수정), 그리고 이 venv에 torchcodec/torchaudio 오디오 백엔드가 없어 `Inference()`가 오디오를 못 읽던
+  문제(Python 표준 `wave` 모듈로 16bit PCM mono WAV를 직접 파싱하도록 변경, 별도 설치 불필요).
+- `diarizeSegments`(라벨이 하나뿐일 때의 폴백, `server/audio/diarize.mjs`) 수정: 진단 신호가 전혀 없을 때
+  "미등록 화자 1"이 아니라 참석자 목록에서 위치 기반으로 실명을 바로 붙이고 있어서, 아직 확인 안 된 구간이
+  이미 확정된 것처럼 보이던 문제.
+- "화자 분리"(`/api/voice-profiles/classify-clips`)가 실제로 아무것도 못 맞추던 문제 수정: 동일 화자라도
+  발화 구간이 다르면 유사도가 0.77~0.79로 나오는데 항상 엄격한 임계값(0.85)만 썼음.
+  `scoreSpeakerProfileMatch`에 이번 회의 참석자로 좁힌 완화 임계값(0.75) fallback을 추가하고, 실측으로
+  "샘플이 적은 프로필이 미등록 화자와의 충돌에서 잘못 이길 수 있다"는 위험이 확인되어 1등 후보가 2등 후보를
+  확실히 앞서야 한다는 마진 조건(`RELAXED_MATCH_MARGIN`)까지 추가로 넣어 재설계.
+- 설정에 **음성 프로필 관리** 섹션 추가: `registerVoiceProfile`은 항상 샘플을 추가만 할 뿐 되돌리는 기능이
+  없어서, 한 번 엉뚱한 이름으로 등록된 샘플을 고칠 방법이 없었음. 이름·샘플 개수 목록 + 확인 다이얼로그가
+  있는 삭제 버튼 추가(`deleteVoiceProfile`, `GET/DELETE /api/voice-profiles`).
+- 메인 화면 4버튼 행에서 "화자 분리" 버튼 제거 - "분석 시작"과 완전히 동일한 핸들러를 호출하던 재설계 이전
+  잔재였음(실제 화자 분리는 오디오 분석 모달 안에 그대로 있음).
+- `data/db/*.json`은 실제 샘플 회의로 라이브 검증한 결과 반영(결제 모듈 개발 현황 점검 대본이 한지민/조은우로
+  정확히 분리됨, 박지훈의 목소리가 잘못 등록되어 있던 오유진 프로필 샘플 제거).
+
 ## `10f722e` — 2026-08-31 — feat: settings contrast fix, TXT import + label round-trip fixes, and 4-stage audio speaker workflow
 
 - Settings: 선택된 LLM/STT 프로바이더 카드와 GPU/CPU·탐색기 방식 토글 버튼의 선택 상태 대비를 높임(라이트/
