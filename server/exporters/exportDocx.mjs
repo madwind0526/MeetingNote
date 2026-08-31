@@ -121,10 +121,15 @@ function buildMinutesParagraphs(minutes) {
 function buildMeetingChildren(meeting) {
   const children = [];
 
-  children.push(new Paragraph({ text: meeting.title || "(제목 없음)", heading: HeadingLevel.HEADING_1 }));
+  // "제목: " prefix (not just a plain heading) matches the label format importDocx.mjs's
+  // title-detection looks for - same convention exportPdf.mjs/exportMd.mjs already use.
+  children.push(new Paragraph({ text: `제목: ${meeting.title || "-"}`, heading: HeadingLevel.HEADING_1 }));
   children.push(new Paragraph(`날짜: ${meeting.date || "-"}`));
-  children.push(new Paragraph(`시간: ${meeting.startTime || "-"} ~ ${meeting.endTime || "-"}`));
+  children.push(new Paragraph(`시작: ${meeting.startTime || "-"}`));
+  children.push(new Paragraph(`종료: ${meeting.endTime || "-"}`));
+  children.push(new Paragraph(`장소: ${meeting.location || "-"}`));
   children.push(new Paragraph(`주관자: ${meeting.organizer || "-"}`));
+  children.push(new Paragraph(`간사: ${meeting.secretary || "-"}`));
   children.push(new Paragraph(`참석자: ${attendeeNamesOf(meeting) || "-"}`));
 
   // A/I List (planned before this meeting) is listed before Agenda (this meeting's own topics).

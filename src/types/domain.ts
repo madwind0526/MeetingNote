@@ -325,7 +325,7 @@ export function matchesFilterTerms(haystack: string, terms: FilterTerm[]): boole
 }
 
 export type ExportFormat = "pdf" | "docx" | "pptx" | "md" | "json";
-export type ImportFormat = "pdf" | "docx" | "pptx" | "md" | "json";
+export type ImportFormat = "pdf" | "docx" | "pptx" | "md" | "txt" | "json";
 export type ImportDuplicateMode = "replace" | "add" | "skip";
 
 export interface MeetingFilters {

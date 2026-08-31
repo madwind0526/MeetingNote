@@ -166,12 +166,17 @@ function addTitleSlide(pptx, meeting) {
   const slide = pptx.addSlide();
 
   slide.addShape("rect", { x: 0, y: 0, w: SLIDE_WIDTH_IN, h: 0.12, fill: { color: ACCENT_COLOR }, line: { type: "none" } });
-  slide.addText(meeting.title || "(제목 없음)", { x: CONTENT_X, y: 1.0, w: CONTENT_WIDTH, h: 1.6, fontSize: 26, bold: true, valign: "top" });
+  // "제목: " prefix matches the label format importPptx.mjs's title-detection looks for - same
+  // convention exportPdf.mjs/exportMd.mjs already use. Kept large/bold so it still reads as a title.
+  slide.addText(`제목: ${meeting.title || "-"}`, { x: CONTENT_X, y: 1.0, w: CONTENT_WIDTH, h: 1.6, fontSize: 26, bold: true, valign: "top" });
   slide.addText(
     [
       { text: `날짜: ${meeting.date || "-"}\n`, options: { fontSize: 14 } },
-      { text: `시간: ${meeting.startTime || "-"} ~ ${meeting.endTime || "-"}\n`, options: { fontSize: 14 } },
+      { text: `시작: ${meeting.startTime || "-"}\n`, options: { fontSize: 14 } },
+      { text: `종료: ${meeting.endTime || "-"}\n`, options: { fontSize: 14 } },
+      { text: `장소: ${meeting.location || "-"}\n`, options: { fontSize: 14 } },
       { text: `주관자: ${meeting.organizer || "-"}\n`, options: { fontSize: 14 } },
+      { text: `간사: ${meeting.secretary || "-"}\n`, options: { fontSize: 14 } },
       { text: `참석자: ${attendeeNamesOf(meeting) || "-"}`, options: { fontSize: 14 } }
     ],
     { x: CONTENT_X, y: 2.9, w: CONTENT_WIDTH, h: 2.5, valign: "top" }

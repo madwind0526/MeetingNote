@@ -51,7 +51,7 @@ import { transcribeNaverClova } from "./server/audio/sttNaverClova.mjs";
 import { checkLocalWhisperAvailable, transcribeLocalWhisperCli } from "./server/audio/sttLocalWhisperCli.mjs";
 import { checkLocalWhisperXAvailable, transcribeLocalWhisperX } from "./server/audio/sttLocalWhisperX.mjs";
 import { diarizeSegments, assignSpeakersWithProfiles } from "./server/audio/diarize.mjs";
-import { registerVoiceProfile } from "./server/voiceProfiles.mjs";
+import { registerVoiceProfile, scoreSpeakerProfileMatch } from "./server/voiceProfiles.mjs";
 import { preprocessAudio } from "./server/audio/audioPreprocess.mjs";
 
 interface LlmMeeting {
@@ -353,7 +353,7 @@ async function readFileNavigatorFile(filePath: string) {
   return { contentBase64: buffer.toString("base64") };
 }
 
-type ImportFormat = "json" | "pdf" | "docx" | "pptx" | "md";
+type ImportFormat = "json" | "pdf" | "docx" | "pptx" | "md" | "txt";
 type ExportFormat = "json" | "pdf" | "docx" | "pptx" | "md";
 const STT_MODEL_IDS_BY_PROVIDER: Record<string, Set<string>> = {
   mock: new Set(["mock"]),
@@ -382,7 +382,11 @@ const IMPORT_PARSERS: Record<ImportFormat, (buffer: Buffer) => Promise<unknown[]
   pdf: (buffer) => parsePdfMeeting(buffer),
   docx: (buffer) => parseDocxMeeting(buffer),
   pptx: (buffer) => parsePptxMeeting(buffer),
-  md: (buffer) => parseMdMeeting(buffer)
+  md: (buffer) => parseMdMeeting(buffer),
+  // .txt reuses the Markdown parser - its plain title/minutes fallback (no heading, no "제목:"
+  // label found) is exactly what a plain-text meeting note needs, and any Markdown decoration it
+  // strips just never appears in real .txt files.
+  txt: (buffer) => parseMdMeeting(buffer)
 };
 
 interface SttJob {
@@ -792,6 +796,59 @@ export default defineConfig(() => {
               sendJson(response, 200, { ok: true });
             } catch (error) {
               sendCaughtError(response, error, "음성 프로필 등록에 실패했습니다.");
+            }
+          });
+
+          // "화자 분리" (re-diarize) button in AudioAnalysisModal: re-matches every speaker
+          // label's already-computed per-cluster embedding against the voice-profile registry as
+          // it stands right now, so labels reinforced/registered earlier in this same session (via
+          // /api/voice-profiles/register on rename) can flip from "미등록"/wrong to a confirmed
+          // name. Label-level only - there's no per-segment embedding to re-cluster individual
+          // utterances with. Scores every label first and claims names by descending score (same
+          // reconciliation as assignSpeakersWithProfiles in diarize.mjs) so two different labels in
+          // this recording can't both end up claiming the same registered name.
+          server.middlewares.use("/api/voice-profiles/rematch", async (request, response) => {
+            try {
+              if (!requireTrusted(request, response) || request.method !== "POST") {
+                sendJson(response, 405, { error: "Method not allowed." });
+                return;
+              }
+
+              const body = JSON.parse(await readRequestBody(request)) as {
+                embeddings?: Record<string, number[]>;
+                attendeeNames?: string[];
+              };
+              const embeddings = body.embeddings && typeof body.embeddings === "object" ? body.embeddings : {};
+              const attendeeNames = Array.isArray(body.attendeeNames) ? body.attendeeNames : [];
+
+              const candidates: { label: string; match: { name: string; score: number } | null }[] = [];
+              for (const [label, embedding] of Object.entries(embeddings)) {
+                const match = Array.isArray(embedding) && embedding.length > 0 ? await scoreSpeakerProfileMatch(embedding, attendeeNames, null) : null;
+                candidates.push({ label, match });
+              }
+
+              const claimedNames = new Set<string>();
+              const speakerMap: Record<string, string | null> = {};
+              const byScoreDesc = candidates
+                .filter((candidate): candidate is { label: string; match: { name: string; score: number } } => Boolean(candidate.match))
+                .sort((a, b) => b.match.score - a.match.score);
+
+              for (const { label, match } of byScoreDesc) {
+                if (claimedNames.has(match.name)) {
+                  continue;
+                }
+                claimedNames.add(match.name);
+                speakerMap[label] = match.name;
+              }
+              for (const { label } of candidates) {
+                if (!(label in speakerMap)) {
+                  speakerMap[label] = null;
+                }
+              }
+
+              sendJson(response, 200, { speakerMap });
+            } catch (error) {
+              sendCaughtError(response, error, "화자 재매칭에 실패했습니다.");
             }
           });
 

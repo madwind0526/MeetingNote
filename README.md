@@ -19,7 +19,7 @@ npm start
 
 - 회의록 List/Card 보기
 - 회의 기본 정보, 참석자, A/I List, Agenda 편집
-- PDF, Word, PowerPoint, JSON 가져오기/내보내기
+- PDF, Word, PowerPoint, Markdown, Text, JSON 가져오기/내보내기
 - 파일 업로드/PC 소리 녹음 오디오를 청크 단위로 실시간 분석(전체·화자별 파형, 대본 불러오기/발언자 수정)
 - 원본 파형과 전처리 파형 비교 재생
 - Demucs 음성 분리, DeNoise, 정규화 전처리
@@ -27,6 +27,27 @@ npm start
 - 발표 자료(PDF/Word/PPT) 자동 Markdown 변환 + 앱 내 뷰어
 - LLM(Claude CLI/Anthropic API/Ollama) 기반 발표별 내용 정리, 회의록 자동 작성, 회의록 질의
 - 약어/수정 사전 자동·소급 치환 (STT 오인식 교정)
+
+## 가져오기/내보내기 형식
+
+"새 회의록 등록"의 "파일에서 가져오기"와 "DB복원"은 PDF/Word(docx)/PowerPoint(pptx)/Markdown(md)/
+Text(txt)/JSON 6종을 지원합니다.
+
+- **라벨 인식**: `제목:`/`날짜:`/`시작:`/`종료:`/`장소:`/`주관자:`/`간사:`/`참석자:` 형식의 줄을 찾아
+  회의 기본 정보를 채웁니다. `주관자`/`참석자`는 `주관`/`참석` 같은 2글자 축약형도 인식하고, `제 목`처럼
+  글자 사이에 공백이 섞여도(정렬용으로 흔히 들어가는 공백) 인식됩니다.
+- **Agenda/A·I List 인식**: `숫자. 제목 (발표시간: N분, 발표자: 이름, 자료: 파일명)`(Agenda),
+  `숫자. 제목 (발표자료: 파일명, 발표자: 이름)`(A/I List) 형식의 **평문 번호 목록 줄**만 인식합니다.
+- **PDF/Markdown/Text/JSON**: 이 앱이 내보낸 파일을 그대로 다시 가져오면 회의 기본 정보 +
+  Agenda/A·I List까지 전부 복원됩니다(완전 라운드트립).
+- **Word(docx)/PowerPoint(pptx)**: 이 앱의 내보내기는 Agenda/A·I List를 실제 Word/PPT
+  **표(Table)**로 만드는데, 가져오기 쪽은 표를 읽지 않고 위 평문 목록 형식만 인식합니다. 따라서 이 앱이
+  내보낸 docx/pptx를 다시 가져오면 회의 기본 정보(제목~참석자)만 복원되고 Agenda/A·I List는 비어서
+  들어옵니다. docx/pptx라도 표 없이 평문 번호 목록으로 직접 작성한 파일이라면 Agenda/A·I List까지 정상
+  인식됩니다.
+- Word/PowerPoint/Text 파일에 위 라벨 형식이 전혀 없으면, 첫 줄을 제목으로 나머지 텍스트를 회의록
+  초안으로 채우는 방식으로 대체(fallback)합니다.
+- `imports/회의록 불러오기.{txt,md,json,pdf,docx,pptx}`에 형식별 테스트용 샘플 파일이 있습니다.
 
 ## 스크린샷
 
@@ -398,9 +419,17 @@ setx OPENAI_API_KEY "sk-..."
 .\.venv-whisperx\Scripts\pip.exe install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128
 ```
 
-### torchcodec import 에러
+### torchcodec import 에러 / DLL을 찾을 수 없다는 에러
 
-대부분 FFmpeg shared DLL을 못 찾는 문제입니다.
+대부분 FFmpeg shared DLL을 못 찾는 문제입니다. `MEETINGNOTE_FFMPEG_BIN`/`PATH` 환경 변수만으로는 WhisperX가
+여전히 DLL을 못 찾는 경우가 있는데, 이때는 FFmpeg의 `*.dll`을 torchcodec 패키지 폴더 안에 직접 복사하면
+해결됩니다.
+
+```powershell
+Copy-Item "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin\*.dll" ".\.venv-whisperx\Lib\site-packages\torchcodec\"
+```
+
+복사 후 확인:
 
 ```powershell
 $env:PATH = "D:\ffmpeg\ffmpeg-7.1.1-full_build-shared\bin;$env:PATH"

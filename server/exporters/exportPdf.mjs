@@ -174,7 +174,9 @@ function writeMeetingBody(doc, meeting, { hasBoldFont }) {
   doc.text(`날짜: ${meeting.date || "-"}`);
   doc.text(`시작: ${meeting.startTime || "-"}`);
   doc.text(`종료: ${meeting.endTime || "-"}`);
+  doc.text(`장소: ${meeting.location || "-"}`);
   doc.text(`주관자: ${meeting.organizer || "-"}`);
+  doc.text(`간사: ${meeting.secretary || "-"}`);
   doc.text(`참석자: ${attendeeNamesOf(meeting) || "-"}`);
   doc.moveDown(0.6);
 

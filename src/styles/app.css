@@ -1701,8 +1701,22 @@ p {
 }
 
 .llm-provider-item.active {
-  border-color: rgba(31, 111, 104, 0.5);
-  background: rgba(31, 111, 104, 0.1);
+  border-color: #1f6f68;
+  border-width: 1.5px;
+  background: rgba(31, 111, 104, 0.16);
+}
+
+.llm-provider-item.active .llm-provider-item-title strong {
+  color: #1f6f68;
+}
+
+.dark .llm-provider-item.active {
+  border-color: #8ed8c8;
+  background: rgba(142, 216, 200, 0.16);
+}
+
+.dark .llm-provider-item.active .llm-provider-item-title strong {
+  color: #8ed8c8;
 }
 
 /* The action button sits right after wherever the title/description text ends, with a small
@@ -2313,12 +2327,16 @@ p {
 }
 
 .format-choice-button.active {
-  border-color: rgba(31, 111, 104, 0.5);
-  background: rgba(31, 111, 104, 0.14);
+  border-color: #1f6f68;
+  border-width: 1.5px;
+  background: rgba(31, 111, 104, 0.16);
   color: #1f6f68;
+  font-weight: 650;
 }
 
 .dark .format-choice-button.active {
+  border-color: #8ed8c8;
+  background: rgba(142, 216, 200, 0.16);
   color: #8ed8c8;
 }
 
@@ -3170,6 +3188,8 @@ p {
   font-family: inherit;
   padding: 0;
   cursor: pointer;
+  width: 6.5em;
+  min-width: 4em;
 }
 
 .dark .audio-analysis-transcript-speaker-select {

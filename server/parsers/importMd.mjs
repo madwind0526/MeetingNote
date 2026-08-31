@@ -22,13 +22,22 @@ function emptyDraft() {
     date: "",
     startTime: "",
     endTime: "",
+    location: "",
     organizer: "",
+    secretary: "",
     attendees: [],
     actionItems: [],
     agenda: [],
     audio: null,
     minutes: ""
   };
+}
+
+// Third-party notes sometimes space out label characters for visual alignment (e.g. "제 목",
+// "주 관", "장 소") - stripping all whitespace (including fullwidth U+3000) before comparing lets
+// "제 목" still match "제목".
+function normalizeLabel(label) {
+  return label.replace(/[\s　]+/g, "");
 }
 
 // Strips common Markdown decoration (heading #, bullet -/*, bold **) so the same label-line
@@ -56,7 +65,10 @@ function parseSingleMeeting(rawText) {
   }
 
   const isHeading = /^#\s+(.+)/.test(rawLines[firstContentIndex]);
-  const hasLabelHeader = rawLines.slice(firstContentIndex).some((line) => /^\s*제목\s*[:：]/.test(stripMdSyntax(line)));
+  const hasLabelHeader = rawLines.slice(firstContentIndex).some((line) => {
+    const match = LABEL_LINE_RE.exec(stripMdSyntax(line));
+    return match ? normalizeLabel(match[1]) === "제목" : false;
+  });
 
   if (!isHeading && !hasLabelHeader) {
     const draft = emptyDraft();
@@ -104,7 +116,7 @@ function parseSingleMeeting(rawText) {
         continue;
       }
 
-      const label = match[1].trim();
+      const label = normalizeLabel(match[1]);
       const value = match[2].trim();
 
       if (label === "제목") {
@@ -124,9 +136,13 @@ function parseSingleMeeting(rawText) {
         } else {
           draft.date = value;
         }
-      } else if (label === "주관자") {
+      } else if (label === "장소") {
+        draft.location = value;
+      } else if (label === "주관자" || label === "주관") {
         draft.organizer = value;
-      } else if (label === "참석자") {
+      } else if (label === "간사") {
+        draft.secretary = value;
+      } else if (label === "참석자" || label === "참석") {
         draft.attendees = value.split(",").map((name) => name.trim()).filter(Boolean).map(makeAttendee);
       }
     } else if (section === "agenda") {

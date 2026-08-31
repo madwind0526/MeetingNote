@@ -283,6 +283,7 @@ const IMPORT_EXTENSION_FORMATS: Record<string, ImportFormat> = {
   pptx: "pptx",
   md: "md",
   markdown: "md",
+  txt: "txt",
   json: "json"
 };
 
@@ -514,4 +515,18 @@ export async function registerVoiceProfileRequest(name: string, embedding: numbe
     body: JSON.stringify({ name, embedding })
   });
   await parseJsonResponse<{ ok: boolean }>(response);
+}
+
+export async function rematchSpeakerProfilesRequest(
+  embeddings: Record<string, number[]>,
+  attendeeNames: string[]
+): Promise<Record<string, string | null>> {
+  const response = await fetch("/api/voice-profiles/rematch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ embeddings, attendeeNames })
+  });
+  const payload = await parseJsonResponse<{ speakerMap: Record<string, string | null> }>(response);
+
+  return payload.speakerMap;
 }

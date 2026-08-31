@@ -95,7 +95,14 @@ function meanEmbedding(samples) {
 // would let a wrong agenda guess steal a name away from a confident blind match. Only once the
 // blind search comes up empty does the hint get a chance, at the lower RELAXED_SIMILARITY_
 // THRESHOLD, to recover a same-speaker match that fell just short of the strict bar.
-export async function matchSpeakerProfile(embedding, meetingAttendeeNames, hintedName) {
+// Same matching logic as matchSpeakerProfile, but returns the score alongside the name instead of
+// just the name. Exists so a caller matching SEVERAL labels from the SAME recording (see
+// diarize.mjs's assignSpeakersWithProfiles and vite.config.mts's /api/voice-profiles/rematch) can
+// reconcile cross-label conflicts itself: diarization clustering two labels apart already proves
+// they're different people, so if both independently clear the threshold against the same stored
+// profile, only the closer-scoring one should actually claim that name - matchSpeakerProfile()
+// alone can't express that since it only ever sees one label's embedding at a time.
+export async function scoreSpeakerProfileMatch(embedding, meetingAttendeeNames, hintedName) {
   if (!Array.isArray(embedding) || embedding.length === 0) {
     return null;
   }
@@ -105,24 +112,29 @@ export async function matchSpeakerProfile(embedding, meetingAttendeeNames, hinte
     return null;
   }
 
-  const allScored = profiles.map((profile) => ({ profile, score: cosineSimilarity(embedding, meanEmbedding(profile.embeddings)) }));
+  const allScored = profiles.map((profile) => ({ name: profile.name, score: cosineSimilarity(embedding, meanEmbedding(profile.embeddings)) }));
   const scored = allScored.filter((entry) => entry.score >= SIMILARITY_THRESHOLD).sort((a, b) => b.score - a.score);
 
   if (scored.length > 0) {
     const attendeeNames = new Set((meetingAttendeeNames || []).filter(Boolean));
-    const attendeeMatch = scored.find((entry) => attendeeNames.has(entry.profile.name));
+    const attendeeMatch = scored.find((entry) => attendeeNames.has(entry.name));
 
-    return (attendeeMatch ?? scored[0]).profile.name;
+    return attendeeMatch ?? scored[0];
   }
 
   if (hintedName) {
-    const hinted = allScored.find((entry) => entry.profile.name === hintedName);
+    const hinted = allScored.find((entry) => entry.name === hintedName);
     if (hinted && hinted.score >= RELAXED_SIMILARITY_THRESHOLD) {
-      return hinted.profile.name;
+      return hinted;
     }
   }
 
   return null;
+}
+
+export async function matchSpeakerProfile(embedding, meetingAttendeeNames, hintedName) {
+  const match = await scoreSpeakerProfileMatch(embedding, meetingAttendeeNames, hintedName);
+  return match?.name ?? null;
 }
 
 // Registers a brand-new profile, or reinforces an existing one with another sample - called both

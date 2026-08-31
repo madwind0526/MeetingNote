@@ -23,7 +23,9 @@ function emptyDraft() {
     date: "",
     startTime: "",
     endTime: "",
+    location: "",
     organizer: "",
+    secretary: "",
     attendees: [],
     actionItems: [],
     agenda: [],
@@ -32,12 +34,22 @@ function emptyDraft() {
   };
 }
 
+// Third-party notes sometimes space out label characters for visual alignment (e.g. "제 목",
+// "주 관", "장 소") - stripping all whitespace (including fullwidth U+3000) before comparing lets
+// "제 목" still match "제목".
+function normalizeLabel(label) {
+  return label.replace(/[\s　]+/g, "");
+}
+
 // Best-effort only: reliably round-trips the plain text mammoth extracts from a .docx that used
 // the same "제목:/날짜:/시작:/종료:/주관자:/참석자:" + Agenda/A/I List/회의록 label format our own
 // PDF export uses. Arbitrary third-party .docx files fall back to a plain title/minutes split.
 function parseMeetingText(rawText) {
   const lines = rawText.replace(/\r\n/g, "\n").split("\n");
-  const titleLineIndex = lines.findIndex((line) => /^\s*제목\s*[:：]/.test(line));
+  const titleLineIndex = lines.findIndex((line) => {
+    const match = LABEL_LINE_RE.exec(line.trim());
+    return match ? normalizeLabel(match[1]) === "제목" : false;
+  });
 
   if (titleLineIndex === -1) {
     const firstNonEmptyIndex = lines.findIndex((line) => line.trim());
@@ -87,7 +99,7 @@ function parseMeetingText(rawText) {
         continue;
       }
 
-      const label = match[1].trim();
+      const label = normalizeLabel(match[1]);
       const value = match[2].trim();
 
       if (label === "제목") {
@@ -107,9 +119,13 @@ function parseMeetingText(rawText) {
         } else {
           draft.date = value;
         }
-      } else if (label === "주관자") {
+      } else if (label === "장소") {
+        draft.location = value;
+      } else if (label === "주관자" || label === "주관") {
         draft.organizer = value;
-      } else if (label === "참석자") {
+      } else if (label === "간사") {
+        draft.secretary = value;
+      } else if (label === "참석자" || label === "참석") {
         draft.attendees = value.split(",").map((name) => name.trim()).filter(Boolean).map(makeAttendee);
       }
     } else if (section === "agenda") {

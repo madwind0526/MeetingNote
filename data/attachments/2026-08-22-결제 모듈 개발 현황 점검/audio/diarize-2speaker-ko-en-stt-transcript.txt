@@ -1,0 +1,5 @@
+[00:00-00:07] 한지민: Good morning everyone. Let's start today's meeting. First, let's review last week's progress on the project.
+[00:08-00:15] 조민지: 네. 지난주에는 결제 모듈 개발을 완료했고, 이번 주부터는 테스트를 진행할 예정입니다.
+[00:16-00:20] 한지민: That sounds great. Do you think we can finish testing by Friday?
+[00:21-00:28] 조은우: 네. 금요일까지 충분히 마무리할 수 있을 것 같습니다. 추가 인력도 필요 없을 것 같아요.
+[00:28-00:34] 한지민: Perfect. Thank you for the update. Let's move on to the next agenda item.

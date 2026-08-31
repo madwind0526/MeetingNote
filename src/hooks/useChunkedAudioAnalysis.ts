@@ -476,17 +476,46 @@ export function useChunkedAudioAnalysis() {
     [reset]
   );
 
-  // Reassigns a single utterance to a different (already-known) speaker label - the waveform lane
-  // it shows up in follows automatically since speakerMasks in AudioAnalysisModal is derived from
-  // transcriptSegments[].speaker, not tracked separately.
-  const updateSegmentSpeaker = useCallback((segmentIndex: number, newSpeaker: string) => {
+  // Reassigns a single utterance to a speaker label - the waveform lane it shows up in follows
+  // automatically since speakerMasks in AudioAnalysisModal is derived from
+  // transcriptSegments[].speaker, not tracked separately. `newSpeaker` doesn't have to be an
+  // already-known label: AudioAnalysisModal's per-segment input lets the user type a brand-new
+  // name for just one utterance (labels are just string keys, nothing requires the
+  // diarization-style "SPEAKER_00" shape), which registers it as a new label here so only this
+  // segment moves - every other segment still sharing the old label is untouched. `displayName`
+  // seeds that new label's entry (defaults to the label itself when omitted).
+  const updateSegmentSpeaker = useCallback((segmentIndex: number, newSpeaker: string, displayName?: string) => {
     setResult((current) => {
       if (!current || !current.transcriptSegments[segmentIndex]) {
         return current;
       }
       const nextSegments = current.transcriptSegments.slice();
       nextSegments[segmentIndex] = { ...nextSegments[segmentIndex], speaker: newSpeaker };
-      return { ...current, transcriptSegments: nextSegments };
+      const nextSpeakerMap =
+        newSpeaker in current.speakerMap ? current.speakerMap : { ...current.speakerMap, [newSpeaker]: displayName ?? newSpeaker };
+      return { ...current, transcriptSegments: nextSegments, speakerMap: nextSpeakerMap };
+    });
+  }, []);
+
+  // Merges one or more labels into `intoLabel`: every segment currently on a `fromLabel` moves to
+  // `intoLabel`, and the `fromLabel` entries are dropped from speakerMap - used when a rename
+  // (via the 화자별 파형/화자 목록 name input) would otherwise leave two different labels
+  // displaying the same name, e.g. because a per-segment edit already minted a new label with that
+  // name for one utterance before this label got renamed to match it.
+  const mergeSpeakerLabels = useCallback((fromLabels: string[], intoLabel: string) => {
+    setResult((current) => {
+      if (!current) {
+        return current;
+      }
+      const fromSet = new Set(fromLabels);
+      const nextSegments = current.transcriptSegments.map((segment) =>
+        fromSet.has(segment.speaker) ? { ...segment, speaker: intoLabel } : segment
+      );
+      const nextSpeakerMap = { ...current.speakerMap };
+      for (const label of fromLabels) {
+        delete nextSpeakerMap[label];
+      }
+      return { ...current, transcriptSegments: nextSegments, speakerMap: nextSpeakerMap };
     });
   }, []);
 
@@ -507,6 +536,7 @@ export function useChunkedAudioAnalysis() {
     reset,
     applyTextCorrection,
     loadExternalTranscript,
-    updateSegmentSpeaker
+    updateSegmentSpeaker,
+    mergeSpeakerLabels
   };
 }

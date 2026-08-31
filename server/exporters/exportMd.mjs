@@ -12,7 +12,9 @@ function writeMeetingBody(meeting) {
   lines.push(`- 날짜: ${meeting.date || "-"}`);
   lines.push(`- 시작: ${meeting.startTime || "-"}`);
   lines.push(`- 종료: ${meeting.endTime || "-"}`);
+  lines.push(`- 장소: ${meeting.location || "-"}`);
   lines.push(`- 주관자: ${meeting.organizer || "-"}`);
+  lines.push(`- 간사: ${meeting.secretary || "-"}`);
   lines.push(`- 참석자: ${attendeeNamesOf(meeting) || "-"}`);
   lines.push("");
 

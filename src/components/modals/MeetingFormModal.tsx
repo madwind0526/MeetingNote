@@ -26,7 +26,7 @@ import {
   emptyMeetingDraft,
   meetingStatusLabels
 } from "../../types/domain";
-import { generateMinutes } from "../../lib/llm";
+import { generateMinutes, generatePresentationSummary } from "../../lib/llm";
 import type { OllamaConfig } from "../../lib/llm";
 import { fetchAttachmentAsFile, importMeetingsRequest, inferImportFormat, openAttachment, uploadAttachment } from "../../lib/api";
 import { pickFileWithConfiguredPicker } from "../../lib/filePicker";
@@ -179,6 +179,8 @@ export function MeetingFormModal({
   const [showMinutesPreview, setShowMinutesPreview] = useState(false);
   const [isGeneratingMinutes, setIsGeneratingMinutes] = useState(false);
   const [minutesError, setMinutesError] = useState("");
+  const [isGeneratingSummaries, setIsGeneratingSummaries] = useState(false);
+  const [summariesError, setSummariesError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [isImportingFile, setIsImportingFile] = useState(false);
@@ -214,7 +216,7 @@ export function MeetingFormModal({
   const processImportFile = async (file: File) => {
     const format = inferImportFormat(file.name);
     if (!format) {
-      setImportFileError("지원하지 않는 파일 형식입니다. (PDF, Word, PowerPoint, Markdown, JSON)");
+      setImportFileError("지원하지 않는 파일 형식입니다. (PDF, Word, PowerPoint, Markdown, Text, JSON)");
       return;
     }
 
@@ -236,7 +238,9 @@ export function MeetingFormModal({
         date: parsedDraft.date,
         startTime: parsedDraft.startTime,
         endTime: parsedDraft.endTime,
+        location: parsedDraft.location,
         organizer: parsedDraft.organizer,
+        secretary: parsedDraft.secretary,
         attendees: parsedDraft.attendees,
         actionItems: parsedDraft.actionItems,
         agenda: parsedDraft.agenda,
@@ -263,7 +267,7 @@ export function MeetingFormModal({
   };
 
   const triggerImportFilePick = async () => {
-    const result = await pickFileWithConfiguredPicker([".pdf", ".docx", ".pptx", ".md", ".markdown", ".json"], "회의록 파일 선택");
+    const result = await pickFileWithConfiguredPicker([".pdf", ".docx", ".pptx", ".md", ".markdown", ".txt", ".json"], "회의록 파일 선택");
     if (result.handled) {
       if (result.file) {
         await processImportFile(result.file);
@@ -499,6 +503,37 @@ export function MeetingFormModal({
     return Array.from(new Set([...presenters, ...otherKeyAttendees])).filter(Boolean);
   };
 
+  // ---------- Presentation summaries (bulk) ----------
+
+  // "발표 정리" button: runs B5 (PresentationSummaryModal's "자동 정리") for every Agenda item in
+  // one action instead of opening each item's popup one at a time. Sequential (not parallel) to
+  // avoid piling concurrent requests onto a local Ollama/Whisper-adjacent box; each item's result
+  // is applied as soon as it finishes so progress is visible instead of an all-or-nothing wait.
+  // The per-row bot-icon popup (setSummaryTargetNo) stays untouched for viewing/manually redoing
+  // a single item.
+  const handleGenerateAllPresentationSummaries = async () => {
+    setIsGeneratingSummaries(true);
+    setSummariesError("");
+    const failedTitles: string[] = [];
+
+    for (const item of draft.agenda) {
+      try {
+        const summary = await generatePresentationSummary(llmProvider, meetingForGeneration, item.no, ollamaConfig);
+        setDraft((current) => ({
+          ...current,
+          agenda: current.agenda.map((agendaItem) => (agendaItem.no === item.no ? { ...agendaItem, presentationSummary: summary } : agendaItem))
+        }));
+      } catch {
+        failedTitles.push(item.title || `#${item.no}`);
+      }
+    }
+
+    if (failedTitles.length > 0) {
+      setSummariesError(`다음 항목 정리에 실패했습니다: ${failedTitles.join(", ")}`);
+    }
+    setIsGeneratingSummaries(false);
+  };
+
   // ---------- Minutes generation ----------
 
   const handleGenerateMinutes = async () => {
@@ -583,10 +618,10 @@ export function MeetingFormModal({
                 <FileInput size={15} />
                 {isImportingFile ? "가져오는 중..." : "파일에서 가져오기"}
               </button>
-              <span className="field-hint">PDF, Word, PowerPoint, Markdown, JSON 회의록 파일을 선택하면 아래 항목이 자동으로 채워집니다.</span>
+              <span className="field-hint">PDF, Word, PowerPoint, Markdown, Text, JSON 회의록 파일을 선택하면 아래 항목이 자동으로 채워집니다.</span>
             </div>
             <input
-              accept=".pdf,.docx,.pptx,.md,.markdown,.json"
+              accept=".pdf,.docx,.pptx,.md,.markdown,.txt,.json"
               hidden
               onChange={handleImportFileChange}
               ref={importFileInputRef}
@@ -985,10 +1020,28 @@ export function MeetingFormModal({
             >
               {isLoadingExistingAudio ? "불러오는 중..." : "분석 시작"}
             </button>
+            <button
+              className="primary-action"
+              disabled={!draft.audio?.transcriptSegments.length || isLoadingExistingAudio}
+              onClick={() => void handleOpenAudioAnalysis()}
+              title="발표 대본에서 화자를 고치고, 지금까지 등록된 음성 프로필로 다시 화자를 매칭합니다"
+              type="button"
+            >
+              화자 분리
+            </button>
+            <button
+              className="primary-action"
+              disabled={!draft.audio || draft.agenda.length === 0 || isGeneratingSummaries}
+              onClick={() => void handleGenerateAllPresentationSummaries()}
+              type="button"
+            >
+              {isGeneratingSummaries ? "정리 중..." : "발표 정리"}
+            </button>
             <button className="primary-action" disabled={isGeneratingMinutes} onClick={handleGenerateMinutes} type="button">
               {isGeneratingMinutes ? "작성 중..." : "회의록 작성"}
             </button>
             {minutesError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{minutesError}</span>}
+            {summariesError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{summariesError}</span>}
           </div>
           {existingAudioLoadError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{existingAudioLoadError}</span>}
           {transcriptText && (
@@ -1046,6 +1099,7 @@ export function MeetingFormModal({
           attendeeNames={audioAttendeeNames()}
           chunkMinutesOverrides={chunkMinutesOverrides}
           dictionary={dictionary}
+          existingAnalysis={draft.audio ?? undefined}
           onClose={() => {
             setShowAudioAnalysis(false);
             setAudioSourceMode(null);

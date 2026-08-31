@@ -1,4 +1,4 @@
-import { matchSpeakerProfile, registerVoiceProfile } from "../voiceProfiles.mjs";
+import { scoreSpeakerProfileMatch, registerVoiceProfile } from "../voiceProfiles.mjs";
 
 // Speaker labels are preserved when an STT provider returns them. Providers without real
 // diarization are treated as a single-speaker transcript instead of inventing extra speakers from
@@ -106,29 +106,54 @@ export function diarizeSegments(segments, attendeeNames) {
 // memory-bank/roadmap.md's confirmed design. A confirmed match is immediately reinforced with this
 // fresh embedding sample; an unmatched speaker is left unregistered until the user manually
 // renames it in the UI (see UNREGISTERED_SPEAKER_PREFIX above).
+//
+// Two-pass on purpose: score every label first, then claim names by descending score, instead of
+// matching+registering one label at a time. Diarization has already told us the labels in this
+// recording are different people (that's what makes them separate labels), so if two of them
+// independently clear the threshold against the SAME stored profile, only the closer-scoring one
+// should actually get that name - matching label-by-label let both claim it, silently merging two
+// different speakers into one profile (confirmed via live testing: a synthetic 2-speaker clip had
+// both speakers come back as the same registered name on a repeat analysis run).
 export async function assignSpeakersWithProfiles(segments, attendeeNames, embeddings, agenda) {
   const names = Array.isArray(attendeeNames) ? attendeeNames : [];
   const labels = uniqueLabels(segments);
   const transcriptSegments = buildTranscriptSegments(segments);
   const agendaWindows = computeAgendaWindows(agenda);
 
-  const speakerMap = {};
-  let unregisteredCount = 0;
-
+  const candidates = [];
   for (const label of labels) {
     const embedding = embeddings ? embeddings[label] : null;
+    if (!embedding) {
+      candidates.push({ label, embedding, match: null });
+      continue;
+    }
     const hintedName = agendaWindows.length
       ? hintedPresenterForLabel(
           segments.filter((segment) => segment.speaker === label),
           agendaWindows
         )
       : null;
-    const matchedName = embedding ? await matchSpeakerProfile(embedding, names, hintedName) : null;
+    candidates.push({ label, embedding, match: await scoreSpeakerProfileMatch(embedding, names, hintedName) });
+  }
 
-    if (matchedName) {
-      speakerMap[label] = matchedName;
-      await registerVoiceProfile(matchedName, embedding);
-    } else {
+  const claimedNames = new Set();
+  const speakerMap = {};
+  const wonLabels = new Set();
+
+  const byScoreDesc = candidates.filter((candidate) => candidate.match).sort((a, b) => b.match.score - a.match.score);
+  for (const { label, embedding, match } of byScoreDesc) {
+    if (claimedNames.has(match.name)) {
+      continue;
+    }
+    claimedNames.add(match.name);
+    speakerMap[label] = match.name;
+    wonLabels.add(label);
+    await registerVoiceProfile(match.name, embedding);
+  }
+
+  let unregisteredCount = 0;
+  for (const label of labels) {
+    if (!wonLabels.has(label)) {
       unregisteredCount += 1;
       speakerMap[label] = `${UNREGISTERED_SPEAKER_PREFIX}${unregisteredCount}`;
     }
