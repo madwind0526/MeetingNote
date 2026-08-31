@@ -6,6 +6,32 @@
 
 ---
 
+## `10f722e` — 2026-08-31 — feat: settings contrast fix, TXT import + label round-trip fixes, and 4-stage audio speaker workflow
+
+- Settings: 선택된 LLM/STT 프로바이더 카드와 GPU/CPU·탐색기 방식 토글 버튼의 선택 상태 대비를 높임(라이트/
+  다크 모두) - 기존엔 hover 상태와 거의 구분이 안 됐음.
+- 가져오기: "파일에서 가져오기"에 Text(.txt) 형식 추가(`importMd.mjs`의 라벨 파서 재사용). 추가하는 과정에서
+  4개 가져오기/내보내기 형식 전반에 걸쳐 있던 기존 라운드트립 버그들도 같이 수정: 라벨 매칭이 글자 사이
+  공백("제 목" → "제목")을 허용하도록, 장소(location)/간사(secretary)가 어느 가져오기·내보내기 경로에도
+  없던 것, docx/pptx 내보내기가 날짜/시간/제목을 자기 자신도 못 읽는 형식으로 쓰던 것(이번 세션 이전부터
+  있던 버그), pptx 슬라이드 텍스트 추출이 모든 텍스트 런을 한 줄로 뭉개서 제목 슬라이드의 여러 필드 파싱이
+  깨지던 것.
+- README: 가져오기/내보내기 지원 형식과 라운드트립 한계 문서화(DOCX/PPTX의 Agenda/A-I List는 평문 번호
+  목록으로만 살아남고 실제 표는 못 읽음), FFmpeg torchcodec DLL 못 찾는 문제 트러블슈팅을 PATH 설정만으로는
+  부족할 때 FFmpeg *.dll을 torchcodec 폴더에 직접 복사하는 방법으로 갱신.
+- 회의 음성 분석: "분석 시작"/"회의록 작성" 2단계를 분석 시작/화자 분리/발표 정리/회의록 작성 4단계로
+  분리. "화자 분리"는 저장된 회의의 대본을(원시 라벨이 아니라 저장된 화자 이름까지) 자동 로딩한 채로
+  `AudioAnalysisModal`을 재오픈하고, 화자 이름을 바꾸면 즉시 음성 프로필을 등록/보강하며, "분석 시작" 옆의
+  "다시 화자 분리" 버튼은 지금까지 등록된 프로필로 모든 화자 라벨을 다시 매칭함. 새
+  `/api/voice-profiles/rematch` 라우트(`server/voiceProfiles.mjs`의 `scoreSpeakerProfileMatch`)와,
+  이 라우트·`assignSpeakersWithProfiles` 양쪽에 점수 기준으로 이름을 선점하는 2단계 매칭을 추가해서 한
+  녹음 안의 서로 다른 두 화자가 같은 저장된 프로필로 동시에 매칭되는 것을 막음. 세그먼트별 화자 입력을
+  드롭다운에서 자유 입력으로 바꿔서, 안 겹치는 이름을 입력하면 그 세그먼트가 속한 라벨만 이름이 바뀌고
+  (다른 세그먼트는 그대로), 다른 라벨과 이름이 겹치게 되면 자동으로 병합해서 동명이인이 남지 않게 함.
+  "발표 정리"는 모든 Agenda 항목의 B5 정리를 한 번에 순차 생성(기존 항목별 팝업은 그대로 유지).
+- `imports/회의록 불러오기.{txt,md,json,pdf,docx,pptx}` 테스트 샘플 파일과 `RevisionNote.md`(이 파일,
+  커밋별 변경 이력 - 앞으로 커밋할 때마다 계속 추가) 추가.
+
 ## `e39fb33` — 2026-08-29 — feat: adaptive STT chunk sizing, meeting location field, real-time refresh, and long-meeting fixes
 
 - STT 청크 크기가 회의 길이에 따라 자동 조정(1/2/5분 구간)되도록 하고 Settings에서 값을 조정할 수 있게 함.
