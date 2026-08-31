@@ -46,6 +46,17 @@ export function mixDownToMono(audioBuffer: AudioBuffer): Float32Array {
   return mono;
 }
 
+// Crops [startSec, endSec) out of an already-decoded AudioBuffer and re-encodes just that range
+// as its own standalone WAV blob - used to build a short, single-utterance clip for per-segment
+// voice-profile enrollment/classification (see AudioAnalysisModal.tsx) without re-uploading the
+// whole recording just to embed one line.
+export function sliceAudioBufferToWav(buffer: AudioBuffer, startSec: number, endSec: number): Blob {
+  const mono = mixDownToMono(buffer);
+  const startSample = Math.max(0, Math.floor(startSec * buffer.sampleRate));
+  const endSample = Math.min(mono.length, Math.ceil(endSec * buffer.sampleRate));
+  return encodeWav(mono.subarray(startSample, Math.max(startSample, endSample)), buffer.sampleRate);
+}
+
 export function computeEnvelopeFromMono(mono: Float32Array, bucketCount: number): Float32Array {
   const envelope = new Float32Array(bucketCount);
 

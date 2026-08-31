@@ -18,6 +18,9 @@ import {
 
 const MAX_IMPORT_FILE_BYTES = 80 * 1024 * 1024;
 const MAX_AUDIO_FILE_BYTES = 200 * 1024 * 1024;
+// A single-segment clip is at most a few minutes of 16kHz mono audio - generous cap, not a
+// realistic ceiling.
+const MAX_AUDIO_CLIP_BYTES = 20 * 1024 * 1024;
 
 export interface ImportSummary {
   createdCount: number;
@@ -517,16 +520,59 @@ export async function registerVoiceProfileRequest(name: string, embedding: numbe
   await parseJsonResponse<{ ok: boolean }>(response);
 }
 
-export async function rematchSpeakerProfilesRequest(
-  embeddings: Record<string, number[]>,
+export async function fetchVoiceProfileNamesRequest(): Promise<string[]> {
+  const response = await fetch("/api/voice-profiles");
+  const payload = await parseJsonResponse<{ names: string[] }>(response);
+
+  return payload.names;
+}
+
+export interface VoiceProfileSummary {
+  name: string;
+  sampleCount: number;
+}
+
+export async function fetchVoiceProfilesRequest(): Promise<VoiceProfileSummary[]> {
+  const response = await fetch("/api/voice-profiles");
+  const payload = await parseJsonResponse<{ profiles: VoiceProfileSummary[] }>(response);
+
+  return payload.profiles;
+}
+
+// Removes a profile entirely - the only way to recover from a wrongly-tagged sample, since
+// registerVoiceProfile only ever appends (see its comment in server/voiceProfiles.mjs).
+export async function deleteVoiceProfileRequest(name: string): Promise<void> {
+  const response = await fetch("/api/voice-profiles", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name })
+  });
+
+  await parseJsonResponse<{ ok: boolean }>(response);
+}
+
+export interface ClipClassification {
+  embedding: number[] | null;
+  matchedName: string | null;
+}
+
+// One or more already-cropped short clips (see src/lib/audio.ts's sliceAudioBufferToWav) - each
+// gets its own pyannote/embedding vector (no clustering) and an independent match against the
+// voice-profile registry. Used both to register a single manually-named segment (the embedding
+// is what gets registered) and, in bulk, by "화자 분리" to classify every still-unlabeled segment.
+export async function classifyAudioClipsRequest(
+  clips: { id: string; blob: Blob }[],
   attendeeNames: string[]
-): Promise<Record<string, string | null>> {
-  const response = await fetch("/api/voice-profiles/rematch", {
+): Promise<Record<string, ClipClassification>> {
+  const clipsBase64 = await Promise.all(
+    clips.map(async (clip) => ({ id: clip.id, audioBase64: await readFileAsBase64(clip.blob, MAX_AUDIO_CLIP_BYTES, "화자 구간") }))
+  );
+  const response = await fetch("/api/voice-profiles/classify-clips", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ embeddings, attendeeNames })
+    body: JSON.stringify({ clips: clipsBase64, attendeeNames })
   });
-  const payload = await parseJsonResponse<{ speakerMap: Record<string, string | null> }>(response);
+  const payload = await parseJsonResponse<{ results: Record<string, ClipClassification> }>(response);
 
-  return payload.speakerMap;
+  return payload.results;
 }

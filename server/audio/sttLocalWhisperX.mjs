@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { readEnvFile } from "../envFile.mjs";
 import { readAppSettings, resolveComputeDevice } from "../settingsFile.mjs";
-import { runPythonCommand, runDiarizeWithEmbeddings, createLineSplitter } from "./pyannoteDiarize.mjs";
+import { runPythonCommand, runDiarizeWithEmbeddings, createLineSplitter, AUTO_DIARIZE_ON_TRANSCRIBE } from "./pyannoteDiarize.mjs";
 
 const CHECK_TIMEOUT_MS = 20000;
 const TRANSCRIBE_TIMEOUT_MS = 900000;
@@ -125,17 +125,12 @@ export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "ba
   const outputJsonPath = path.join(workDir, "input.json");
   const scriptPath = path.join(workDir, "run_whisperx.py");
 
-  // Diarization is applied automatically whenever a Hugging Face token is configured - see
-  // NaverClovaConfigModal's counterpart, the HF token modal, wired from Settings' "로컬 WhisperX
-  // GPU" provider card. Without a token, transcription still runs, just without speaker labels
-  // (matches the behavior before diarization support existed - never a hard failure).
-  //
-  // This used to pass WhisperX's own `--diarize`/`--hf_token` CLI flags, which run pyannote
-  // internally as a black box with no way to get per-speaker embeddings out. It now runs plain
-  // transcription here, then diarizes as a separate step via the same shared
-  // pyannoteDiarize.mjs helper sttLocalWhisperCli.mjs uses - identical diarization mechanics on
-  // both paths (WhisperX's --diarize called the same DiarizationPipeline internally anyway), but
-  // this way both paths expose embeddings for B3's persistent voice-profile matching.
+  // Whole-recording diarization is now off by default (AUTO_DIARIZE_ON_TRANSCRIBE, see
+  // pyannoteDiarize.mjs) - a misclustered turn used to poison a voice profile with two blended
+  // speakers. Segments come back with no `speaker` field, so diarize.mjs's no-embedding fallback
+  // gives every segment the same single label; the user names segments individually in
+  // AudioAnalysisModal, and "화자 분리" classifies the rest one clip at a time (see
+  // /api/voice-profiles/classify-clips).
   const env = await readEnvFile();
   const hfToken = env.HUGGINGFACE_TOKEN;
   const speakerCount = Array.isArray(attendeeNames) ? attendeeNames.filter(Boolean).length : 0;
@@ -206,7 +201,7 @@ export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "ba
     if (signal?.aborted) {
       throw new DOMException("음성 분석을 중지했습니다.", "AbortError");
     }
-    if (hfToken) {
+    if (AUTO_DIARIZE_ON_TRANSCRIBE && hfToken) {
       const diarized = await runDiarizeWithEmbeddings({
         pythonPath,
         workDir,

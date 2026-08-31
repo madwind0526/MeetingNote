@@ -500,7 +500,9 @@ export function MeetingFormModal({
       .filter((attendee) => attendee.isKeyAttendee && !attendee.isPresenter)
       .map((attendee) => attendee.name);
 
-    return Array.from(new Set([...presenters, ...otherKeyAttendees])).filter(Boolean);
+    // 주관자 included too - AudioAnalysisModal's speaker picker offers 발표자/참석자/주관자 as
+    // candidate names, and an organizer often also speaks during the meeting.
+    return Array.from(new Set([...presenters, ...otherKeyAttendees, draft.organizer])).filter(Boolean);
   };
 
   // ---------- Presentation summaries (bulk) ----------
@@ -1019,15 +1021,6 @@ export function MeetingFormModal({
               type="button"
             >
               {isLoadingExistingAudio ? "불러오는 중..." : "분석 시작"}
-            </button>
-            <button
-              className="primary-action"
-              disabled={!draft.audio?.transcriptSegments.length || isLoadingExistingAudio}
-              onClick={() => void handleOpenAudioAnalysis()}
-              title="발표 대본에서 화자를 고치고, 지금까지 등록된 음성 프로필로 다시 화자를 매칭합니다"
-              type="button"
-            >
-              화자 분리
             </button>
             <button
               className="primary-action"

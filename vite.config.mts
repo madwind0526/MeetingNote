@@ -1,9 +1,9 @@
-import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { homedir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -51,7 +51,9 @@ import { transcribeNaverClova } from "./server/audio/sttNaverClova.mjs";
 import { checkLocalWhisperAvailable, transcribeLocalWhisperCli } from "./server/audio/sttLocalWhisperCli.mjs";
 import { checkLocalWhisperXAvailable, transcribeLocalWhisperX } from "./server/audio/sttLocalWhisperX.mjs";
 import { diarizeSegments, assignSpeakersWithProfiles } from "./server/audio/diarize.mjs";
-import { registerVoiceProfile, scoreSpeakerProfileMatch } from "./server/voiceProfiles.mjs";
+import { registerVoiceProfile, scoreSpeakerProfileMatch, readVoiceProfiles, deleteVoiceProfile } from "./server/voiceProfiles.mjs";
+import { runEmbedClips } from "./server/audio/pyannoteDiarize.mjs";
+import { resolveComputeDevice } from "./server/settingsFile.mjs";
 import { preprocessAudio } from "./server/audio/audioPreprocess.mjs";
 
 interface LlmMeeting {
@@ -799,56 +801,123 @@ export default defineConfig(() => {
             }
           });
 
-          // "화자 분리" (re-diarize) button in AudioAnalysisModal: re-matches every speaker
-          // label's already-computed per-cluster embedding against the voice-profile registry as
-          // it stands right now, so labels reinforced/registered earlier in this same session (via
-          // /api/voice-profiles/register on rename) can flip from "미등록"/wrong to a confirmed
-          // name. Label-level only - there's no per-segment embedding to re-cluster individual
-          // utterances with. Scores every label first and claims names by descending score (same
-          // reconciliation as assignSpeakersWithProfiles in diarize.mjs) so two different labels in
-          // this recording can't both end up claiming the same registered name.
-          server.middlewares.use("/api/voice-profiles/rematch", async (request, response) => {
+          // Per-segment speaker classification (replaces the old cluster-embedding "다시 화자 분리"
+          // rematch route - removed, since whole-recording diarization no longer runs and there's
+          // no cluster embedding left to re-match). Takes one or more already-cropped short audio
+          // clips (see AudioAnalysisModal.tsx's sliceAudioBufferToWav), computes a fresh
+          // pyannote/embedding vector per clip (no clustering - see runEmbedClips), then scores
+          // each against the voice-profile registry independently. Unlike the old label-level
+          // rematch, MULTIPLE clips are expected to legitimately match the same person (many
+          // segments by one speaker), so there's no cross-clip "claim uniqueness" step here.
+          server.middlewares.use("/api/voice-profiles/classify-clips", async (request, response) => {
+            let workDir: string | null = null;
             try {
               if (!requireTrusted(request, response) || request.method !== "POST") {
                 sendJson(response, 405, { error: "Method not allowed." });
                 return;
               }
 
-              const body = JSON.parse(await readRequestBody(request)) as {
-                embeddings?: Record<string, number[]>;
+              const body = JSON.parse(await readRequestBody(request, MAX_IMPORT_BODY_BYTES)) as {
+                clips?: { id?: string; audioBase64?: string }[];
                 attendeeNames?: string[];
               };
-              const embeddings = body.embeddings && typeof body.embeddings === "object" ? body.embeddings : {};
+              const clips = Array.isArray(body.clips)
+                ? body.clips.filter((clip): clip is { id: string; audioBase64: string } => Boolean(clip?.id && clip?.audioBase64))
+                : [];
               const attendeeNames = Array.isArray(body.attendeeNames) ? body.attendeeNames : [];
 
-              const candidates: { label: string; match: { name: string; score: number } | null }[] = [];
-              for (const [label, embedding] of Object.entries(embeddings)) {
-                const match = Array.isArray(embedding) && embedding.length > 0 ? await scoreSpeakerProfileMatch(embedding, attendeeNames, null) : null;
-                candidates.push({ label, match });
+              const results: Record<string, { embedding: number[] | null; matchedName: string | null }> = {};
+
+              if (clips.length === 0) {
+                sendJson(response, 200, { results });
+                return;
               }
 
-              const claimedNames = new Set<string>();
-              const speakerMap: Record<string, string | null> = {};
-              const byScoreDesc = candidates
-                .filter((candidate): candidate is { label: string; match: { name: string; score: number } } => Boolean(candidate.match))
-                .sort((a, b) => b.match.score - a.match.score);
+              const env = (await readEnvFile()) as Record<string, string>;
+              const hfToken = env.HUGGINGFACE_TOKEN;
+              if (!hfToken) {
+                for (const clip of clips) {
+                  results[clip.id] = { embedding: null, matchedName: null };
+                }
+                sendJson(response, 200, { results });
+                return;
+              }
 
-              for (const { label, match } of byScoreDesc) {
-                if (claimedNames.has(match.name)) {
+              workDir = await mkdtemp(path.join(tmpdir(), "meetingnote-embed-"));
+              const device = await resolveComputeDevice();
+              const { embeddings } = await runEmbedClips({
+                pythonPath: process.env.MEETINGNOTE_WHISPERX_PYTHON || path.resolve(process.cwd(), ".venv-whisperx", "Scripts", "python.exe"),
+                workDir,
+                clips: clips.map((clip) => ({ id: clip.id, buffer: Buffer.from(clip.audioBase64, "base64") })),
+                hfToken,
+                device,
+                ffmpegBin: process.env.MEETINGNOTE_FFMPEG_BIN || "D:\\ffmpeg\\ffmpeg-7.1.1-full_build-shared\\bin",
+                timeoutMs: 120000,
+                signal: undefined
+              });
+
+              for (const clip of clips) {
+                const embedding = embeddings[clip.id];
+                if (!Array.isArray(embedding) || embedding.length === 0) {
+                  results[clip.id] = { embedding: null, matchedName: null };
                   continue;
                 }
-                claimedNames.add(match.name);
-                speakerMap[label] = match.name;
-              }
-              for (const { label } of candidates) {
-                if (!(label in speakerMap)) {
-                  speakerMap[label] = null;
-                }
+                const match = await scoreSpeakerProfileMatch(embedding, attendeeNames, null);
+                results[clip.id] = { embedding, matchedName: match?.name ?? null };
               }
 
-              sendJson(response, 200, { speakerMap });
+              sendJson(response, 200, { results });
             } catch (error) {
-              sendCaughtError(response, error, "화자 재매칭에 실패했습니다.");
+              sendCaughtError(response, error, "화자 클립 분류에 실패했습니다.");
+            } finally {
+              if (workDir) {
+                await rm(workDir, { recursive: true, force: true });
+              }
+            }
+          });
+
+          // Lists just the registered profile names (no embeddings) - AudioAnalysisModal's
+          // per-segment speaker dropdown uses this to color-code candidate names (already has a
+          // voice profile vs. not) without ever sending embedding vectors to the browser.
+          // Registered after /register and /classify-clips on purpose: server.middlewares routes
+          // by prefix match in registration order and none of these handlers call next(), so this
+          // shorter "/api/voice-profiles" prefix would otherwise swallow requests meant for those
+          // more specific paths.
+          server.middlewares.use("/api/voice-profiles", async (request, response) => {
+            try {
+              if (request.method === "GET") {
+                const profiles = (await readVoiceProfiles()) as { name: string; embeddings: unknown[] }[];
+                sendJson(response, 200, {
+                  names: profiles.map((profile) => profile.name),
+                  profiles: profiles.map((profile) => ({ name: profile.name, sampleCount: profile.embeddings.length }))
+                });
+                return;
+              }
+
+              // Settings' 음성 프로필 관리 section uses this to remove a contaminated profile (see
+              // deleteVoiceProfile's comment) - registerVoiceProfile only ever appends, so this is
+              // the only way to walk back a wrongly-tagged sample.
+              if (request.method === "DELETE") {
+                if (!requireTrusted(request, response)) {
+                  return;
+                }
+                const body = JSON.parse(await readRequestBody(request, MAX_IMPORT_BODY_BYTES)) as { name?: string };
+                if (!body.name) {
+                  sendJson(response, 400, { error: "삭제할 프로필 이름이 없습니다." });
+                  return;
+                }
+                const deleted = await deleteVoiceProfile(body.name);
+                if (!deleted) {
+                  sendJson(response, 404, { error: "해당 이름의 음성 프로필을 찾을 수 없습니다." });
+                  return;
+                }
+                sendJson(response, 200, { ok: true });
+                return;
+              }
+
+              sendJson(response, 405, { error: "Method not allowed." });
+            } catch (error) {
+              sendCaughtError(response, error, "음성 프로필 처리에 실패했습니다.");
             }
           });
 

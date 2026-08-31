@@ -1700,6 +1700,37 @@ p {
   border-color: rgba(31, 111, 104, 0.4);
 }
 
+.voice-profile-list {
+  display: grid;
+  gap: 8px;
+}
+
+.voice-profile-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(32, 33, 36, 0.14);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.dark .voice-profile-item {
+  border-color: rgba(243, 241, 234, 0.16);
+}
+
+.voice-profile-item-name {
+  font-weight: 600;
+}
+
+.voice-profile-item-count {
+  color: #60706a;
+  font-size: 0.84rem;
+}
+
+.dark .voice-profile-item-count {
+  color: #bac6c0;
+}
+
 .llm-provider-item.active {
   border-color: #1f6f68;
   border-width: 1.5px;
@@ -3179,21 +3210,111 @@ p {
   color: #8ed8c8;
 }
 
-.audio-analysis-transcript-speaker-select {
+/* SpeakerPicker (AudioAnalysisModal) - free-text speaker input + a dropdown toggle that always
+   shows the full candidate list, used both for per-segment editing and the 화자별 파형/화자 목록
+   whole-label rename. */
+.speaker-picker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.speaker-picker input.speaker-picker-input {
+  min-width: 4em;
+  width: 6.5em;
   border: none;
+  border-bottom: 1px solid rgba(31, 111, 104, 0.3);
   background: transparent;
+  padding: 0 0 1px;
   color: #1f6f68;
   font-size: 0.78rem;
   font-weight: 650;
   font-family: inherit;
-  padding: 0;
-  cursor: pointer;
-  width: 6.5em;
-  min-width: 4em;
 }
 
-.dark .audio-analysis-transcript-speaker-select {
+.dark .speaker-picker input.speaker-picker-input {
   color: #8ed8c8;
+  border-bottom-color: rgba(142, 216, 200, 0.35);
+}
+
+.speaker-picker-input::placeholder {
+  color: #8b968f;
+  font-weight: 500;
+}
+
+.dark .speaker-picker-input::placeholder {
+  color: #8f9a94;
+}
+
+.speaker-picker-toggle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.65;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.speaker-picker-toggle:hover {
+  opacity: 1;
+}
+
+.speaker-picker-dropdown {
+  position: absolute;
+  z-index: 1100;
+  top: 100%;
+  left: 0;
+  margin: 4px 0 0;
+  padding: 4px 0;
+  min-width: 140px;
+  max-height: 220px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid rgba(32, 33, 36, 0.14);
+  border-radius: 8px;
+  background: #f6f7f4;
+  box-shadow: 0 12px 32px rgba(18, 19, 18, 0.22);
+}
+
+.dark .speaker-picker-dropdown {
+  border-color: rgba(243, 241, 234, 0.16);
+  background: #1c1d1c;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.speaker-picker-dropdown li {
+  padding: 6px 14px;
+  color: #202124;
+  font-size: 0.84rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dark .speaker-picker-dropdown li {
+  color: #f3f1ea;
+}
+
+.speaker-picker-dropdown li:hover {
+  background: rgba(31, 111, 104, 0.14);
+}
+
+.dark .speaker-picker-dropdown li:hover {
+  background: rgba(142, 216, 200, 0.18);
+}
+
+/* Already has a registered voice profile - green in both themes; everyone else stays the default
+   text color (white-ish in dark, near-black in light), per the "green = enrolled" convention. */
+.speaker-picker-dropdown li.has-profile {
+  color: #16a34a;
+  font-weight: 650;
+}
+
+.dark .speaker-picker-dropdown li.has-profile {
+  color: #4ade80;
 }
 
 .audio-analysis-transcript-text {

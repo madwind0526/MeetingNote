@@ -282,7 +282,8 @@
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T13:39:55.644Z",
-    "updatedAt": "2026-08-25T17:50:08.184Z"
+    "updatedAt": "2026-08-25T17:50:08.184Z",
+    "location": ""
   },
   {
     "id": "5f153cb7-e897-441e-9883-d120bd5a155d",
@@ -737,7 +738,8 @@
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T13:41:37.472Z",
-    "updatedAt": "2026-08-25T13:57:19.931Z"
+    "updatedAt": "2026-08-25T13:57:19.931Z",
+    "location": ""
   },
   {
     "id": "557924b8-a07e-4eff-b831-b19fe78bb35c",
@@ -773,7 +775,7 @@
         "materialPath": "2026-08-22-결제 모듈 개발 현황 점검/materials/결제-모듈-개발-진행-상황.pdf",
         "materialMdPath": "2026-08-22-결제 모듈 개발 현황 점검/materials/결제-모듈-개발-진행-상황.md",
         "presenter": "조은우",
-        "presentationSummary": "**[발표 내용]**\n*   지난주 결제 모듈 개발을 완료했습니다.\n*   이번 주부터는 테스트를 진행할 예정입니다.\n*   결제 연동 QA 일정 조율이 필요합니다.\n\n**[논의 내용]**\n(질문) 주관자: Do you think we can finish testing by Friday?\n(답변) 발표1: 네. 금요일까지 충분히 마무리할 수 있을 것 같습니다. 추가 인력도 필요 없을 것 같아요."
+        "presentationSummary": "**[발표 내용]**\n*   **지난주:** 결제 모듈 개발을 완료했습니다.\n*   **이번 주 이후:** 테스트를 진행할 예정입니다.\n*   **필요 사항:** 결제 연동 QA 일정 조율이 필요합니다.\n\n**[논의 내용]**\n(질문) 주관자: Do you think we can finish testing by Friday?\n(답변) 발표1: 네. 금요일까지 충분히 마무리할 수 있을 것 같습니다. 추가 인력도 필요 없을 것 같아요."
       }
     ],
     "audio": {
@@ -786,31 +788,31 @@
       },
       "transcriptSegments": [
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "한지민",
           "startSec": 0,
           "endSec": 7.22,
           "text": "Good morning everyone. Let's start today's meeting. First, let's review last week's progress on the project."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "조은우",
           "startSec": 8.18,
           "endSec": 15.14,
           "text": "네. 지난주에는 결제 모듈 개발을 완료했고, 이번 주부터는 테스트를 진행할 예정입니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "한지민",
           "startSec": 16.06,
           "endSec": 20.2,
           "text": "That sounds great. Do you think we can finish testing by Friday?"
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "조은우",
           "startSec": 21.2,
           "endSec": 28.42,
           "text": "네. 금요일까지 충분히 마무리할 수 있을 것 같습니다. 추가 인력도 필요 없을 것 같아요."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "한지민",
           "startSec": 28.42,
           "endSec": 34.34,
           "text": "Perfect. Thank you for the update. Let's move on to the next agenda item."
@@ -818,17 +820,21 @@
       ],
       "speakerMap": {
         "SPEAKER_01": "미등록 화자 1",
-        "SPEAKER_00": "미등록 화자 2"
+        "SPEAKER_00": "미등록 화자 2",
+        "미등록 화자 1": "미등록 화자 1",
+        "한지민": "한지민",
+        "조은우": "조은우"
       },
-      "analyzedAt": "2026-08-25T13:43:47.419Z",
-      "audioPath": "2026-08-22-결제 모듈 개발 현황 점검/audio/diarize-2speaker-ko-en.wav",
-      "transcriptPath": "2026-08-22-결제 모듈 개발 현황 점검/audio/결제-모듈-개발-현황-점검-stt-transcript.txt"
+      "analyzedAt": "2026-08-31T15:44:11.425Z",
+      "audioPath": "2026-08-22-결제 모듈 개발 현황 점검/audio/diarize-2speaker-ko-en-3.wav",
+      "transcriptPath": "2026-08-22-결제 모듈 개발 현황 점검/audio/diarize-2speaker-ko-en-stt-transcript-2.txt"
     },
-    "minutes": "# 회의록: 결제 모듈 개발 현황 점검\n\n**일시:** 2026-08-22 (토) 10:00 – 10:30\n**장소:** (지정되지 않음)\n**작성자:** 회의 진행자 도우미\n**참석자:** 한지민 (PM), 조은우 (백엔드팀)\n\n---\n\n### 💡 사전 액션 아이템 (A/I List)\n*   없음 (회의 시작 전 사전 계획된 액션 아이템은 없습니다.)\n\n---\n\n### 📝 논의 내용 요약\n\n**1. 결제 모듈 개발 진행 상황 (발표자: 조은우)**\n조은우 발표자는 결제 모듈 개발 현황을 보고하며, 개발 단계가 순조롭게 진행되었음을 공유했습니다.\n*   **진행 현황:** 지난주에 결제 모듈 개발을 성공적으로 완료했습니다.\n*   **향후 계획:** 금주부터 본격적인 테스트(Testing)를 진행할 예정이며, 최종적으로 금요일까지 테스트를 마무리할 수 있을 것으로 예상되었습니다.\n*   **주요 논의 사항:** 남은 일정에 맞춰 결제 연동 QA(Quality Assurance) 일정을 조율하는 것이 핵심 과제로 논의되었습니다.\n\n---\n\n### ✨ 할일 (Action Items)\n\n| 할일 | 담당자 | 납기 |\n| :--- | :--- | :--- |\n| 결제 연동 QA 일정 조율 및 확정 | (미정) | - |\n| 결제 모듈 테스트 금요일까지 완료 | (조은우) | - |\n\n---\n\n## 태그\n결제모듈개발 개발현황 테스트진행 QA일정 백엔드개발 PM체크업",
+    "minutes": "# 결제 모듈 개발 현황 점검 회의록\n\n**회의 기본정보**\n*   **제목:** 결제 모듈 개발 현황 점검\n*   **일시:** 2026-08-22 (화) 10:00-10:30\n*   **주관자:** 한지민 (PM)\n*   **참석자:** 한지민 (PM), 조은우 (백엔드팀)\n\n---\n\n### 📝 사전 액션 아이템 (A/I List)\n*   이번 회의 시작 전 사전 계획된 액션 아이템은 없습니다.\n\n### 📋 안건 논의 내용 및 결정 사항\n\n**1. 결제 모듈 개발 진행 상황 (발표자: 조은우)**\n*   **개발 현황:** 결제 모듈 개발은 지난주에 완료되었으며, 향후 테스트 단계에 진입할 예정입니다.\n*   **진행 계획:** 현재로서는 추가 인력 없이 금주 금요일까지 테스트를 충분히 마무리할 수 있을 것으로 예상됩니다.\n*   **주요 논의 및 결정:** 프로젝트를 원활하게 진행하기 위해, 결제 연동 QA 일정을 조속히 조율할 필요가 있습니다.\n\n### ✅ 할일\n\n| 할일 | 담당자 | 납기 |\n| :--- | :--- | :--- |\n| 결제 연동 QA 일정 확정 및 조율 | 한지민 | - |\n\n## 태그\n#결제모듈개발 #개발진행상황 #결제모듈 #테스트계획 #QA일정조율 #프로젝트관리",
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T13:43:28.862Z",
-    "updatedAt": "2026-08-25T13:57:20.153Z"
+    "updatedAt": "2026-08-31T15:48:34.703Z",
+    "location": ""
   },
   {
     "id": "154abe5a-fdbf-41bd-8efd-b237dfbbbea8",
@@ -1113,7 +1119,8 @@
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T13:44:10.107Z",
-    "updatedAt": "2026-08-25T13:57:20.221Z"
+    "updatedAt": "2026-08-25T13:57:20.221Z",
+    "location": ""
   },
   {
     "id": "d7cf26f9-f274-4e2a-9582-8549c6faf53c",
@@ -1520,7 +1527,8 @@
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T13:45:26.135Z",
-    "updatedAt": "2026-08-25T13:57:20.274Z"
+    "updatedAt": "2026-08-25T13:57:20.274Z",
+    "location": ""
   },
   {
     "id": "b824d64e-f7e7-4b97-b48e-5f99ce64c26e",
@@ -1901,7 +1909,8 @@
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T16:49:13.248Z",
-    "updatedAt": "2026-08-25T16:51:52.829Z"
+    "updatedAt": "2026-08-25T16:51:52.829Z",
+    "location": ""
   },
   {
     "id": "b90eb684-7fd8-48af-9923-2bddf2edb006",
@@ -2564,7 +2573,8 @@
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T16:51:52.931Z",
-    "updatedAt": "2026-08-25T16:55:58.908Z"
+    "updatedAt": "2026-08-25T16:55:58.908Z",
+    "location": ""
   },
   {
     "id": "6a0c74e5-7414-4697-93fa-f1b0da382ba9",
@@ -4218,7 +4228,8 @@
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T16:55:59.013Z",
-    "updatedAt": "2026-08-25T17:02:10.551Z"
+    "updatedAt": "2026-08-25T17:02:10.551Z",
+    "location": ""
   },
   {
     "id": "b1c4737d-e142-4ba8-ab8c-543cf0c54a60",
@@ -7643,7 +7654,8 @@
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T17:02:10.667Z",
-    "updatedAt": "2026-08-25T17:09:39.893Z"
+    "updatedAt": "2026-08-25T17:09:39.893Z",
+    "location": ""
   },
   {
     "id": "f93eabf7-f395-43a8-9243-62f743273285",
@@ -12820,6 +12832,7 @@
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T17:14:47.949Z",
-    "updatedAt": "2026-08-25T17:25:04.039Z"
+    "updatedAt": "2026-08-25T17:25:04.039Z",
+    "location": ""
   }
 ]

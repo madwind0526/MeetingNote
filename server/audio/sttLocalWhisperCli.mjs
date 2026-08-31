@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { readEnvFile } from "../envFile.mjs";
 import { resolveComputeDevice } from "../settingsFile.mjs";
-import { runPythonCommand, runDiarizeWithEmbeddings, createLineSplitter } from "./pyannoteDiarize.mjs";
+import { runPythonCommand, runDiarizeWithEmbeddings, createLineSplitter, AUTO_DIARIZE_ON_TRANSCRIBE } from "./pyannoteDiarize.mjs";
 
 const CHECK_TIMEOUT_MS = 10000;
 // Local CPU transcription is slow (minutes per file), so this needs a much longer budget than
@@ -165,10 +165,13 @@ export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "
       );
     }
 
-    // Diarization is applied automatically whenever a Hugging Face token is configured - same
-    // opt-in condition as local-whisperx (see NaverClovaConfigModal's counterpart, the HF token
-    // modal, wired from Settings). Best-effort: falls back silently to the plain transcript above
-    // if it fails, since transcription itself already succeeded. return_embeddings gives per-
+    // Whole-recording diarization is now off by default (AUTO_DIARIZE_ON_TRANSCRIBE, see
+    // pyannoteDiarize.mjs) - a misclustered turn used to poison a voice profile with two blended
+    // speakers. Segments come back with no `speaker` field, so diarize.mjs's no-embedding fallback
+    // gives every segment the same single label; the user names segments individually in
+    // AudioAnalysisModal, and "화자 분리" classifies the rest one clip at a time (see
+    // /api/voice-profiles/classify-clips). Best-effort: falls back silently to the plain transcript
+    // above if it fails, since transcription itself already succeeded. return_embeddings gives per-
     // speaker voice embeddings for B3's persistent voice-profile matching (see diarize.mjs).
     const env = await readEnvFile();
     const hfToken = env.HUGGINGFACE_TOKEN;
@@ -176,7 +179,7 @@ export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "
     if (signal?.aborted) {
       throw new DOMException("음성 분석을 중지했습니다.", "AbortError");
     }
-    if (hfToken && existsSync(whisperXPythonPath())) {
+    if (AUTO_DIARIZE_ON_TRANSCRIBE && hfToken && existsSync(whisperXPythonPath())) {
       const speakerCount = attendeeNames.filter(Boolean).length;
       const diarized = await runDiarizeWithEmbeddings({
         pythonPath: whisperXPythonPath(),

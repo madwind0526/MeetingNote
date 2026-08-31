@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FileText, Mic, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Upload, Users } from "lucide-react";
+import { ChevronDown, FileText, Mic, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Upload, Users } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import type { AudioAnalysis, SttProviderId } from "../../types/domain";
-import { computeEnvelope, decodeAudioFile } from "../../lib/audio";
-import { registerVoiceProfileRequest, rematchSpeakerProfilesRequest } from "../../lib/api";
+import { computeEnvelope, decodeAudioFile, sliceAudioBufferToWav } from "../../lib/audio";
+import { classifyAudioClipsRequest, fetchVoiceProfileNamesRequest, registerVoiceProfileRequest } from "../../lib/api";
 import { saveDictionary } from "../../lib/dictionary";
 import type { DictionaryState } from "../../lib/dictionary";
 import { parseTranscriptText } from "../../lib/transcript";
-import { UNREGISTERED_SPEAKER_PREFIX } from "../../lib/speakerSessionLinking";
 import { isSystemAudioCaptureSupported, startSystemAudioCapture } from "../../lib/systemAudioCapture";
 import type { SystemAudioCapture } from "../../lib/systemAudioCapture";
 import { useChunkedAudioAnalysis } from "../../hooks/useChunkedAudioAnalysis";
@@ -21,9 +20,7 @@ interface AudioAnalysisModalProps {
   // Already-saved analysis for this meeting's audio (edit mode reopening "분석 시작"/"화자 분리"
   // on a file that's already been analyzed once) - auto-loaded into the transcript panel on mount
   // (see the loadExternalTranscript effect below) so the user isn't staring at an empty popup
-  // just to look at or correct an already-produced transcript. No speakerEmbeddings here (that
-  // field never gets persisted, see handleComplete), so a session reopened this way has nothing
-  // for "다시 화자 분리" to re-match against until a fresh "분석 시작" run repopulates them.
+  // just to look at or correct an already-produced transcript.
   existingAnalysis?: AudioAnalysis;
   attendeeNames: string[];
   // Agenda order + 발표 시간(분) - passed straight through to transcribeAudioRequest as a soft
@@ -252,6 +249,88 @@ function EditableTranscriptText({ text, onWordContextMenu }: { text: string; onW
   );
 }
 
+// Free-text speaker input with a dropdown toggle - replaces a plain <input list>/<datalist> combo
+// because a native datalist filters its suggestions by whatever's currently typed (so clearing the
+// field to browse the full roster meant clicking the arrow only showed matches for stale text) and
+// gives no way to style individual options. This always shows every candidate name regardless of
+// the current input value, and color-codes each one by whether it already has a voice profile
+// (see the `.speaker-picker` rules in app.css for the green/default split, light and dark).
+function SpeakerPicker({
+  disabled,
+  onCommitDraft,
+  onDraftChange,
+  onSelectOption,
+  options,
+  placeholder,
+  profiledNames,
+  value
+}: {
+  disabled?: boolean;
+  onCommitDraft: () => void;
+  onDraftChange: (value: string) => void;
+  onSelectOption: (name: string) => void;
+  options: string[];
+  placeholder?: string;
+  profiledNames: Set<string>;
+  value: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="speaker-picker" onClick={(event) => event.stopPropagation()}>
+      <input
+        className="speaker-picker-input"
+        disabled={disabled}
+        onBlur={() => {
+          onCommitDraft();
+          window.setTimeout(() => setIsOpen(false), 120);
+        }}
+        onChange={(event) => onDraftChange(event.target.value)}
+        onFocus={() => setIsOpen(true)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.currentTarget.blur();
+          } else if (event.key === "Escape") {
+            setIsOpen(false);
+          }
+        }}
+        placeholder={placeholder}
+        type="text"
+        value={value}
+      />
+      {options.length > 0 && (
+        <button
+          className="speaker-picker-toggle"
+          disabled={disabled}
+          onClick={() => setIsOpen((open) => !open)}
+          onMouseDown={(event) => event.preventDefault()}
+          title="화자 목록 열기"
+          type="button"
+        >
+          <ChevronDown size={12} />
+        </button>
+      )}
+      {isOpen && options.length > 0 && (
+        <ul className="speaker-picker-dropdown">
+          {options.map((name) => (
+            <li
+              className={profiledNames.has(name) ? "has-profile" : ""}
+              key={name}
+              onMouseDown={(event) => {
+                event.preventDefault();
+                setIsOpen(false);
+                onSelectOption(name);
+              }}
+            >
+              {name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export function AudioAnalysisModal({
   source,
   existingAnalysis,
@@ -324,38 +403,50 @@ export function AudioAnalysisModal({
   } = analysis;
   const [editedSpeakerMap, setEditedSpeakerMap] = useState<Record<string, string>>({});
 
-  // 화자 이름을 고치는 즉시(입력창 포커스 아웃) 그 라벨의 embedding으로 음성 프로필을 등록/보강한다 -
-  // "화자 분리" 버튼을 누르기 전에도 프로필이 쌓이도록. 같은 세션에서 같은 (label, name) 조합을 반복
-  // 등록하지 않도록 추적만 하고, 실패해도 조용히 무시(최선 노력 - handleComplete의 기존 등록 로직이
-  // 그물망 역할을 한다).
-  const registeredProfileKeysRef = useRef<Set<string>>(new Set());
-  const [isRematchingSpeakers, setIsRematchingSpeakers] = useState(false);
-  const [rematchError, setRematchError] = useState("");
+  // Names already backed by a registered voice profile, refreshed after every registration - used
+  // purely to color the speaker picker dropdown (green = already enrolled), never to decide
+  // matching itself (that's server-side, per clip).
+  const [registeredProfileNames, setRegisteredProfileNames] = useState<Set<string>>(new Set());
 
-  async function registerProfileForLabel(label: string, name: string) {
-    const embedding = result?.speakerEmbeddings?.[label];
-    if (!name || !embedding) {
-      return;
-    }
-
-    const key = `${label}::${name}`;
-    if (registeredProfileKeysRef.current.has(key)) {
-      return;
-    }
-    registeredProfileKeysRef.current.add(key);
-
+  async function refreshProfileNames() {
     try {
-      await registerVoiceProfileRequest(name, embedding);
+      setRegisteredProfileNames(new Set(await fetchVoiceProfileNamesRequest()));
     } catch {
-      // best-effort - handleComplete registers unregistered-speaker renames again on save
+      // best-effort - the dropdown just won't highlight anyone if this fails
     }
   }
 
-  // Renaming a whole label (this input) can end up with the same display name as some OTHER
-  // label - typically because a per-segment edit (commitSegmentSpeakerName) already minted a
-  // brand-new label with that name for one utterance before this label got renamed to match it.
-  // Rather than leaving two entries under the same name, fold the other label(s) into this one:
-  // every segment on them moves here and their speakerMap entries are dropped.
+  useEffect(() => {
+    void refreshProfileNames();
+  }, []);
+
+  // The label(s) STT produced before any per-segment verification (whole-recording diarization no
+  // longer runs, see pyannoteDiarize.mjs's AUTO_DIARIZE_ON_TRANSCRIBE - every segment starts on one
+  // shared placeholder label). Snapshotted once, the first time a result appears: "화자 분리"
+  // targets whatever segments are STILL sitting on one of these labels, and naturally stops
+  // touching a segment the moment it's reassigned (manually or by a previous 화자 분리 pass) to its
+  // own real-name label - no extra bookkeeping needed to keep that idempotent.
+  const pendingLabelsRef = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    if (result && pendingLabelsRef.current === null) {
+      pendingLabelsRef.current = new Set(Object.keys(result.speakerMap));
+    }
+  }, [result]);
+
+  const hasPendingSegments = Boolean(
+    result?.transcriptSegments.some((segment) => pendingLabelsRef.current?.has(segment.speaker))
+  );
+
+  const [pendingSegmentIndices, setPendingSegmentIndices] = useState<Set<number>>(new Set());
+  const [segmentEnrollError, setSegmentEnrollError] = useState("");
+  const [isClassifyingRemaining, setIsClassifyingRemaining] = useState(false);
+  const [classifyError, setClassifyError] = useState("");
+
+  // Renaming a whole label (화자별 파형/화자 목록 input) can end up with the same display name as
+  // some OTHER label - typically because a per-segment edit already minted a brand-new label with
+  // that name for one utterance before this label got renamed to match it. Rather than leaving two
+  // entries under the same name, fold the other label(s) into this one: every segment on them
+  // moves here and their speakerMap entries are dropped.
   function mergeDuplicateLabelsInto(label: string, name: string) {
     const duplicates = speakerLabels.filter((other) => other !== label && (editedSpeakerMap[other] ?? other) === name);
     if (duplicates.length === 0) {
@@ -372,41 +463,97 @@ export function AudioAnalysisModal({
     });
   }
 
-  async function handleSpeakerNameBlur(label: string) {
-    const name = editedSpeakerMap[label]?.trim();
+  // Purely a rename now - whole-recording diarization no longer runs, so this label has no clip
+  // embedding of its own to register a voice profile from (registering from a whole-recording
+  // cluster embedding used to be how this worked, but a misclustered turn could blend two
+  // different speakers into one profile - see the trouble-shooting note for the live-tested
+  // failure). Enrollment only ever happens from a single verified segment clip - see
+  // enrollSegmentClip below.
+  function commitSpeakerLabelName(label: string, rawName: string) {
+    const name = rawName.trim();
     if (!name) {
       return;
     }
     mergeDuplicateLabelsInto(label, name);
-    await registerProfileForLabel(label, name);
   }
 
-  // "화자 분리": re-matches every label's already-known embedding against the voice-profile
-  // registry as it stands right now (including whatever handleSpeakerNameBlur just registered),
-  // so a label that was "미등록"/wrong can flip to a name reinforced earlier in this same session.
-  async function handleRematchSpeakers() {
-    if (!result?.speakerEmbeddings) {
+  function handleSpeakerNameBlur(label: string) {
+    commitSpeakerLabelName(label, editedSpeakerMap[label] ?? "");
+  }
+
+  // Extracts just this one segment's audio (see sliceAudioBufferToWav) and registers a voice
+  // profile from it under `name` - the user has already confirmed who's speaking on this exact
+  // line, so this is the only place a profile gets created/reinforced.
+  async function enrollSegmentClip(index: number, name: string) {
+    const segment = result?.transcriptSegments[index];
+    const sourceBuffer = sourceAudioBufferRef.current;
+    if (!segment || !sourceBuffer) {
       return;
     }
 
-    setIsRematchingSpeakers(true);
-    setRematchError("");
+    setPendingSegmentIndices((prev) => new Set(prev).add(index));
+    setSegmentEnrollError("");
 
     try {
-      const speakerMap = await rematchSpeakerProfilesRequest(result.speakerEmbeddings, attendeeNames);
-      setEditedSpeakerMap((prev) => {
-        const next = { ...prev };
-        for (const [label, matchedName] of Object.entries(speakerMap)) {
-          if (matchedName) {
-            next[label] = matchedName;
-          }
-        }
+      const blob = sliceAudioBufferToWav(sourceBuffer, segment.startSec, segment.endSec);
+      const results = await classifyAudioClipsRequest([{ id: String(index), blob }], attendeeNames);
+      const embedding = results[String(index)]?.embedding;
+
+      if (embedding) {
+        await registerVoiceProfileRequest(name, embedding);
+        await refreshProfileNames();
+      } else {
+        setSegmentEnrollError("이 구간은 너무 짧거나 음성 프로필을 만들지 못했습니다.");
+      }
+    } catch (error) {
+      setSegmentEnrollError(error instanceof Error ? error.message : "화자 등록에 실패했습니다.");
+    } finally {
+      setPendingSegmentIndices((prev) => {
+        const next = new Set(prev);
+        next.delete(index);
         return next;
       });
+    }
+  }
+
+  // "화자 분리": classifies every segment still on a pending label (see pendingLabelsRef) by
+  // extracting each one's own clip and matching it independently against the profile registry -
+  // no clustering, so unlike the label-level rematch this replaced, many segments legitimately
+  // matching the same person is expected and never treated as a conflict.
+  async function handleClassifyRemainingSegments() {
+    const sourceBuffer = sourceAudioBufferRef.current;
+    if (!result || !sourceBuffer) {
+      return;
+    }
+
+    const targets = result.transcriptSegments
+      .map((segment, index) => ({ segment, index }))
+      .filter(({ segment }) => pendingLabelsRef.current?.has(segment.speaker));
+
+    if (targets.length === 0) {
+      return;
+    }
+
+    setIsClassifyingRemaining(true);
+    setClassifyError("");
+
+    try {
+      const clips = targets.map(({ segment, index }) => ({
+        id: String(index),
+        blob: sliceAudioBufferToWav(sourceBuffer, segment.startSec, segment.endSec)
+      }));
+      const results = await classifyAudioClipsRequest(clips, attendeeNames);
+
+      for (const { index } of targets) {
+        const matchedName = results[String(index)]?.matchedName;
+        if (matchedName) {
+          analysis.updateSegmentSpeaker(index, matchedName, matchedName);
+        }
+      }
     } catch (error) {
-      setRematchError(error instanceof Error ? error.message : "화자 재매칭에 실패했습니다.");
+      setClassifyError(error instanceof Error ? error.message : "화자 분리에 실패했습니다.");
     } finally {
-      setIsRematchingSpeakers(false);
+      setIsClassifyingRemaining(false);
     }
   }
 
@@ -1080,6 +1227,10 @@ export function AudioAnalysisModal({
     }
 
     resetPlaybackPosition();
+    // A fresh run discards whatever transcript was there before (startFileAnalysis's own reset())
+    // - the "화자 분리" pending-set has to start over with it, not keep pointing at labels from the
+    // discarded run.
+    pendingLabelsRef.current = null;
     await analysis.startFileAnalysis(sourceAudioBuffer, {
       provider: selectedProvider,
       model: sttModel,
@@ -1105,6 +1256,7 @@ export function AudioAnalysisModal({
     // MediaRecorder capturing data) only starts here, on the user's explicit "분석 시작" click.
     capture.startRecording();
     setHasStartedRecordingAnalysis(true);
+    pendingLabelsRef.current = null;
     analysis.startRecordingAnalysis(capture, {
       provider: selectedProvider,
       model: sttModel,
@@ -1126,60 +1278,48 @@ export function AudioAnalysisModal({
     await analysis.stopRecordingAnalysis(capture);
   }
 
-  function speakerOptions(label: string): string[] {
-    const values = new Set<string>();
-    const autoValue = result?.speakerMap[label];
-
-    if (autoValue) {
-      values.add(autoValue);
-    }
-    for (const name of attendeeNames) {
-      if (name) {
-        values.add(name);
-      }
-    }
-
-    return Array.from(values);
-  }
-
   // ---------- Per-segment speaker editing (free text, not limited to the already-known labels) ----------
 
-  // Suggestions for the per-segment speaker input's datalist - every speaker name known so far in
-  // this analysis, so typing can autocomplete to an existing person without forcing a rigid
-  // dropdown-only choice. Deduped: two labels can transiently (or, before a merge, briefly)
-  // display the same name, and duplicate <option> values under one name would otherwise give
-  // React two list children with the same key.
-  const segmentSpeakerSuggestions = Array.from(new Set(speakerLabels.map((label) => editedSpeakerMap[label] ?? label)));
+  // Candidate names for both the per-segment picker and the 화자별 파형/화자 목록 picker: the
+  // meeting's own roster (발표자/참석자/주관자 - see MeetingFormModal's audioAttendeeNames) plus
+  // whatever names are already in use this session, deduped. Always the full list regardless of
+  // what's currently typed - see SpeakerPicker.
+  const speakerCandidateNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const name of attendeeNames) {
+      if (name) {
+        names.add(name);
+      }
+    }
+    for (const label of speakerLabels) {
+      const displayName = editedSpeakerMap[label] ?? label;
+      if (displayName) {
+        names.add(displayName);
+      }
+    }
+    return Array.from(names);
+  }, [attendeeNames, speakerLabels, editedSpeakerMap]);
 
   // Holds in-progress edits for the per-segment speaker input while the user is still typing -
   // committing (which can reassign the segment and possibly mint a brand-new speaker label) only
-  // happens on blur/Enter, not on every keystroke, the same as the 화자 이름 inputs' registration.
+  // happens on blur/Enter/dropdown-select, not on every keystroke.
   const [segmentSpeakerDrafts, setSegmentSpeakerDrafts] = useState<Record<number, string>>({});
 
   function segmentSpeakerInputValue(index: number, speaker: string): string {
     return segmentSpeakerDrafts[index] ?? editedSpeakerMap[speaker] ?? speaker;
   }
 
-  // Typing a name for one segment either moves it to a DIFFERENT already-known speaker (the name
-  // matches another label's current display name - "this line was actually them") or mints a
-  // brand-new label just for this one segment when the name doesn't match anyone else - every
-  // other segment still on the old label is left untouched (this is what makes per-segment
-  // editing actually per-segment, instead of renaming the whole speaker). If that new name later
-  // collides with another label (e.g. the 화자별 파형 input renames the original label to the same
-  // name), handleSpeakerNameBlur's merge step folds them back into one entry - duplicates get
-  // resolved at the point they'd occur, rather than by refusing to mint new labels here.
-  function commitSegmentSpeakerName(index: number, speaker: string) {
-    const draft = segmentSpeakerDrafts[index];
-    if (draft === undefined) {
-      return;
-    }
-    setSegmentSpeakerDrafts((prev) => {
-      const next = { ...prev };
-      delete next[index];
-      return next;
-    });
-
-    const name = draft.trim();
+  // Typing (or picking from the dropdown) a name for one segment either moves it to a DIFFERENT
+  // already-known speaker (the name matches another label's current display name - "this line was
+  // actually them") or mints a brand-new label just for this one segment when the name doesn't
+  // match anyone else - every other segment still on the old label is left untouched (this is what
+  // makes per-segment editing actually per-segment, instead of renaming the whole speaker). A
+  // brand-new label immediately enrolls a voice profile from this segment's own audio clip (see
+  // enrollSegmentClip) - the user just confirmed who's speaking on this exact line. If that new
+  // name later collides with another label (e.g. the 화자별 파형 input renames the original label
+  // to the same name), handleSpeakerNameBlur's merge step folds them back into one entry.
+  function applySegmentSpeakerName(index: number, speaker: string, rawName: string) {
+    const name = rawName.trim();
     if (!name || name === (editedSpeakerMap[speaker] ?? speaker)) {
       return;
     }
@@ -1196,6 +1336,32 @@ export function AudioAnalysisModal({
     // minting yet another duplicate.
     analysis.updateSegmentSpeaker(index, name, name);
     setEditedSpeakerMap((prev) => ({ ...prev, [name]: name }));
+    void enrollSegmentClip(index, name);
+  }
+
+  function commitSegmentSpeakerName(index: number, speaker: string) {
+    const draft = segmentSpeakerDrafts[index];
+    if (draft === undefined) {
+      return;
+    }
+    setSegmentSpeakerDrafts((prev) => {
+      const next = { ...prev };
+      delete next[index];
+      return next;
+    });
+    applySegmentSpeakerName(index, speaker, draft);
+  }
+
+  // Picking a name directly from the dropdown - separate from commitSegmentSpeakerName because
+  // that reads the draft from state, which wouldn't yet reflect a value set in the very same
+  // event (React state updates aren't synchronous); this applies the picked name immediately.
+  function selectSegmentSpeakerName(index: number, speaker: string, name: string) {
+    setSegmentSpeakerDrafts((prev) => {
+      const next = { ...prev };
+      delete next[index];
+      return next;
+    });
+    applySegmentSpeakerName(index, speaker, name);
   }
 
   async function handleComplete() {
@@ -1206,24 +1372,7 @@ export function AudioAnalysisModal({
     void processedAudioBase64;
     void processedAudioMimeType;
     void processedFileName;
-
-    // A "미등록" speaker the user just renamed to a real name registers a brand-new voice profile
-    // - a confirmed match during diarization itself already registered automatically server-side
-    // (see assignSpeakersWithProfiles), so this only ever fires for speakers that had no match.
-    if (speakerEmbeddings) {
-      for (const [label, autoName] of Object.entries(result.speakerMap)) {
-        const finalName = editedSpeakerMap[label];
-        const embedding = speakerEmbeddings[label];
-
-        if (autoName.startsWith(UNREGISTERED_SPEAKER_PREFIX) && finalName && finalName !== autoName && embedding) {
-          try {
-            await registerVoiceProfileRequest(finalName, embedding);
-          } catch {
-            // Best-effort - a registration failure shouldn't block saving the meeting itself.
-          }
-        }
-      }
-    }
+    void speakerEmbeddings;
 
     await onComplete({ ...(persistableResult as AudioAnalysis), speakerMap: editedSpeakerMap });
     onClose();
@@ -1269,6 +1418,7 @@ export function AudioAnalysisModal({
             <input accept=".txt,.md" hidden onChange={(event) => void handleTranscriptFileChange(event)} ref={transcriptFileInputRef} type="file" />
             {!!result && <span className="field-hint">단어를 마우스 오른쪽 버튼으로 클릭하면 수정 사전에 등록, 발언자는 옆의 선택 상자로 바꿀 수 있습니다.</span>}
             {transcriptLoadError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{transcriptLoadError}</span>}
+            {segmentEnrollError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{segmentEnrollError}</span>}
 
             {!result && liveSegments.length === 0 && (
               <p className="audio-analysis-placeholder">
@@ -1286,24 +1436,15 @@ export function AudioAnalysisModal({
                       <span className="audio-analysis-transcript-time">
                         {formatMmSs(segment.startSec)}-{formatMmSs(segment.endSec)}
                       </span>
-                      <input
-                        className="audio-analysis-transcript-speaker-select"
-                        list={`segment-speaker-options-${index}`}
-                        onBlur={() => commitSegmentSpeakerName(index, segment.speaker)}
-                        onChange={(event) => setSegmentSpeakerDrafts((prev) => ({ ...prev, [index]: event.target.value }))}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.currentTarget.blur();
-                          }
-                        }}
-                        type="text"
+                      <SpeakerPicker
+                        disabled={pendingSegmentIndices.has(index)}
+                        onCommitDraft={() => commitSegmentSpeakerName(index, segment.speaker)}
+                        onDraftChange={(value) => setSegmentSpeakerDrafts((prev) => ({ ...prev, [index]: value }))}
+                        onSelectOption={(name) => selectSegmentSpeakerName(index, segment.speaker, name)}
+                        options={speakerCandidateNames}
+                        profiledNames={registeredProfileNames}
                         value={segmentSpeakerInputValue(index, segment.speaker)}
                       />
-                      <datalist id={`segment-speaker-options-${index}`}>
-                        {segmentSpeakerSuggestions.map((name) => (
-                          <option key={name} value={name} />
-                        ))}
-                      </datalist>
                     </div>
                     <EditableTranscriptText onWordContextMenu={handleWordContextMenu} text={segment.text} />
                   </li>
@@ -1442,20 +1583,20 @@ export function AudioAnalysisModal({
                   >
                     {hasStartedRecordingAnalysis ? "분석 중..." : "분석 시작"}
                   </button>
-                  {result?.speakerEmbeddings && Object.keys(result.speakerEmbeddings).length > 0 && (
+                  {hasPendingSegments && (
                     <button
                       className="primary-action"
-                      disabled={isRematchingSpeakers}
-                      onClick={() => void handleRematchSpeakers()}
-                      title="화자 이름을 고친 뒤 눌러, 지금까지 등록된 음성 프로필로 화자를 다시 매칭합니다"
+                      disabled={isClassifyingRemaining}
+                      onClick={() => void handleClassifyRemainingSegments()}
+                      title="왼쪽 대본에서 화자를 지정한 뒤 눌러, 등록된 음성 프로필로 나머지 구간을 분류합니다"
                       type="button"
                     >
-                      {isRematchingSpeakers ? "재분류 중..." : "다시 화자 분리"}
+                      {isClassifyingRemaining ? "화자 분리 중..." : "화자 분리"}
                     </button>
                   )}
                 </div>
               </div>
-              {rematchError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{rematchError}</span>}
+              {classifyError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{classifyError}</span>}
             </section>
 
             {result && (
@@ -1469,19 +1610,18 @@ export function AudioAnalysisModal({
                   {speakerLabels.map((label, index) => (
                     <div className="speaker-lane-row" key={label}>
                       <div className="speaker-lane-chip">{index + 1}</div>
-                      <input
-                        list={`speaker-options-live-${index}`}
-                        onBlur={() => void handleSpeakerNameBlur(label)}
-                        onChange={(event) => setEditedSpeakerMap((prev) => ({ ...prev, [label]: event.target.value }))}
+                      <SpeakerPicker
+                        onCommitDraft={() => handleSpeakerNameBlur(label)}
+                        onDraftChange={(value) => setEditedSpeakerMap((prev) => ({ ...prev, [label]: value }))}
+                        onSelectOption={(name) => {
+                          setEditedSpeakerMap((prev) => ({ ...prev, [label]: name }));
+                          commitSpeakerLabelName(label, name);
+                        }}
+                        options={speakerCandidateNames}
                         placeholder="화자 이름"
-                        type="text"
+                        profiledNames={registeredProfileNames}
                         value={editedSpeakerMap[label] ?? ""}
                       />
-                      <datalist id={`speaker-options-live-${index}`}>
-                        {speakerOptions(label).map((name) => (
-                          <option key={name} value={name} />
-                        ))}
-                      </datalist>
                     </div>
                   ))}
                 </div>
@@ -1511,6 +1651,7 @@ export function AudioAnalysisModal({
             <input accept=".txt,.md" hidden onChange={(event) => void handleTranscriptFileChange(event)} ref={transcriptFileInputRef} type="file" />
             {!!result && <span className="field-hint">단어를 마우스 오른쪽 버튼으로 클릭하면 수정 사전에 등록, 발언자는 옆의 선택 상자로 바꿀 수 있습니다.</span>}
             {transcriptLoadError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{transcriptLoadError}</span>}
+            {segmentEnrollError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{segmentEnrollError}</span>}
 
             {!result && liveSegments.length === 0 && (
               <p className="audio-analysis-placeholder">분석 시작 버튼을 누르거나, 이미 만들어진 발언 대본을 불러올 수 있습니다.</p>
@@ -1532,25 +1673,15 @@ export function AudioAnalysisModal({
                       <span className="audio-analysis-transcript-time">
                         {formatMmSs(segment.startSec)}-{formatMmSs(segment.endSec)}
                       </span>
-                      <input
-                        className="audio-analysis-transcript-speaker-select"
-                        list={`segment-speaker-options-file-${index}`}
-                        onBlur={() => commitSegmentSpeakerName(index, segment.speaker)}
-                        onChange={(event) => setSegmentSpeakerDrafts((prev) => ({ ...prev, [index]: event.target.value }))}
-                        onClick={(event) => event.stopPropagation()}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.currentTarget.blur();
-                          }
-                        }}
-                        type="text"
+                      <SpeakerPicker
+                        disabled={pendingSegmentIndices.has(index)}
+                        onCommitDraft={() => commitSegmentSpeakerName(index, segment.speaker)}
+                        onDraftChange={(value) => setSegmentSpeakerDrafts((prev) => ({ ...prev, [index]: value }))}
+                        onSelectOption={(name) => selectSegmentSpeakerName(index, segment.speaker, name)}
+                        options={speakerCandidateNames}
+                        profiledNames={registeredProfileNames}
                         value={segmentSpeakerInputValue(index, segment.speaker)}
                       />
-                      <datalist id={`segment-speaker-options-file-${index}`}>
-                        {segmentSpeakerSuggestions.map((name) => (
-                          <option key={name} value={name} />
-                        ))}
-                      </datalist>
                     </div>
                     <EditableTranscriptText onWordContextMenu={handleWordContextMenu} text={segment.text} />
                   </li>
@@ -1744,21 +1875,21 @@ export function AudioAnalysisModal({
                       >
                         {isAnalyzing ? `분석 중... ${analyzeProgress}%` : "분석 시작"}
                       </button>
-                      {result?.speakerEmbeddings && Object.keys(result.speakerEmbeddings).length > 0 && (
+                      {hasPendingSegments && (
                         <button
                           className="primary-action"
-                          disabled={isRematchingSpeakers}
-                          onClick={() => void handleRematchSpeakers()}
-                          title="화자 이름을 고친 뒤 눌러, 지금까지 등록된 음성 프로필로 화자를 다시 매칭합니다"
+                          disabled={isClassifyingRemaining}
+                          onClick={() => void handleClassifyRemainingSegments()}
+                          title="왼쪽 대본에서 화자를 지정한 뒤 눌러, 등록된 음성 프로필로 나머지 구간을 분류합니다"
                           type="button"
                         >
-                          {isRematchingSpeakers ? "재분류 중..." : "다시 화자 분리"}
+                          {isClassifyingRemaining ? "화자 분리 중..." : "화자 분리"}
                         </button>
                       )}
                     </div>
                   </div>
                   {analyzeError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{analyzeError}</span>}
-                  {rematchError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{rematchError}</span>}
+                  {classifyError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{classifyError}</span>}
                 </>
               )}
             </section>
@@ -1774,19 +1905,18 @@ export function AudioAnalysisModal({
                   {speakerLabels.map((label, index) => (
                     <div className="speaker-lane-row" key={label}>
                       <div className="speaker-lane-chip">{index + 1}</div>
-                      <input
-                        list={`speaker-options-${index}`}
-                        onBlur={() => void handleSpeakerNameBlur(label)}
-                        onChange={(event) => setEditedSpeakerMap((prev) => ({ ...prev, [label]: event.target.value }))}
+                      <SpeakerPicker
+                        onCommitDraft={() => handleSpeakerNameBlur(label)}
+                        onDraftChange={(value) => setEditedSpeakerMap((prev) => ({ ...prev, [label]: value }))}
+                        onSelectOption={(name) => {
+                          setEditedSpeakerMap((prev) => ({ ...prev, [label]: name }));
+                          commitSpeakerLabelName(label, name);
+                        }}
+                        options={speakerCandidateNames}
                         placeholder="화자 이름"
-                        type="text"
+                        profiledNames={registeredProfileNames}
                         value={editedSpeakerMap[label] ?? ""}
                       />
-                      <datalist id={`speaker-options-${index}`}>
-                        {speakerOptions(label).map((name) => (
-                          <option key={name} value={name} />
-                        ))}
-                      </datalist>
                       <button
                         className="speaker-lane-play-button"
                         onClick={() => toggleSpeakerPlayback(label)}

@@ -21,6 +21,14 @@ const SIMILARITY_THRESHOLD = 0.85;
 // SIMILARITY_THRESHOLD. This lower floor still requires genuine acoustic support before trusting
 // the hint - it's not a rubber stamp, just less strict than the blind (no-hint) match.
 const RELAXED_SIMILARITY_THRESHOLD = 0.75;
+// Minimum lead the top candidate must hold over the runner-up before the relaxed-threshold
+// attendee search (below) trusts it. This project's own measured different-speaker score on its
+// synthetic 2-voice test file was 0.757 - almost exactly at RELAXED_SIMILARITY_THRESHOLD - so a
+// bare floor is not enough to rule out two attendees who are acoustically close; only a clear gap
+// between the best and second-best score does that. A genuine same-speaker match against the
+// wrong attendee scored ~0.6 apart in live testing, so this margin is comfortably below a real
+// match's gap while still rejecting a close call.
+const RELAXED_MATCH_MARGIN = 0.15;
 // Caps how many embedding samples accumulate per profile so the JSON file doesn't grow unbounded
 // across many meetings - a rolling window is enough to average out per-recording noise.
 const MAX_SAMPLES_PER_PROFILE = 20;
@@ -129,6 +137,31 @@ export async function scoreSpeakerProfileMatch(embedding, meetingAttendeeNames, 
     }
   }
 
+  // Same-speaker, different-utterance clips routinely score 0.77-0.79 in this project's own
+  // measurements (well under SIMILARITY_THRESHOLD) once a profile only has a couple of short
+  // samples - live-tested via /api/voice-profiles/classify-clips, which never passes a
+  // hintedName, so without this the strict bar rejected every genuinely-correct match and
+  // "화자 분리" classified nothing. Narrowing to this meeting's own attendees before relaxing the
+  // bar helps, but is NOT sufficient on its own - two attendees can plausibly sound closer to each
+  // other than the 0.757 different-speaker score already measured on this project's own test file
+  // (see RELAXED_SIMILARITY_THRESHOLD's comment). The RELAXED_MATCH_MARGIN check below is the real
+  // safeguard: only trust the top attendee candidate when it clearly beats every other profile
+  // (attendee or not), not merely when it clears the floor.
+  const meetingAttendeeSet = new Set((meetingAttendeeNames || []).filter(Boolean));
+  const attendeeRelaxed = allScored
+    .filter((entry) => meetingAttendeeSet.has(entry.name) && entry.score >= RELAXED_SIMILARITY_THRESHOLD)
+    .sort((a, b) => b.score - a.score);
+  if (attendeeRelaxed.length > 0) {
+    const top = attendeeRelaxed[0];
+    const secondBest = allScored
+      .filter((entry) => entry.name !== top.name)
+      .sort((a, b) => b.score - a.score)[0];
+    const margin = secondBest ? top.score - secondBest.score : Infinity;
+    if (margin >= RELAXED_MATCH_MARGIN) {
+      return top;
+    }
+  }
+
   return null;
 }
 
@@ -161,4 +194,24 @@ export async function registerVoiceProfile(name, embedding) {
   await writeVoiceProfiles(profiles);
 
   return profiles;
+}
+
+// Removes a profile entirely (all of its accumulated samples). registerVoiceProfile above only
+// ever appends - it has no way to walk back a wrongly-tagged sample, so this is the recovery path
+// for a contaminated profile (e.g. a segment mistakenly tagged with someone else's name). Returns
+// true if a profile with this name existed and was removed.
+export async function deleteVoiceProfile(name) {
+  if (!name) {
+    return false;
+  }
+
+  const profiles = await readVoiceProfiles();
+  const next = profiles.filter((profile) => profile.name !== name);
+  if (next.length === profiles.length) {
+    return false;
+  }
+
+  await writeVoiceProfiles(next);
+
+  return true;
 }

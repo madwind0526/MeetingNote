@@ -93,9 +93,18 @@ export function diarizeSegments(segments, attendeeNames) {
   const transcriptSegments = buildTranscriptSegments(segments);
 
   const speakerMap = {};
-  labels.forEach((label, index) => {
-    speakerMap[label] = names[index] || `화자 ${label}`;
-  });
+  if (labels.length === 1 && labels[0] === DEFAULT_SPEAKER_LABEL) {
+    // No diarization signal at all (AUTO_DIARIZE_ON_TRANSCRIBE off, or a provider that never sets
+    // `speaker`) - guessing a real attendee name from list position would look like a confirmed
+    // match when it's pure luck, so mark it unregistered instead, matching
+    // assignSpeakersWithProfiles's UNREGISTERED_SPEAKER_PREFIX naming. The user tags real names via
+    // segment-level clip enrollment, or "화자 분리" classifies against registered profiles.
+    speakerMap[labels[0]] = `${UNREGISTERED_SPEAKER_PREFIX}1`;
+  } else {
+    labels.forEach((label, index) => {
+      speakerMap[label] = names[index] || `화자 ${label}`;
+    });
+  }
 
   return { transcriptSegments, speakerMap };
 }
