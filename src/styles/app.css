@@ -1700,34 +1700,60 @@ p {
   border-color: rgba(31, 111, 104, 0.4);
 }
 
-.voice-profile-list {
+/* Card grid for VoiceProfileManagerModal - reuses .card-grid's layout (see the meeting Card view)
+   but with its own card/delete-button classes since a voice profile isn't a meeting. */
+.voice-profile-card-grid {
+  max-height: 55vh;
+}
+
+.voice-profile-card {
+  position: relative;
   display: grid;
-  gap: 8px;
+  gap: 4px;
+  border: 1px solid rgba(32, 33, 36, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 14px 16px;
 }
 
-.voice-profile-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid rgba(32, 33, 36, 0.14);
-  border-radius: 8px;
-  padding: 8px 12px;
+.dark .voice-profile-card {
+  border-color: rgba(243, 241, 234, 0.14);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.dark .voice-profile-item {
-  border-color: rgba(243, 241, 234, 0.16);
+.voice-profile-card-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #8b968f;
 }
 
-.voice-profile-item-name {
-  font-weight: 600;
+.voice-profile-card-delete:hover {
+  background: rgba(248, 113, 113, 0.14);
+  color: #f87171;
 }
 
-.voice-profile-item-count {
+.voice-profile-card-name {
+  padding-right: 22px;
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.voice-profile-card-count {
   color: #60706a;
-  font-size: 0.84rem;
+  font-size: 0.82rem;
 }
 
-.dark .voice-profile-item-count {
+.dark .voice-profile-card-count {
   color: #bac6c0;
 }
 
@@ -3287,6 +3313,10 @@ p {
 }
 
 .speaker-picker-dropdown li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   padding: 6px 14px;
   color: #202124;
   font-size: 0.84rem;
@@ -3315,6 +3345,46 @@ p {
 
 .dark .speaker-picker-dropdown li.has-profile {
   color: #4ade80;
+}
+
+.speaker-picker-dropdown-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* One distinct color per role, separate from has-profile's green so the two signals never
+   collide - a name can be both (e.g. an organizer with a registered voice profile) and still
+   read as two different pieces of information at a glance. */
+.speaker-role-badge {
+  flex-shrink: 0;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.speaker-role-badge-주관자 {
+  background: rgba(124, 106, 247, 0.16);
+  color: #7c6af7;
+}
+
+.speaker-role-badge-간사 {
+  background: rgba(96, 165, 250, 0.16);
+  color: #3b82f6;
+}
+
+.dark .speaker-role-badge-간사 {
+  color: #60a5fa;
+}
+
+.speaker-role-badge-발표자 {
+  background: rgba(251, 146, 60, 0.16);
+  color: #c2610a;
+}
+
+.dark .speaker-role-badge-발표자 {
+  color: #fb923c;
 }
 
 .audio-analysis-transcript-text {

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, FileText, Mic, Pause, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Upload, Users } from "lucide-react";
+import { ChevronDown, FileText, Mic, Pause, Pencil, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Upload, Users } from "lucide-react";
 import { ModalShell } from "./ModalShell";
-import type { AudioAnalysis, SttProviderId } from "../../types/domain";
+import { VoiceProfileManagerModal } from "./VoiceProfileManagerModal";
+import type { AudioAnalysis, SpeakerRoleEntry, SttProviderId } from "../../types/domain";
 import { computeEnvelope, decodeAudioFile, sliceAudioBufferToWav } from "../../lib/audio";
 import { classifyAudioClipsRequest, fetchVoiceProfileNamesRequest, registerVoiceProfileRequest } from "../../lib/api";
 import { saveDictionary } from "../../lib/dictionary";
@@ -23,6 +24,10 @@ interface AudioAnalysisModalProps {
   // just to look at or correct an already-produced transcript.
   existingAnalysis?: AudioAnalysis;
   attendeeNames: string[];
+  // Same roster as attendeeNames, but with each person's role (주관자/간사/발표자/no badge for a
+  // plain attendee) - see MeetingFormModal's audioAttendeeRoles. Optional so any other future
+  // caller of this modal isn't forced to plumb it through immediately; falls back to no badges.
+  attendeeRoles?: SpeakerRoleEntry[];
   // Agenda order + 발표 시간(분) - passed straight through to transcribeAudioRequest as a soft
   // voice-matching hint (see server/audio/diarize.mjs). Optional since a brand-new meeting can
   // have no agenda rows yet.
@@ -263,6 +268,7 @@ function SpeakerPicker({
   options,
   placeholder,
   profiledNames,
+  roleByName,
   value
 }: {
   disabled?: boolean;
@@ -272,12 +278,34 @@ function SpeakerPicker({
   options: string[];
   placeholder?: string;
   profiledNames: Set<string>;
+  // 주관자/간사/발표자 only - see speakerRoleByName's comment. A name with no entry (a plain
+  // attendee, or one minted fresh from a segment tag) just gets no badge.
+  roleByName?: Map<string, string>;
   value: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Opening via the ▼ toggle button never focuses the text input (its onMouseDown deliberately
+  // preventDefaults so it doesn't steal focus from wherever the user was), so a click anywhere
+  // else on the page didn't blur anything and the dropdown just stayed open until the user
+  // clicked ▼ again or picked an option. This closes it on any mousedown outside the picker,
+  // regardless of how it was opened.
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    function handleOutsidePointerDown(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutsidePointerDown);
+    return () => document.removeEventListener("mousedown", handleOutsidePointerDown);
+  }, [isOpen]);
 
   return (
-    <div className="speaker-picker" onClick={(event) => event.stopPropagation()}>
+    <div className="speaker-picker" onClick={(event) => event.stopPropagation()} ref={containerRef}>
       <input
         className="speaker-picker-input"
         disabled={disabled}
@@ -312,19 +340,23 @@ function SpeakerPicker({
       )}
       {isOpen && options.length > 0 && (
         <ul className="speaker-picker-dropdown">
-          {options.map((name) => (
-            <li
-              className={profiledNames.has(name) ? "has-profile" : ""}
-              key={name}
-              onMouseDown={(event) => {
-                event.preventDefault();
-                setIsOpen(false);
-                onSelectOption(name);
-              }}
-            >
-              {name}
-            </li>
-          ))}
+          {options.map((name) => {
+            const role = roleByName?.get(name);
+            return (
+              <li
+                className={profiledNames.has(name) ? "has-profile" : ""}
+                key={name}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  setIsOpen(false);
+                  onSelectOption(name);
+                }}
+              >
+                <span className="speaker-picker-dropdown-name">{name}</span>
+                {role && <span className={`speaker-role-badge speaker-role-badge-${role}`}>{role}</span>}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
@@ -335,6 +367,7 @@ export function AudioAnalysisModal({
   source,
   existingAnalysis,
   attendeeNames,
+  attendeeRoles,
   agenda,
   sttProvider,
   silenceThreshold,
@@ -419,6 +452,11 @@ export function AudioAnalysisModal({
   useEffect(() => {
     void refreshProfileNames();
   }, []);
+
+  // "화자 편집" button - opens the same card-grid voice profile manager as Settings' 수정 button
+  // (see VoiceProfileManagerModal). Refreshes registeredProfileNames on close since a delete in
+  // there should immediately stop coloring that name green in the speaker picker dropdowns below.
+  const [isVoiceProfileManagerOpen, setIsVoiceProfileManagerOpen] = useState(false);
 
   // The label(s) STT produced before any per-segment verification (whole-recording diarization no
   // longer runs, see pyannoteDiarize.mjs's AUTO_DIARIZE_ON_TRANSCRIBE - every segment starts on one
@@ -536,6 +574,13 @@ export function AudioAnalysisModal({
 
     setIsClassifyingRemaining(true);
     setClassifyError("");
+
+    // Yield to the browser so "화자 분리 중..." actually paints before the synchronous clip-slicing
+    // work below (sliceAudioBufferToWav per target) blocks the main thread - without this, clicking
+    // 화자 분리 on a long meeting with many pending segments left the button looking unresponsive for
+    // that entire slicing pass (nothing painted between the click and the eventual network request),
+    // which is what led users to click it repeatedly, unsure whether the first click had registered.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
 
     try {
       const clips = targets.map(({ segment, index }) => ({
@@ -1297,8 +1342,20 @@ export function AudioAnalysisModal({
         names.add(displayName);
       }
     }
-    return Array.from(names);
+    return Array.from(names).sort((a, b) => a.localeCompare(b, "ko"));
   }, [attendeeNames, speakerLabels, editedSpeakerMap]);
+
+  // Name -> role badge lookup for the dropdown (주관자/간사/발표자 only - a plain attendee gets no
+  // badge, see SpeakerRoleBadge's priority-order comment in types/domain.ts).
+  const speakerRoleByName = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const entry of attendeeRoles ?? []) {
+      if (entry.role) {
+        map.set(entry.name, entry.role);
+      }
+    }
+    return map;
+  }, [attendeeRoles]);
 
   // Holds in-progress edits for the per-segment speaker input while the user is still typing -
   // committing (which can reassign the segment and possibly mint a brand-new speaker label) only
@@ -1328,6 +1385,13 @@ export function AudioAnalysisModal({
 
     if (otherLabel) {
       analysis.updateSegmentSpeaker(index, otherLabel);
+      // Always (re-)enroll, not just when this name is brand new to the session - a label already
+      // carrying this name used to mean "already registered", but 화자 편집 (VoiceProfileManagerModal)
+      // can now delete that profile out from under an unchanged label mid-session. Without this,
+      // re-tagging a segment with a name whose profile was just deleted silently did nothing (the
+      // dropdown never turned green again) - enrollSegmentClip just appends a sample either way,
+      // so re-registering an already-healthy profile is harmless, just one more sample.
+      void enrollSegmentClip(index, name);
       return;
     }
 
@@ -1443,6 +1507,7 @@ export function AudioAnalysisModal({
                         onSelectOption={(name) => selectSegmentSpeakerName(index, segment.speaker, name)}
                         options={speakerCandidateNames}
                         profiledNames={registeredProfileNames}
+                        roleByName={speakerRoleByName}
                         value={segmentSpeakerInputValue(index, segment.speaker)}
                       />
                     </div>
@@ -1594,6 +1659,10 @@ export function AudioAnalysisModal({
                       {isClassifyingRemaining ? "화자 분리 중..." : "화자 분리"}
                     </button>
                   )}
+                  <button className="primary-action" onClick={() => setIsVoiceProfileManagerOpen(true)} type="button">
+                    <Pencil size={14} />
+                    화자 편집
+                  </button>
                 </div>
               </div>
               {classifyError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{classifyError}</span>}
@@ -1620,6 +1689,7 @@ export function AudioAnalysisModal({
                         options={speakerCandidateNames}
                         placeholder="화자 이름"
                         profiledNames={registeredProfileNames}
+                        roleByName={speakerRoleByName}
                         value={editedSpeakerMap[label] ?? ""}
                       />
                     </div>
@@ -1680,6 +1750,7 @@ export function AudioAnalysisModal({
                         onSelectOption={(name) => selectSegmentSpeakerName(index, segment.speaker, name)}
                         options={speakerCandidateNames}
                         profiledNames={registeredProfileNames}
+                        roleByName={speakerRoleByName}
                         value={segmentSpeakerInputValue(index, segment.speaker)}
                       />
                     </div>
@@ -1886,6 +1957,10 @@ export function AudioAnalysisModal({
                           {isClassifyingRemaining ? "화자 분리 중..." : "화자 분리"}
                         </button>
                       )}
+                      <button className="primary-action" onClick={() => setIsVoiceProfileManagerOpen(true)} type="button">
+                        <Pencil size={14} />
+                        화자 편집
+                      </button>
                     </div>
                   </div>
                   {analyzeError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{analyzeError}</span>}
@@ -1915,6 +1990,7 @@ export function AudioAnalysisModal({
                         options={speakerCandidateNames}
                         placeholder="화자 이름"
                         profiledNames={registeredProfileNames}
+                        roleByName={speakerRoleByName}
                         value={editedSpeakerMap[label] ?? ""}
                       />
                       <button
@@ -1994,6 +2070,14 @@ export function AudioAnalysisModal({
         </div>
         {correctionError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{correctionError}</span>}
       </ModalShell>
+    )}
+
+    {isVoiceProfileManagerOpen && (
+      <VoiceProfileManagerModal
+        onClose={() => setIsVoiceProfileManagerOpen(false)}
+        onProfilesChanged={() => void refreshProfileNames()}
+        overlayZIndex={1000}
+      />
     )}
     </>
   );

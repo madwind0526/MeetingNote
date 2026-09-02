@@ -15,6 +15,8 @@ import type {
   LlmProviderId,
   Meeting,
   MeetingDraft,
+  SpeakerRoleBadge,
+  SpeakerRoleEntry,
   SttProviderId
 } from "../../types/domain";
 import {
@@ -492,18 +494,36 @@ export function MeetingFormModal({
     setDraft((current) => ({ ...current, audio: nextAnalysis }));
   };
 
-  // Presenters first, then other key attendees, matching the diarization heuristic's
-  // "presenters/key attendees first" speaker-ordering expectation. Dedupes and drops blanks.
-  const audioAttendeeNames = () => {
-    const presenters = draft.attendees.filter((attendee) => attendee.isPresenter).map((attendee) => attendee.name);
-    const otherKeyAttendees = draft.attendees
-      .filter((attendee) => attendee.isKeyAttendee && !attendee.isPresenter)
-      .map((attendee) => attendee.name);
+  // Every named person on this meeting's roster - 주관자, 간사, and every attendee regardless of
+  // isKeyAttendee (that flag used to gate who showed up here, which was the bug: a plain
+  // participant with isKeyAttendee unchecked just silently never appeared in the speaker picker).
+  // One entry per unique name, tagged with the most senior role that applies (주관자 > 간사 >
+  // 발표자 > plain attendee/no badge) - see SpeakerRoleBadge's priority-order comment in
+  // types/domain.ts. AudioAnalysisModal's speaker picker uses this both for the dropdown's full
+  // candidate list and for the role badge next to each name.
+  const audioAttendeeRoles = (): SpeakerRoleEntry[] => {
+    const roleByName = new Map<string, SpeakerRoleBadge | null>();
+    const claim = (name: string, role: SpeakerRoleBadge | null) => {
+      if (name && !roleByName.has(name)) {
+        roleByName.set(name, role);
+      }
+    };
 
-    // 주관자 included too - AudioAnalysisModal's speaker picker offers 발표자/참석자/주관자 as
-    // candidate names, and an organizer often also speaks during the meeting.
-    return Array.from(new Set([...presenters, ...otherKeyAttendees, draft.organizer])).filter(Boolean);
+    claim(draft.organizer, "주관자");
+    claim(draft.secretary, "간사");
+    for (const attendee of draft.attendees) {
+      if (attendee.isPresenter) {
+        claim(attendee.name, "발표자");
+      }
+    }
+    for (const attendee of draft.attendees) {
+      claim(attendee.name, null);
+    }
+
+    return Array.from(roleByName, ([name, role]) => ({ name, role })).sort((a, b) => a.name.localeCompare(b.name, "ko"));
   };
+
+  const audioAttendeeNames = () => audioAttendeeRoles().map((entry) => entry.name);
 
   // ---------- Presentation summaries (bulk) ----------
 
@@ -1090,6 +1110,7 @@ export function MeetingFormModal({
         <AudioAnalysisModal
           agenda={draft.agenda}
           attendeeNames={audioAttendeeNames()}
+          attendeeRoles={audioAttendeeRoles()}
           chunkMinutesOverrides={chunkMinutesOverrides}
           dictionary={dictionary}
           existingAnalysis={draft.audio ?? undefined}

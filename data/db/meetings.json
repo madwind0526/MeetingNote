@@ -833,7 +833,7 @@
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T13:43:28.862Z",
-    "updatedAt": "2026-08-31T15:48:34.703Z",
+    "updatedAt": "2026-09-02T14:25:05.610Z",
     "location": ""
   },
   {
@@ -2663,7 +2663,7 @@
     ],
     "audio": {
       "fileName": "duration-30min.wav",
-      "durationSec": 1422.432,
+      "durationSec": 1451.12,
       "preprocessing": {
         "vocalIsolation": false,
         "noiseRemoval": false,
@@ -2671,19 +2671,19 @@
       },
       "transcriptSegments": [
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 0,
           "endSec": 4.64,
           "text": "안녕하세요. 오늘 3분기 실행 현황 점검 회의를 시작하겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 6.28,
           "endSec": 13.92,
           "text": "오늘은 Artificial Intelligence 코드리뷰 파일럿, 고객 지원 프로세스 개선, 인프라 비용 집행 세 가지 안건을 순서대로 다루겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 15.58,
           "endSec": 18.36,
           "text": "각 발표 후에는 질의 응답 시간을 갖겠습니다."
@@ -2695,85 +2695,85 @@
           "text": "먼저 박서연님, Artificial Intelligence 코드리뷰 파일럿 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 25.5,
           "endSec": 28.84,
           "text": "안녕하세요. 백엔드팀 박서연입니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 28.84,
           "endSec": 33.96,
           "text": "이번 분기에 Artificial Intelligence 코드리뷰 어시스턴트 파일럿을 진행했습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 35.1,
           "endSec": 44.58,
           "text": "8월 한 달간 백엔드팀 12명을 대상으로 풀 리퀘스트 340건에 적용했고, 리뷰 대기시간이 18시간에서 6시간으로 줄었습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 45.760000000000005,
           "endSec": 53.400000000000006,
           "text": "스타일 관련 지적의 72%는 자동으로 처리됐고, 개발자들의 만족도 조사에서도 긍정적인 답변이 많았습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 53.620000000000005,
           "endSec": 58.74,
           "text": "다음 분기에는 프론트엔드팀까지 확대 적용할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "강민재",
           "startSec": 58.84,
           "endSec": 65.76,
           "text": "베타 테스트 기간 동안 오탄, 그러니까 잘못된 지적 비율은 어느 정도였나요?"
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 67.10000000000001,
           "endSec": 68.52000000000001,
           "text": "좋은 질문입니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 69.64,
           "endSec": 78.26,
           "text": "초기에는 오탄률이 15% 정도로 높았는데, 프롬프트와 규칙을 계속 튜닝하면서 최종적으로는 4%까지 낮췄습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 78.26,
           "endSec": 88.26,
           "text": "나머지 오탄은 대부분 도메인 특화 로직에 대한 오해에서 나왔고, 이 부분은 팀별 컨텍스트를 추가로 제공하는 방식으로 개선할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 88.26,
           "endSec": 93.10000000000001,
           "text": "추가 질문 없으시면 다음으로 넘어가겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 94.66000000000001,
           "endSec": 98.5,
           "text": "이준호님, 고객지원 프로세스 개선 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 98.5,
           "endSec": 103.64,
           "text": "안녕하세요. 고객지원팀 이준호입니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 104.92,
           "endSec": 108.82,
           "text": "이번 분기에는 고객문의 대응 프로세스를 개선했습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 110.1,
           "endSec": 118.2,
           "text": "챗봇 1차 응대 비중을 늘리고, 상담사 배정 로직을 개편해서 평균 응답 시간이 40% 단축됐습니다."
@@ -2785,31 +2785,31 @@
           "text": "고객만족"
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 120,
           "endSec": 128.56,
           "text": "지역도 조사에서도 전분기 대비 점수가 올랐고 특히 야간 시간대 응대 품질이 크게 개선됐다는 피드백이 많았습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "정하은",
           "startSec": 130.42,
           "endSec": 135.46,
           "text": "챗보디 처리하지 못하고 사람에게 넘기는 비율은 어느 정도인가요?"
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 137.06,
           "endSec": 141.74,
           "text": "현재는 약 35% 정도가 상담사에게 이관되고 있습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 141.74,
           "endSec": 151.24,
           "text": "단순 문의는 챗보디 대부분 처리하고 결제나 환불처럼 민감한 것은 바로 상담사에게 넘기도록 설계했습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 152.56,
           "endSec": 158.14,
           "text": "다음 분기에는 이관비율을 30% 아래로 낮추는 것을 목표로 하고 있습니다."
@@ -2821,31 +2821,31 @@
           "text": "감사합니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 162.56,
           "endSec": 166.7,
           "text": "마지막으로 최윤아님, 인프라 비용 집행 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 168.8,
           "endSec": 171,
           "text": "안녕하세요. 인프라팀 최윤아입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 171.74,
           "endSec": 174.94,
           "text": "이번 분기 클라우드 비용을 전분기 대비 최적화했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 175.94,
           "endSec": 181.48000000000002,
           "text": "예약 인스턴스로 전환하고 사용하지 않는 리소스를 정리해서 월 비용을 약 20% 절감했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 182.54000000000002,
           "endSec": 189.2,
           "text": "다음 분기 예산안도 함께 준비했는데 트래픽 증가를 고려해서 전체 예산은 유지하되 내부 배분을 조정할 계획입니다."
@@ -2863,13 +2863,13 @@
           "text": "네, 무중단으로 전환을 완료했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 198.5,
           "endSec": 204.56,
           "text": "트래픽이 적은 새벽 시간대에 단계적으로 전환했고, 롤백 계획도 미리 준비해뒀습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 205.5,
           "endSec": 210.86,
           "text": "실제로 문제가 발생한 구간은 없었고, 모니터링 대시보드로 전 과정을 실시간으로 확인했습니다."
@@ -2881,13 +2881,13 @@
           "text": "세 분 모두 좋은 발표 감사합니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 215.86,
           "endSec": 229.22,
           "text": "오늘 논의된 내용을 정리하면 Artificial Intelligence 코드리뷰는 프론트엔드팀으로 확대하고, 고객 지원은 챗봇 이관 비율을 낮추는 것을 목표로 하며, 인프라 비용은 다음 분기 예산 배분을 조정하기로 했습니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 229.22,
           "endSec": 232.94,
           "text": "오늘 회의는 여기서 마치겠습니다."
@@ -2899,31 +2899,31 @@
           "text": "모두 수고하셨습니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 235.22,
           "endSec": 240.22,
           "text": "안녕하세요. 오늘 3분기 실행 현황입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 240,
           "endSec": 241.74,
           "text": "전망점검회의를 시작하겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 243.36,
           "endSec": 248.9,
           "text": "오늘은 Artificial Intelligence 코드리뷰 파일럿, 고객지원 프로세스 개선, 인프라 비용 집행"
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 248.9,
           "endSec": 251,
           "text": "세 가지 안건을 순서대로 다루겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 252.66,
           "endSec": 255.44,
           "text": "각 발표 후에는 질의 응답 시간을 갖겠습니다."
@@ -2935,25 +2935,25 @@
           "text": "먼저 박서연님, Artificial Intelligence 코드리뷰 파일럿 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 263.24,
           "endSec": 265.86,
           "text": "안녕하세요. 백엔드팀 박서연입니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 265.86,
           "endSec": 271.04,
           "text": "이번 분기에 Artificial Intelligence 코드리뷰 어시스턴트 파일럿을 진행했습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 272.15999999999997,
           "endSec": 277.68,
           "text": "8월 한 달간 백엔드팀 12명을 대상으로 풀 리퀘스트 340건에 적용했고"
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 277.68,
           "endSec": 281.65999999999997,
           "text": "리뷰 대기시간이 18시간에서 6시간으로 줄었습니다."
@@ -2971,13 +2971,13 @@
           "text": "개발자들의 만족도 조사에서도 긍정적인 답변이 많았습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 290.7,
           "endSec": 295.82,
           "text": "다음 분기에는 프론트엔드팀까지 확대 적용할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "강민재",
           "startSec": 295.86,
           "endSec": 302.84000000000003,
           "text": "베타 테스트 기간 동안 오탄, 그러니까 잘못된 지적 비율은 어느 정도였나요?"
@@ -3007,73 +3007,73 @@
           "text": "나머지 오탄은 대부분 도메인 특화 로직에 대한 오해에서 나왔고"
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 319.86,
           "endSec": 325.36,
           "text": "이 부분은 팀별 컨텍스트를 추가로 제공하는 방식으로 개선할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 326.86,
           "endSec": 330.15999999999997,
           "text": "추가 질문 없으시면 다음으로 넘어가겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 331.74,
           "endSec": 335.58,
           "text": "이준호님, 고객지원 프로세스 개선 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 335.58,
           "endSec": 340.7,
           "text": "안녕하세요. 고객지원팀 이준호입니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 341.98,
           "endSec": 345.84000000000003,
           "text": "이번 분기에는 고객문의 대응 프로세스를 개선했습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 347.15999999999997,
           "endSec": 354.58,
           "text": "챗봇 1차 응대 비중을 늘리고 상담사 배정 로직을 개편해서 평균 응답 시간이 40% 단축됐습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 354.58,
           "endSec": 359.58,
           "text": "고객만족도 조사에서도 전분기 대비 점수가 올랐습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 360,
           "endSec": 367,
           "text": "특히 야간 시간대 응대 품질이 크게 개선됐다는 피드백이 많았습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "정하은",
           "startSec": 367,
           "endSec": 374,
           "text": "챗보디 처리하지 못하고 사람에게 넘기는 비율은 어느 정도인가요?"
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 374,
           "endSec": 380,
           "text": "현재는 약 35% 정도가 상담사에게 이관되고 있습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 380,
           "endSec": 389,
           "text": "단순 문의는 챗보디 대부분 처리하고 결제나 환불처럼 민감한 거는 바로 상담사에게 넘기도록 설계했습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 389,
           "endSec": 397,
           "text": "다음 분기에는 이관비율을 30% 아래로 낮추는 것을 목표로 하고 있습니다."
@@ -3085,37 +3085,37 @@
           "text": "감사합니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 399,
           "endSec": 405,
           "text": "마지막으로 최윤아님, 인프라 비용 집행 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 405,
           "endSec": 409,
           "text": "안녕하세요. 인프라팀 최윤아입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 409,
           "endSec": 413,
           "text": "이번 분기 클라우드 비용을 전분기 대비 최적화했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 413,
           "endSec": 419,
           "text": "예약 인스턴스로 전환하고 사용하지 않는 리소스를 정리해서 월 비용을 약 20% 절감했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 419,
           "endSec": 427,
           "text": "다음 분기 예산안도 함께 준비했는데, 트래픽 증가를 고려해서 전체 예산은 유지하되 내부 배분을 조정할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "강민재",
           "startSec": 427,
           "endSec": 433,
           "text": "예약 인스턴스 전환 과정에서 서비스 중단은 없었나요?"
@@ -3127,13 +3127,13 @@
           "text": "네, 무중단으로 전환을 완료했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 436,
           "endSec": 442,
           "text": "트래픽이 적은 새벽 시간대에 단계적으로 전환했고, 롤백 계획도 미리 준비해뒀습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 442,
           "endSec": 448,
           "text": "실제로 문제가 발생한 구간은 없었고, 모니터링 대시보드로 전 과정을 실시간으로 확인했습니다."
@@ -3145,13 +3145,13 @@
           "text": "세 분 모두 좋은 발표 감사합니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 453,
           "endSec": 467,
           "text": "오늘 논의된 내용을 정리하면, Artificial Intelligence 코드리뷰는 프론트엔드 팀으로 확대하고, 고객 지원은 챗봇 이관 비율을 낮추는 것을 목표로 하며, 인프라 비용은 다음 분기 예산 배분을 조정하기로 했습니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 467,
           "endSec": 471,
           "text": "오늘 회의는 여기서 마치겠습니다."
@@ -3163,19 +3163,19 @@
           "text": "모두 수고하셨습니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 474,
           "endSec": 480,
           "text": "안녕하세요. 오늘 3분기 실행 현황 점검 회의를 시작하겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 480,
           "endSec": 488.1,
           "text": "오늘은 Artificial Intelligence 코드리뷰 파일럿, 고객 지원 프로세스 개선, 인프라 비용 집행 세 가지 안건을 순서대로 다루겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 489.72,
           "endSec": 492.52,
           "text": "각 발표 후에는 질의 응답 시간을 갖겠습니다."
@@ -3187,25 +3187,25 @@
           "text": "먼저 박서연님, Artificial Intelligence 코드리뷰 파일럿 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 500.3,
           "endSec": 502.96,
           "text": "안녕하세요. 백엔드팀 박서연입니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 504.12,
           "endSec": 508.02,
           "text": "이번 분기에 Artificial Intelligence 코드리뷰 어시스턴트 파일럿을 진행했습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 508.02,
           "endSec": 518.72,
           "text": "8월 한 달간 백엔드팀 12명을 대상으로 풀 리퀘스트 340건에 적용했고, 리뷰 대기시간이 18시간에서 6시간으로 줄었습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 519.9,
           "endSec": 527.02,
           "text": "스타일 관련 지적의 72%는 자동으로 처리됐고, 개발자들의 만족도 조사에서도 긍정적인 답변이 많았습니다."
@@ -3217,7 +3217,7 @@
           "text": "다음 분기에는 프론트엔드팀까지 확대 적용할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "강민재",
           "startSec": 532.86,
           "endSec": 539.92,
           "text": "베타 테스트 기간 동안 오탄, 그러니까 잘못된 지적 비율은 어느 정도였나요?"
@@ -3229,67 +3229,67 @@
           "text": "좋은 질문입니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 543.78,
           "endSec": 551.86,
           "text": "초기에는 오탄률이 15% 정도로 높았는데, 프롬프트와 규칙을 계속 튜닝하면서 최종적으로는 4%까지 낮췄습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 551.86,
           "endSec": 561.86,
           "text": "나머지 오탄은 대부분 도메인 특화 로직에 대한 오해에서 나왔고, 이 부분은 팀별 컨텍스트를 추가로 제공하는 방식으로 개선할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 561.86,
           "endSec": 567.24,
           "text": "추가 질문 없으시면 다음으로 넘어가겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 568.8,
           "endSec": 572.64,
           "text": "이준호님, 고객지원 프로세스 개선 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 572.64,
           "endSec": 577.78,
           "text": "안녕하세요. 고객지원팀 이준호입니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 579.06,
           "endSec": 582.96,
           "text": "이번 분기에는 고객문의 대응 프로세스를 개선했습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 584.24,
           "endSec": 591.64,
           "text": "챗봇 1차 응대 비중을 늘리고, 상담사 배정 로직을 개편해서 평균 응답 시간이 40% 단축됐습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 591.64,
           "endSec": 600,
           "text": "고객만족도 조사에서도 전분기 대비 점수가 올랐고, 특히 야간 시간대 응대 품질이"
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 600,
           "endSec": 602.62,
           "text": "크게 개선됐다는 피드백이 많았습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 610.62,
           "endSec": 615.88,
           "text": "현재는 약 35% 정도가 상담사에게 이관되고 있습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 617.22,
           "endSec": 622.82,
           "text": "단순 문의는 챗보디 대부분 처리하고 결제나 환불처럼 민감한 것은 바로"
@@ -3301,7 +3301,7 @@
           "text": "상담사에게 넘기도록 설계했습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 625.32,
           "endSec": 632.3,
           "text": "다음 분기에는 이관비율을 30% 아래로 낮추는 것을 목표로 하고 있습니다."
@@ -3313,25 +3313,25 @@
           "text": "감사합니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 636.36,
           "endSec": 640.84,
           "text": "마지막으로 최윤아님, 인프라 비용 집행 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 642.92,
           "endSec": 645.16,
           "text": "안녕하세요. 인프라팀 최윤아입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 646.16,
           "endSec": 649.02,
           "text": "이번 분기 클라우드 비용을 전분기 대비 최적화했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 649.02,
           "endSec": 655.02,
           "text": "예약 인스턴스로 전환하고 사용하지 않는 리소스를 정리해서 월 비용을 약 20% 절감했습니다."
@@ -3343,7 +3343,7 @@
           "text": "다음 분기 예산안도 함께 준비했는데,"
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 658.96,
           "endSec": 663.36,
           "text": "트래픽 증가를 고려해서 전체 예산은 유지하되 내부 배분을 조정할 계획입니다."
@@ -3361,13 +3361,13 @@
           "text": "네, 무중단으로 전환을 완료했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 672.02,
           "endSec": 678.02,
           "text": "트래픽이 적은 새벽 시간대에 단계적으로 전환했고, 롤백 계획도 미리 준비해뒀습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 679.64,
           "endSec": 684.98,
           "text": "실제로 문제가 발생한 구간은 없었고, 모니터링 대시보드로 전 과정을 실시간으로 확인했습니다."
@@ -3385,13 +3385,13 @@
           "text": "오늘 논의된 내용을 정리하면, Artificial Intelligence 코드리뷰는 프론트엔드팀으로 확대하고,"
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 696.08,
           "endSec": 699.3,
           "text": "고객 지원은 챗봇 이관 비율을 낮추는 것을 목표로 하며,"
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 700.1,
           "endSec": 703.34,
           "text": "인프라 비용은 다음 분기 예산 배분을 조정하기로 했습니다."
@@ -3409,7 +3409,7 @@
           "text": "모두 수고하셨습니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 709.92,
           "endSec": 715.84,
           "text": "안녕하세요. 오늘 3분기 실행 현황 점검 회의를 시작하겠습니다."
@@ -3421,7 +3421,7 @@
           "text": "오늘은 Artificial Intelligence 코드리뷰 파일럿"
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 719.46,
           "endSec": 727.04,
           "text": "다음 분기 실행 현황 점검 회의를 시작하겠습니다."
@@ -3433,13 +3433,13 @@
           "text": "감사합니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 720,
           "endSec": 725.14,
           "text": "고객지원 프로세스 개선, 인프라 비용 집행 세 가지 안건을 순서대로 다루겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 726.8,
           "endSec": 729.58,
           "text": "각 발표 후에는 질의 응답 시간을 갖겠습니다."
@@ -3451,25 +3451,25 @@
           "text": "먼저 박서연님, Artificial Intelligence 코드리뷰 파일럿 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 737.38,
           "endSec": 740,
           "text": "안녕하세요. 백엔드팀 박서연입니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 740.28,
           "endSec": 745.18,
           "text": "이번 분기에 Artificial Intelligence 코드리뷰 어시스턴트 파일럿을 진행했습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 745.18,
           "endSec": 755.8,
           "text": "8월 한 달간 백엔드팀 12명을 대상으로 풀 리퀘스트 340건에 적용했고, 리뷰 대기시간이 18시간에서 6시간으로 줄었습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 756.96,
           "endSec": 764.64,
           "text": "스타일 관련 지적의 72%는 자동으로 처리됐고, 개발자들의 만족도 조사에서도 긍정적인 답변이 많았습니다."
@@ -3481,7 +3481,7 @@
           "text": "다음 분기에는 프론트엔드팀까지 확대 적용할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "강민재",
           "startSec": 769.92,
           "endSec": 776.98,
           "text": "베타 테스트 기간 동안 오탄, 그러니까 잘못된 지적 비율은 어느 정도였나요?"
@@ -3493,85 +3493,85 @@
           "text": "좋은 질문입니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 780.86,
           "endSec": 788.92,
           "text": "초기에는 오탄률이 15% 정도로 높았는데, 프롬프트와 규칙을 계속 튜닝하면서 최종적으로는 4%까지 낮췄습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 789.92,
           "endSec": 798.92,
           "text": "나머지 오탄은 대부분 도메인 특화 로직에 대한 오해에서 나왔고, 이 부분은 팀별 컨텍스트를 추가로 제공하는 방식으로 개선할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 799.92,
           "endSec": 804.3,
           "text": "추가 질문 없으시면 다음으로 넘어가겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 805.88,
           "endSec": 809.7,
           "text": "이준호님, 고객지원 프로세스 개선 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 809.7,
           "endSec": 814.84,
           "text": "안녕하세요. 고객지원팀 이준호입니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 816.14,
           "endSec": 820.02,
           "text": "이번 분기에는 고객문의 대응 프로세스를 개선했습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 821.3,
           "endSec": 829.38,
           "text": "챗봇 1차 응대 비중을 늘리고, 상담사 배정 로직을 개편해서 평균 응답 시간이 40% 단축됐습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 829.38,
           "endSec": 839.54,
           "text": "고객만족도 조사에서도 전분기 대비 점수가 올랐고, 특히 야간 시간대 응대 품질이 크게 개선됐다는 피드백이 많았습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "정하은",
           "startSec": 839.54,
           "endSec": 849.9200000000001,
           "text": "жел기봐요, 손여알리 obeys examples으로 사용하도록 하겠습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 849.9200000000001,
           "endSec": 855.5,
           "text": "나중에 제 꺼냐든 인식 프로세스가 풀어납니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "정하은",
           "startSec": 840.86,
           "endSec": 846.68,
           "text": "챗보디 처리하지 못하고 사람에게 넘기는 비율은 어느 정도인가요?"
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 848.26,
           "endSec": 852.96,
           "text": "현재는 약 35% 정도가 상담사에게 이관되고 있습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 854.28,
           "endSec": 862.4,
           "text": "단순 문의는 챗보디 대부분 처리하고 결제나 환불처럼 민감한 것은 바로 상담사에게 넘기도록 설계했습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 862.88,
           "endSec": 869.38,
           "text": "다음 분기에는 이관비율을 30% 아래로 낮추는 것을 목표로 하고 있습니다."
@@ -3583,31 +3583,31 @@
           "text": "감사합니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 873.32,
           "endSec": 877.9,
           "text": "마지막으로 최윤아님, 인프라 비용 집행 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 879.4,
           "endSec": 882.22,
           "text": "안녕하세요. 인프라팀 최윤아입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 883.22,
           "endSec": 886.1,
           "text": "이번 분기 클라우드 비용을 전분기 대비 최적화했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 886.46,
           "endSec": 892.1,
           "text": "예약 인스턴스로 전환하고 사용하지 않는 리소스를 정리해서 월 비용을 약 20% 절감했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 892.1,
           "endSec": 900.44,
           "text": "다음 분기 예산안도 함께 준비했는데, 트래픽 증가를 고려해서 전체 예산은 유지하되 내부 배분을 조정할 계획입니다."
@@ -3625,13 +3625,13 @@
           "text": "네, 무중단으로 전환을 완료했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 910.78,
           "endSec": 915.16,
           "text": "트래픽이 적은 새벽 시간대에 단계적으로 전환했고, 롤백 계획도 미리 준비해뒀습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 916.72,
           "endSec": 922.1,
           "text": "실제로 문제가 발생한 구간은 없었고, 모니터링 대시보드로 전 과정을 실시간으로 확인했습니다."
@@ -3649,13 +3649,13 @@
           "text": "오늘 논의된 내용을 정리하면, Artificial Intelligence 코드리뷰는 프론트엔드팀으로 확대하고,"
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 933.14,
           "endSec": 936.38,
           "text": "고객 지원은 챗봇 이관 비율을 낮추는 것을 목표로 하며,"
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 937.16,
           "endSec": 940.4,
           "text": "인프라 비용은 다음 분기 예산 배분을 조정하기로 했습니다."
@@ -3673,25 +3673,25 @@
           "text": "모두 수고하셨습니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 947,
           "endSec": 952.92,
           "text": "안녕하세요. 오늘 3분기 실행 현황 점검 회의를 시작하겠습니다."
         },
         {
-          "speaker": "SPEAKER_04",
+          "speaker": "김도현",
           "startSec": 954.58,
           "endSec": 960,
           "text": "오늘은 Artificial Intelligence 코드리뷰 파일럿, 고객 지원 프로세스 개선, 인프라 비용 집..."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 960,
           "endSec": 962.2,
           "text": "3가지 안건을 순서대로 다루겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 963.86,
           "endSec": 966.66,
           "text": "각 발표 후에는 질의 응답 시간을 갖겠습니다."
@@ -3703,25 +3703,25 @@
           "text": "먼저 박서연님, Artificial Intelligence 코드리뷰 파일럿 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 974,
           "endSec": 977.1,
           "text": "안녕하세요. 백엔드팀 박서연입니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 978.26,
           "endSec": 982.18,
           "text": "이번 분기에 Artificial Intelligence 코드리뷰 어시스턴트 파일럿을 진행했습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 983.4,
           "endSec": 988.88,
           "text": "8월 한 달간 백엔드팀 12명을 대상으로 풀 리퀘스트 340건에 적용했고,"
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 988.88,
           "endSec": 992.86,
           "text": "리뷰 대기시간이 18시간에서 6시간으로 줄었습니다."
@@ -3739,13 +3739,13 @@
           "text": "개발자들의 만족도 조사에서도 긍정적인 답변이 많았습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 1002.92,
           "endSec": 1007.02,
           "text": "다음 분기에는 프론트엔드팀까지 확대 적용할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "강민재",
           "startSec": 1008.78,
           "endSec": 1014.06,
           "text": "베타 테스트 기간 동안 오탄, 그러니까 잘못된 지적 비율은 어느 정도였나요?"
@@ -3769,7 +3769,7 @@
           "text": "프롬프트와 규칙을 계속 튜닝하면서 최종적으로는 4%까지 낮췄습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 1027.7,
           "endSec": 1031.54,
           "text": "나머지 오탄은 대부분 도메인 특화 로직에 대한 오해에서 나왔고,"
@@ -3781,49 +3781,49 @@
           "text": "이 부분은 팀별 컨텍스트를 추가로 제공하는 방식으로 개선할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 1036.54,
           "endSec": 1041.38,
           "text": "추가 질문 없으시면 다음으로 넘어가겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 1042.96,
           "endSec": 1046.78,
           "text": "이준호님, 고객지원 프로세스 개선 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1046.78,
           "endSec": 1051.92,
           "text": "안녕하세요. 고객지원팀 이준호입니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1053.2,
           "endSec": 1057.08,
           "text": "이번 분기에는 고객문의 대응 프로세스를 개선했습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1058.38,
           "endSec": 1060.48,
           "text": "챗봇 1차 응대 비중을 늘리고,"
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1061,
           "endSec": 1066.46,
           "text": "상담사 배정 로직을 개편해서 평균 응답 시간이 40% 단축됐습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1066.46,
           "endSec": 1071.88,
           "text": "고객만족도 조사에서도 전분기 대비 점수가 올랐고,"
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1071.98,
           "endSec": 1076.7,
           "text": "특히 야간 시간대 응대 품질이 크게 개선됐다는 피드백이 많았습니다."
@@ -3835,49 +3835,49 @@
           "text": "현재는 약 35% 정도가 상담사에게 이관되고 있습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 1091.36,
           "endSec": 1099.44,
           "text": "단순 문의는 챗봇이 대부분 처리하고, 결제나 환불처럼 민감한 것은 바로 상담사에게 넘기도록 설계했습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 1099.92,
           "endSec": 1106.44,
           "text": "다음 분기에는 이관 비율을 30% 아래로 낮추는 것을 목표로 하고 있습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "김도현",
           "startSec": 1110,
           "endSec": 1115,
           "text": "마지막으로 최윤화님, 인프라 비용 집행 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1116.64,
           "endSec": 1119.28,
           "text": "안녕하세요. 인프라팀 최윤화입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1120.3,
           "endSec": 1123.18,
           "text": "이번 분기 클라우드 비용을 전분기 대비 최적화했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1124.24,
           "endSec": 1129.76,
           "text": "예약 인스턴스로 전환하고 사용하지 않는 리소스를 정리해서 월 비용을 약 20% 절감했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1130.84,
           "endSec": 1137.46,
           "text": "다음 분기 예산안도 함께 준비했는데, 트래픽 증가를 고려해서 전체 예산은 유지하되 내부 배분을 조정할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "강민재",
           "startSec": 1137.46,
           "endSec": 1143.24,
           "text": "예약 인스턴스 전환 과정에서 서비스 중단은 없었나요?"
@@ -3889,13 +3889,13 @@
           "text": "네, 무중단으로 전환을 완료했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1147.86,
           "endSec": 1152.8,
           "text": "트래픽이 적은 새벽 시간대에 단계적으로 전환했고, 롤백 계획도 미리 준비해뒀습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1153.8,
           "endSec": 1159.12,
           "text": "실제로 문제가 발생한 구간은 없었고, 모니터링 대시보드로 전 과정을 실시간으로 확인했습니다."
@@ -3913,13 +3913,13 @@
           "text": "오늘 논의된 내용을 정리하면, Artificial Intelligence 코드리뷰는 프론트엔드팀으로 확대하고,"
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "김도현",
           "startSec": 1170.22,
           "endSec": 1173.46,
           "text": "고객 지원은 챗봇 이관 비율을 낮추는 것을 목표로 하며,"
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "김도현",
           "startSec": 1174.26,
           "endSec": 1177.48,
           "text": "인프라 비용은 다음 분기 예산 배분을 조정하기로 했습니다."
@@ -3937,19 +3937,19 @@
           "text": "모두 수고하셨습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "김도현",
           "startSec": 1185.74,
           "endSec": 1189.98,
           "text": "안녕하세요. 오늘 3분기 실행 현황 점검 회의를 시작하겠습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "김도현",
           "startSec": 1189.98,
           "endSec": 1199.22,
           "text": "오늘은 Artificial Intelligence 코드리뷰 파일럿, 고객 지원 프로세스 개선, 인프라 비용 집행 3가지 안건을 순서대로 다루겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 1200,
           "endSec": 1203.74,
           "text": "각 발표 후에는 질의 응답 시간을 갖겠습니다."
@@ -3961,25 +3961,25 @@
           "text": "먼저 박서연님, Artificial Intelligence 코드리뷰 파일럿 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 1210.98,
           "endSec": 1214.16,
           "text": "안녕하세요. 백엔드팀 박서연입니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 1215.34,
           "endSec": 1219.26,
           "text": "이번 분기에 Artificial Intelligence 코드리뷰 어시스턴트 파일럿을 진행했습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 1220.46,
           "endSec": 1225.96,
           "text": "8월 한 달간 백엔드팀 12명을 대상으로 풀 리퀘스트 340건에 적용했고,"
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 1225.96,
           "endSec": 1229.96,
           "text": "리뷰 대기 시간이 18시간에서 6시간으로 줄었습니다."
@@ -3997,13 +3997,13 @@
           "text": "개발자들의 만족도 조사에서도 긍정적인 답변이 많았습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 1239.98,
           "endSec": 1244.1,
           "text": "다음 분기에는 프론트엔드팀까지 확대 적용할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "강민재",
           "startSec": 1245.86,
           "endSec": 1251.12,
           "text": "베타 테스트 기간 동안 오탄, 그러니까 잘못된 지적 비율은 어느 정도였나요?"
@@ -4027,7 +4027,7 @@
           "text": "프롬프트와 규칙을 계속 튜닝하면서 최종적으로는 4%까지 낮췄습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "박서연",
           "startSec": 1264.76,
           "endSec": 1268.62,
           "text": "나머지 오탄은 대부분 도메인 특화 로직에 대한 오해에서 나왔고,"
@@ -4039,73 +4039,73 @@
           "text": "이 부분은 팀별 컨텍스트를 추가로 제공하는 방식으로 개선할 계획입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 1273.6,
           "endSec": 1278.44,
           "text": "추가 질문 없으시면 다음으로 넘어가겠습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "김도현",
           "startSec": 1280.02,
           "endSec": 1283.86,
           "text": "이준호님, 고객지원 프로세스 개선 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1283.86,
           "endSec": 1289,
           "text": "안녕하세요. 고객지원팀 이준호입니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1290.28,
           "endSec": 1294.16,
           "text": "이번 분기에는 고객문의 대응 프로세스를 개선했습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1295.46,
           "endSec": 1297.56,
           "text": "챗봇 1차 응대 비중을 늘리고,"
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1298.06,
           "endSec": 1303.54,
           "text": "상담사 배정 로직을 개편해서 평균 응답 시간이 40% 단축됐습니다."
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1304.8,
           "endSec": 1308.58,
           "text": "고객만족도 조사에서도 전분기 대비 점수가 올랐고,"
         },
         {
-          "speaker": "SPEAKER_02",
+          "speaker": "이준호",
           "startSec": 1308.58,
           "endSec": 1313.76,
           "text": "특히 야간 시간대 응대 품질이 크게 개선됐다는 피드백이 많았습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "정하은",
           "startSec": 1315.76,
           "endSec": 1320.1,
           "text": "챗봇이 처리하지 못하고 사람에게 넘기는 비율은 어느..."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 1320,
           "endSec": 1327.12,
           "text": "현재는 약 35% 정도가 상담사에게 이관되고 있습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 1328.44,
           "endSec": 1336,
           "text": "단순 문의는 챗봇이 대부분 처리하고 결제나 환불처럼 민감한 것은 바로 상담사에게 넘기도록 설계했습니다."
         },
         {
-          "speaker": "SPEAKER_01",
+          "speaker": "이준호",
           "startSec": 1337.92,
           "endSec": 1343.46,
           "text": "다음 분기에는 이관비율을 30% 아래로 낮추는 것을 목표로 하고 있습니다."
@@ -4117,31 +4117,31 @@
           "text": "감사합니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "김도현",
           "startSec": 1346.08,
           "endSec": 1352.06,
           "text": "마지막으로 최윤아님, 인프라 비용 집행 발표 부탁드립니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1353.66,
           "endSec": 1356.36,
           "text": "안녕하세요. 인프라팀 최윤아입니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1357.36,
           "endSec": 1360.24,
           "text": "이번 분기 클라우드 비용을 전분기 대비 최적화했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1361.3,
           "endSec": 1366.82,
           "text": "예약 인스턴스로 전환하고 사용하지 않는 리소스를 정리해서 월 비용을 약 20% 절감했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1367.9,
           "endSec": 1374.52,
           "text": "다음 분기 예산안도 함께 준비했는데 트래픽 증가를 고려해서 전체 예산은 유지하되 내부 배분을 조정할 계획입니다."
@@ -4159,13 +4159,13 @@
           "text": "네, 무중단으로 전환을 완료했습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1384.94,
           "endSec": 1389.88,
           "text": "트래픽이 적은 새벽 시간대에 단계적으로 전환했고 롤백 계획도 미리 준비해뒀습니다."
         },
         {
-          "speaker": "SPEAKER_00",
+          "speaker": "최유나",
           "startSec": 1390.06,
           "endSec": 1396.3,
           "text": "실제로 문제가 발생한 구간은 없었고 모니터링 대시보드로 전 과정을 실시간으로 확인했습니다."
@@ -4183,19 +4183,19 @@
           "text": "오늘 논의된 내용을 정리하면 Artificial Intelligence 코드리뷰는 프론트엔드팀으로 확대하고"
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "김도현",
           "startSec": 1406.56,
           "endSec": 1410.56,
           "text": "고객 지원은 챗봇 이관 비율을 낮추는 것을 목표로 하며"
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "김도현",
           "startSec": 1410.56,
           "endSec": 1414.64,
           "text": "인프라 비용은 다음 분기 예산 배분을 조정하기로 했습니다."
         },
         {
-          "speaker": "SPEAKER_03",
+          "speaker": "김도현",
           "startSec": 1414.64,
           "endSec": 1418.3,
           "text": "오늘 회의는 여기서 마치겠습니다."
@@ -4218,17 +4218,23 @@
         "SPEAKER_03": "미등록 화자 2",
         "SPEAKER_01": "미등록 화자 1",
         "SPEAKER_02": "미등록 화자 4",
-        "SPEAKER_04": "미등록 화자 3"
+        "SPEAKER_04": "미등록 화자 3",
+        "김도현": "김도현",
+        "박서연": "박서연",
+        "이준호": "이준호",
+        "최유나": "최유나",
+        "강민재": "강민재",
+        "정하은": "정하은"
       },
-      "analyzedAt": "2026-08-25T17:01:03.134Z",
-      "audioPath": "2026-08-26-(24분) 회의록/audio/duration-30min.wav",
-      "transcriptPath": "2026-08-26-(24분) 회의록/audio/24분-회의록-stt-transcript.txt"
+      "analyzedAt": "2026-09-02T15:34:39.908Z",
+      "audioPath": "2026-08-26-(24분) 회의록/audio/duration-30min-2.wav",
+      "transcriptPath": "2026-08-26-(24분) 회의록/audio/duration-30min-stt-transcript.txt"
     },
     "minutes": "# 회의록\n\n**제목:** 회의록\n**일시:** 2026-08-26 10:00-10:30\n**주관자:** 김도현 (PM)\n**참석자:** 김도현 (PM), 박서연 (백엔드팀), 이준호 (고객지원팀), 최유나 (인프라팀), 정하은 (간사), 강민재\n\n***\n\n### 💡 A/I List (사전 액션 아이템)\n\n*   **사전 A/I 없음.**\n\n***\n\n### 📋 논의 요약 및 결정 사항\n\n#### 1. AI 코드리뷰 파일럿 (발표자: 박서연)\nAI 코드리뷰 파일럿 프로젝트의 8월 한 달간의 결과를 공유했습니다. 백엔드팀 12명을 대상으로 총 340건의 PR에 적용한 결과, 주요 성과를 거두었습니다.\n\n*   **주요 성과:**\n    *   리뷰 대기시간을 기존 18시간에서 6시간으로 대폭 단축했습니다.\n    *   코드 스타일 지적 중 72%를 자동 처리할 수 있게 되어 개발 생산성을 향상시켰습니다.\n    *   초기 오탐률(잘못된 지적 비율)은 15%였으나, 프롬프트 및 규칙 지속적인 튜닝을 통해 4%까지 개선되었습니다.\n*   **개선 방안 및 향후 계획:**\n    *   발표자 측에서 지적된 나머지 오탐은 대부분 도메인 특화 로직에 대한 오해에서 기인한 것으로 파악되었습니다. 이에 따라 팀별 컨텍스트 정보를 추가로 제공하는 방식으로 오탐률 개선을 진행할 계획입니다.\n    *   다음 분기에는 AI 코드리뷰 적용 범위를 프론트엔드팀까지 확대할 예정입니다.\n\n#### 2. 고객 지원 프로세스 개선 (발표자: 이준호)\n고객 문의 대응 프로세스 개선 방안을 논의했습니다.\n\n*   **주요 개선 내용:**\n    *   챗봇의 1차 응대 비중을 확대하고, 상담사 배정 로직을 개편했습니다.\n    *   단순 문의는 챗봇이 대부분 처리하도록 자동화하고, 결제나 환불과 같은 민감도가 높은 건에 한해 상담사에게 즉시 이관하는 프로세스를 설계했습니다.\n*   **성과 및 목표:**\n    *   이러한 프로세스 개선을 통해 평균 응답 시간이 40% 단축되었으며, 고객 만족도 점수가 전분기 대비 상승하는 효과를 거두었습니다.\n    *   현재 상담사에게 이관되는 비율은 약 35% 수준입니다. 차기 분기에는 이관 비율을 30% 이하로 낮추는 것을 목표로 개선을 추진하기로 했습니다.\n\n#### 3. 인프라 비용 집행 (발표자: 최유나)\n인프라 비용 효율화 방안에 대해 발표했습니다.\n\n*   **비용 절감 계획:**\n    *   예약 인스턴스 전환 및 사용되지 않는 유휴 리소스 정리 작업을 통해 월 비용을 20% 절감할 계획입니다.\n    *   해당 전환 작업은 서비스에 영향을 주지 않도록 무중단으로 진행하며, 새벽 시간대를 활용하여 단계적으로 완료할 예정입니다.\n*   **예산 및 모니터링:**\n    *   다음 분기 예산은 현행을 유지하되, 내부 배분만 조정할 예정입니다.\n    *   비용 절감 전 과정은 모니터링 대시보드를 통해 실시간으로 확인할 수 있습니다.\n\n***\n\n### ✅ 할일\n\n| 할일 | 담당자 | 납기 |\n| :--- | :--- | :--- |\n| 팀별 컨텍스트 정보를 추가 제공하여 AI 코드리뷰 오탐률 개선 | 백엔드팀 (발표자) | - |\n| 고객 지원 이관 비율 30% 이하 달성을 위한 프로세스 개선 및 적용 | 고객지원팀 (발표자) | 다음 분기 |\n| 예약 인스턴스 전환 및 유휴 리소스 정리 작업 수행 | 인프라팀 (발표자) | (단계적/무중단) |\n\n***\n\n## 태그\n#AI코드리뷰 #프로세스개선 #인프라비용 #개발생산성 #고객지원 #챗봇 #기술효율화 #코드품질",
     "authorId": "",
     "comments": [],
     "createdAt": "2026-08-25T16:55:59.013Z",
-    "updatedAt": "2026-08-25T17:02:10.551Z",
+    "updatedAt": "2026-09-02T15:42:45.531Z",
     "location": ""
   },
   {

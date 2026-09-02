@@ -4105,6 +4105,18 @@
       "from": "선과",
       "to": "성과",
       "description": ""
+    },
+    {
+      "id": "5f059bc3-2433-4716-a87d-4e0aadae0a00",
+      "from": "오탄",
+      "to": "오탐",
+      "description": ""
+    },
+    {
+      "id": "5d427ade-e1fb-4281-a7c3-f3a857157978",
+      "from": "챗보디",
+      "to": "챗봇이",
+      "description": ""
     }
   ]
 }

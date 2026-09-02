@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Bot,
   CheckCircle2,
@@ -11,9 +11,9 @@ import {
   Mic,
   MessageSquare,
   Monitor,
+  Pencil,
   Settings2,
   ShieldCheck,
-  Trash2,
   Upload,
   Users,
   XCircle
@@ -21,7 +21,7 @@ import {
 import type { AppSettings, ExportFormat, ImportDuplicateMode, LlmProviderId, SttProviderId, ViewMode } from "../types/domain";
 import { llmProviders, sttProviders } from "../types/domain";
 import type { LlmStatus, SttStatus } from "../lib/llm";
-import { deleteVoiceProfileRequest, fetchVoiceProfilesRequest, pickAttachmentsFolder, readFileAsDataUrl, type VoiceProfileSummary } from "../lib/api";
+import { pickAttachmentsFolder, readFileAsDataUrl } from "../lib/api";
 import { isBuiltinFilePickerAvailable, pickFileWithConfiguredPicker } from "../lib/filePicker";
 
 interface SettingsViewProps {
@@ -37,6 +37,7 @@ interface SettingsViewProps {
   onConfigureHuggingFace: () => void;
   onConfigureOllama: () => void;
   onOpenMemberManagement: () => void;
+  onOpenVoiceProfileManagement: () => void;
   onResetToSample: () => void;
   onSelectLlmProvider: (provider: LlmProviderId) => void;
   onSelectSttProvider: (provider: SttProviderId) => void;
@@ -133,6 +134,7 @@ export function SettingsView({
   onConfigureHuggingFace,
   onConfigureOllama,
   onOpenMemberManagement,
+  onOpenVoiceProfileManagement,
   onResetToSample,
   onSelectLlmProvider,
   onSelectSttProvider,
@@ -143,38 +145,6 @@ export function SettingsView({
   const [folderError, setFolderError] = useState("");
   const logoFileInputRef = useRef<HTMLInputElement>(null);
   const builtinFilePickerAvailable = isBuiltinFilePickerAvailable();
-
-  const [voiceProfiles, setVoiceProfiles] = useState<VoiceProfileSummary[]>([]);
-  const [voiceProfilesError, setVoiceProfilesError] = useState("");
-  const [deletingProfileName, setDeletingProfileName] = useState("");
-
-  const refreshVoiceProfiles = async () => {
-    try {
-      setVoiceProfiles(await fetchVoiceProfilesRequest());
-      setVoiceProfilesError("");
-    } catch (error) {
-      setVoiceProfilesError(error instanceof Error ? error.message : "음성 프로필 목록을 불러오지 못했습니다.");
-    }
-  };
-
-  useEffect(() => {
-    void refreshVoiceProfiles();
-  }, []);
-
-  const handleDeleteVoiceProfile = async (name: string) => {
-    if (!window.confirm(`"${name}" 음성 프로필을 삭제할까요? 지금까지 등록된 샘플이 모두 사라지며, 되돌릴 수 없습니다.`)) {
-      return;
-    }
-    setDeletingProfileName(name);
-    try {
-      await deleteVoiceProfileRequest(name);
-      await refreshVoiceProfiles();
-    } catch (error) {
-      setVoiceProfilesError(error instanceof Error ? error.message : "음성 프로필을 삭제하지 못했습니다.");
-    } finally {
-      setDeletingProfileName("");
-    }
-  };
 
   const processLogoFile = async (file: File) => {
     const dataUrl = await readFileAsDataUrl(file);
@@ -421,30 +391,11 @@ export function SettingsView({
             회의 음성 분석에서 화자에게 이름을 등록하면 여기 쌓입니다. 잘못된 구간이 엉뚱한 이름으로 등록됐다면
             삭제 후 다시 등록하세요.
           </span>
+          <button className="ghost-action" onClick={onOpenVoiceProfileManagement} style={{ width: "fit-content" }} type="button">
+            <Pencil size={16} />
+            수정
+          </button>
         </div>
-        {voiceProfilesError && <span style={{ color: "#ba3030", fontSize: "0.82rem" }}>{voiceProfilesError}</span>}
-        {voiceProfiles.length === 0 && !voiceProfilesError ? (
-          <p className="settings-section-desc">등록된 음성 프로필이 없습니다.</p>
-        ) : (
-          <div className="voice-profile-list">
-            {voiceProfiles.map((profile) => (
-              <div className="voice-profile-item" key={profile.name}>
-                <span className="voice-profile-item-name">{profile.name}</span>
-                <span className="voice-profile-item-count">샘플 {profile.sampleCount}개</span>
-                <button
-                  className="ghost-action"
-                  disabled={deletingProfileName === profile.name}
-                  onClick={() => void handleDeleteVoiceProfile(profile.name)}
-                  style={{ width: "fit-content", marginLeft: "auto" }}
-                  type="button"
-                >
-                  <Trash2 size={14} />
-                  {deletingProfileName === profile.name ? "삭제 중..." : "삭제"}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
       </section>
 
       <section className="settings-section">

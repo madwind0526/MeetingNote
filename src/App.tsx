@@ -20,6 +20,7 @@ import { ApiKeyModal } from "./components/modals/ApiKeyModal";
 import { OllamaConfigModal } from "./components/modals/OllamaConfigModal";
 import { NaverClovaConfigModal } from "./components/modals/NaverClovaConfigModal";
 import { MemberManagementModal } from "./components/modals/MemberManagementModal";
+import { VoiceProfileManagerModal } from "./components/modals/VoiceProfileManagerModal";
 import { IntroScreen } from "./components/IntroScreen";
 import { LoginView } from "./components/LoginView";
 import { BoardView } from "./components/views/BoardView";
@@ -131,6 +132,7 @@ export function App() {
   const [showHfTokenModal, setShowHfTokenModal] = useState(false);
   const [showOllamaConfig, setShowOllamaConfig] = useState(false);
   const [showMemberManagement, setShowMemberManagement] = useState(false);
+  const [showVoiceProfileManagement, setShowVoiceProfileManagement] = useState(false);
   const [systemMessage, setSystemMessage] = useState("준비되었습니다.");
   const [buildInfo, setBuildInfo] = useState<BuildInfo>(FALLBACK_BUILD_INFO);
 
@@ -732,6 +734,7 @@ export function App() {
                 onConfigureHuggingFace={() => setShowHfTokenModal(true)}
                 onConfigureOllama={() => setShowOllamaConfig(true)}
                 onOpenMemberManagement={() => setShowMemberManagement(true)}
+                onOpenVoiceProfileManagement={() => setShowVoiceProfileManagement(true)}
                 onResetToSample={handleResetToSample}
                 onSelectLlmProvider={(provider) => updateSettingsDraft("llmProvider", provider)}
                 onSelectSttProvider={(provider) => updateSettingsDraft("sttProvider", provider)}
@@ -997,6 +1000,7 @@ export function App() {
       )}
 
       {showMemberManagement && <MemberManagementModal onClose={() => setShowMemberManagement(false)} />}
+      {showVoiceProfileManagement && <VoiceProfileManagerModal onClose={() => setShowVoiceProfileManagement(false)} />}
 
       {showAbbreviationDictionary && (
         <DictionaryModal

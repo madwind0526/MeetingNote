@@ -8,6 +8,16 @@ export interface Attendee {
   isPresenter: boolean;
 }
 
+// A person's most senior role in this meeting, for the audio speaker picker's role badge (see
+// AudioAnalysisModal's SpeakerPicker) - priority order matches this list: 주관자 beats 간사 beats
+// 발표자, and a plain 참석자 gets no badge at all (see MeetingFormModal's audioAttendeeRoles).
+export type SpeakerRoleBadge = "주관자" | "간사" | "발표자";
+
+export interface SpeakerRoleEntry {
+  name: string;
+  role: SpeakerRoleBadge | null;
+}
+
 export function emptyAttendee(): Attendee {
   return {
     id: typeof crypto !== "undefined" ? crypto.randomUUID() : String(Math.random()),
