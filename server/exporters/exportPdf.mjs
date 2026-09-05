@@ -44,7 +44,6 @@ function drawInlineRuns(doc, text, { fontSize = 10, hasBoldFont } = {}) {
 }
 
 // Proportional-to-content column widths (longer columns get more room), each floored at a
-// minimum so a short "담당자"/"납기"-style column never collapses to nothing, then rescaled to
 // fit availableWidth exactly if the proportional sum overshoots it.
 function computeColumnWidths(table, availableWidth) {
   const minColWidth = 55;
@@ -61,7 +60,6 @@ function computeColumnWidths(table, availableWidth) {
 // Draws a real bordered/shaded table grid for a detected GFM table block - pdfkit has no native
 // table primitive, so this measures each cell's wrapped height first (via heightOfString) to get
 // a correct row height, then draws the row's borders/fill and text. Repeats the header row after
-// a page break so a long "할일" table stays readable across pages.
 function drawMarkdownTable(doc, table, { hasBoldFont }) {
   const startX = doc.page.margins.left;
   const availableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
@@ -117,7 +115,6 @@ function drawMarkdownTable(doc, table, { hasBoldFont }) {
   doc.moveDown(0.6);
 }
 
-// Renders the LLM-generated 회의록 markdown as real PDF elements (headings/tables/lists) instead
 // of dumping raw markdown text line-by-line - see parseMinutesMarkdown.mjs.
 function writeMinutesBlocks(doc, minutes, { hasBoldFont }) {
   const trimmed = (minutes || "").trim();
@@ -164,7 +161,6 @@ function writeMinutesBlocks(doc, minutes, { hasBoldFont }) {
 }
 
 // Writes exactly the label format importPdf.mjs's parseMeetingText expects, so exporting and
-// re-importing this app's own PDF round-trips cleanly - except the 회의록 section itself, which
 // now renders any GFM table as a real drawn table (see writeMinutesBlocks) rather than the plain
 // text pdf-parse would otherwise round-trip byte-for-byte; a re-imported table renders as
 // unstructured text instead of a table, which is an acceptable trade-off for readable exports.

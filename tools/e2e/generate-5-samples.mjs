@@ -1,11 +1,9 @@
 // Full-flow E2E sample generator: creates 5 real meetings through the exact same pipeline the
 // app's UI drives - material upload (+ auto MD conversion), audio upload, chunked STT, per-agenda
-// 발표 내용 자동 정리 (B5), and 회의록 작성 (B6) - using LLM=Ollama and STT=local-whisper-cli per
 // the current app-settings.json (read at startup, not hardcoded, so this stays consistent with
 // whatever Settings currently has configured).
 //
 // Unlike generate-batch.mjs (which synthesizes fresh TTS audio per meeting), this reuses the
-// already-recorded sample audio files under data/test-audio/ directly - meeting content/材料 are
 // written to match what's actually said in each recording's ground-truth transcript, so STT and
 // the agenda-hint speaker matching stay realistic.
 import { readFile, writeFile } from "node:fs/promises";

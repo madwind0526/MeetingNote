@@ -34,14 +34,10 @@ function emptyDraft() {
   };
 }
 
-// Third-party notes sometimes space out label characters for visual alignment (e.g. "제 목",
-// "주 관", "장 소") - stripping all whitespace (including fullwidth U+3000) before comparing lets
-// "제 목" still match "제목".
 function normalizeLabel(label) {
   return label.replace(/[\s　]+/g, "");
 }
 
-// Only used when the combined slide text contains a recognizable "제목:" label line - unlike the
 // PDF/docx parsers, plain slide-shaped decks (no labels) get a slide-aware fallback instead of
 // this function's generic one, see parsePptxMeeting below. Returns null when no label is found.
 function parseLabeledMeetingText(rawText) {
@@ -152,8 +148,6 @@ function parseLabeledMeetingText(rawText) {
 // paragraphs that each hold one or more <a:t> runs (formatting boundaries like bold split a line
 // into several runs). Runs within a paragraph are concatenated with no separator, but paragraphs
 // are joined with "\n" instead of flattened onto one line - otherwise a title slide that stacks
-// "날짜: .../시작: .../장소: .../참석자: ..." as separate lines collapses into a single
-// space-joined line that parseLabeledMeetingText's line-by-line "라벨: 값" matching can't recover
 // individual fields from. A regex is enough to pull this out - a full XML/OOXML parser would be
 // overkill here.
 function slideXmlToText(xml) {

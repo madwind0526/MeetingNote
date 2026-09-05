@@ -33,7 +33,6 @@ function uniqueLabels(segments) {
   return explicitLabels.length ? explicitLabels : [DEFAULT_SPEAKER_LABEL];
 }
 
-// Turns the Agenda table's planned order + `발표 시간(분)` into rough cumulative [start, end]
 // windows - an estimate made before the meeting, not real timestamps from the recording. Items
 // with no presenter or zero duration contribute no window (nothing to hint from).
 function computeAgendaWindows(agenda) {
@@ -98,7 +97,6 @@ export function diarizeSegments(segments, attendeeNames) {
     // `speaker`) - guessing a real attendee name from list position would look like a confirmed
     // match when it's pure luck, so mark it unregistered instead, matching
     // assignSpeakersWithProfiles's UNREGISTERED_SPEAKER_PREFIX naming. The user tags real names via
-    // segment-level clip enrollment, or "화자 분리" classifies against registered profiles.
     speakerMap[labels[0]] = `${UNREGISTERED_SPEAKER_PREFIX}1`;
   } else {
     labels.forEach((label, index) => {
@@ -111,7 +109,6 @@ export function diarizeSegments(segments, attendeeNames) {
 
 // Embedding-based matching (B3, local WhisperX/Whisper CLI with an HF token). Matching priority:
 // (1) agenda-hinted presenter at a relaxed bar, (2) this meeting's own registered attendees at the
-// full bar, (3) any other stored profile at the full bar, (4) "미등록 화자 N" - see
 // memory-bank/roadmap.md's confirmed design. A confirmed match is immediately reinforced with this
 // fresh embedding sample; an unmatched speaker is left unregistered until the user manually
 // renames it in the UI (see UNREGISTERED_SPEAKER_PREFIX above).

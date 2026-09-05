@@ -7,8 +7,6 @@
 // separate meetings, not just within one.
 //
 // To keep total runtime sane (~10-20 real claude-cli calls instead of ~40), this batch skips the
-// per-agenda "발표별 정리" (B5) step that the single meeting used and goes straight to B6 (전체
-// 회의록 작성), which falls back to the full [발언 대본] transcript when no agenda item has a
 // presentationSummary - see buildMinutesPrompt in server/llm.mjs. Still a complete, real minutes
 // document per meeting, just through the fallback path instead of the B5-enriched one.
 import { spawn } from "node:child_process";

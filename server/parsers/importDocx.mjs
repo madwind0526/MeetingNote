@@ -34,15 +34,11 @@ function emptyDraft() {
   };
 }
 
-// Third-party notes sometimes space out label characters for visual alignment (e.g. "제 목",
-// "주 관", "장 소") - stripping all whitespace (including fullwidth U+3000) before comparing lets
-// "제 목" still match "제목".
 function normalizeLabel(label) {
   return label.replace(/[\s　]+/g, "");
 }
 
 // Best-effort only: reliably round-trips the plain text mammoth extracts from a .docx that used
-// the same "제목:/날짜:/시작:/종료:/주관자:/참석자:" + Agenda/A/I List/회의록 label format our own
 // PDF export uses. Arbitrary third-party .docx files fall back to a plain title/minutes split.
 function parseMeetingText(rawText) {
   const lines = rawText.replace(/\r\n/g, "\n").split("\n");

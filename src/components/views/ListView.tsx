@@ -111,9 +111,11 @@ export function ListView({ meetings, currentMember, onOpen, onEdit, onDelete, so
                 </td>
                 <td>
                   <div className="row-actions" onClick={(event) => event.stopPropagation()}>
-                    <button aria-label="수정" className="row-icon-button" data-tooltip="수정" onClick={() => onEdit(meeting)} type="button">
-                      <Pencil size={14} />
-                    </button>
+                    {canDeleteMeeting(meeting, currentMember) && (
+                      <button aria-label="수정" className="row-icon-button" data-tooltip="수정" onClick={() => onEdit(meeting)} type="button">
+                        <Pencil size={14} />
+                      </button>
+                    )}
                     {canDeleteMeeting(meeting, currentMember) && (
                       <button aria-label="삭제" className="row-icon-button" data-tooltip="삭제" onClick={() => onDelete(meeting)} type="button">
                         <Trash2 size={14} />

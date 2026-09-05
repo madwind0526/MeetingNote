@@ -58,7 +58,6 @@ export function QueryModal({ meetings, ollamaConfig, provider, onClose, onOpenMe
     try {
       // Keyword-scored candidates keep the prompt small and grounded instead of dumping every
       // meeting; if nothing scores, fall back to the full visible list so aggregate questions
-      // ("다음 회의는 언제야?") still have data to work with.
       const scored = scoreMeetingsForQuestion(question, meetings);
       const contextMeetings = (scored.length > 0 ? scored.map((item) => item.meeting) : meetings).slice(
         0,

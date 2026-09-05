@@ -1,4 +1,3 @@
-// Captures PC 시스템 오디오 (speaker output) for AudioAnalysisModal's recording mode - what plays
 // through the speakers (the other side of a call, a shared video, etc.), not the microphone.
 // Routes through electron/main.ts's setDisplayMediaRequestHandler, which auto-grants a loopback
 // audio stream with no OS picker dialog. A plain getUserMedia({audio:true}) call would capture the
@@ -11,7 +10,6 @@ export interface SystemAudioCapture {
   // components/LiveWaveform.tsx) - reading it doesn't consume/affect the recording itself, and
   // works as soon as the capture stream exists, independent of whether startRecording was called
   // yet - AudioAnalysisModal shows this immediately on mount so the popup isn't silent/blank while
-  // the user is still choosing 전처리/엔진/모델 before actually starting to record.
   analyser: AnalyserNode;
   // Starts the first recording segment. Idempotent - a second call is a no-op, so the caller
   // doesn't need to track whether it already started recording itself.
@@ -83,7 +81,6 @@ export async function startSystemAudioCapture(onInterrupted?: (message: string) 
   });
 
   // Recording (the MediaRecorder actually capturing data) is deferred until startRecording is
-  // called - AudioAnalysisModal only calls it once the user clicks "분석 시작", not as soon as the
   // popup opens, so opening the popup alone doesn't silently start recording.
   let current: { recorder: MediaRecorder; stopped: Promise<Blob> } | null = null;
 
@@ -115,7 +112,6 @@ export async function startSystemAudioCapture(onInterrupted?: (message: string) 
   };
 
   // Idempotent: AudioAnalysisModal can end up calling this twice (once explicitly when the user
-  // clicks "녹음 중지", again from its mount-effect's cleanup when the modal later unmounts) -
   // MediaRecorder.stop() throws InvalidStateError on an already-inactive recorder, so a second
   // call has to return the same result instead of re-running the stop sequence.
   let stopPromise: Promise<Blob> | null = null;

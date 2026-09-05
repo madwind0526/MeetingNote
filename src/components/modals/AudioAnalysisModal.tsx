@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, FileText, Mic, Pause, Pencil, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Upload, Users } from "lucide-react";
+import { ChevronDown, FileText, Link2, Mic, Pause, Pencil, Play, RotateCcw, RotateCw, SlidersHorizontal, Square, Upload, Users } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import { VoiceProfileManagerModal } from "./VoiceProfileManagerModal";
 import type { AudioAnalysis, SpeakerRoleEntry, SttProviderId } from "../../types/domain";
@@ -18,30 +18,24 @@ type AudioSource = { kind: "file"; file: File } | { kind: "recording" };
 
 interface AudioAnalysisModalProps {
   source: AudioSource;
-  // Already-saved analysis for this meeting's audio (edit mode reopening "분석 시작"/"화자 분리"
   // on a file that's already been analyzed once) - auto-loaded into the transcript panel on mount
   // (see the loadExternalTranscript effect below) so the user isn't staring at an empty popup
   // just to look at or correct an already-produced transcript.
   existingAnalysis?: AudioAnalysis;
   attendeeNames: string[];
-  // Same roster as attendeeNames, but with each person's role (주관자/간사/발표자/no badge for a
   // plain attendee) - see MeetingFormModal's audioAttendeeRoles. Optional so any other future
   // caller of this modal isn't forced to plumb it through immediately; falls back to no badges.
   attendeeRoles?: SpeakerRoleEntry[];
-  // Agenda order + 발표 시간(분) - passed straight through to transcribeAudioRequest as a soft
   // voice-matching hint (see server/audio/diarize.mjs). Optional since a brand-new meeting can
   // have no agenda rows yet.
   agenda?: { no: number; durationMinutes: number; presenter: string }[];
   sttProvider: SttProviderId;
-  // Settings' 무음 임계값 (silenceThreshold) - see useChunkedAudioAnalysis's
   // DEFAULT_SILENCE_RMS_THRESHOLD. Optional so a caller that hasn't threaded it through yet still
   // falls back to that default.
   silenceThreshold?: number;
-  // Settings' 회의 길이별 STT 청크 크기 fields, already parsed to numbers (see
   // useChunkedAudioAnalysis's parseChunkMinutesSetting) - optional per-tier so a caller that
   // hasn't threaded it through, or a blank field, falls back to pickChunkSizeBounds's own default.
   chunkMinutesOverrides?: ChunkMinutesOverrides;
-  // The word-correction popup (수정 사전 등록) reads/writes through this shared cache - see
   // MeetingFormModal/App.tsx - instead of fetching its own copy, which would silently diverge
   // from whatever the Dictionary modal has open in the same session and risk one clobbering the
   // other's write.
@@ -236,7 +230,6 @@ function WaveformCanvas({
 }
 
 // Splits transcript text into whitespace-separated tokens so each word can carry its own
-// right-click handler - the corrected-word popup this opens registers a 수정 사전 entry (see
 // AudioAnalysisModal's handleWordContextMenu/handleSaveCorrection below).
 function EditableTranscriptText({ text, onWordContextMenu }: { text: string; onWordContextMenu: (event: React.MouseEvent, word: string) => void }) {
   return (
@@ -278,7 +271,6 @@ function SpeakerPicker({
   options: string[];
   placeholder?: string;
   profiledNames: Set<string>;
-  // 주관자/간사/발표자 only - see speakerRoleByName's comment. A name with no entry (a plain
   // attendee, or one minted fresh from a segment tag) just gets no badge.
   roleByName?: Map<string, string>;
   value: string;
@@ -286,10 +278,8 @@ function SpeakerPicker({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Opening via the ▼ toggle button never focuses the text input (its onMouseDown deliberately
   // preventDefaults so it doesn't steal focus from wherever the user was), so a click anywhere
   // else on the page didn't blur anything and the dropdown just stayed open until the user
-  // clicked ▼ again or picked an option. This closes it on any mousedown outside the picker,
   // regardless of how it was opened.
   useEffect(() => {
     if (!isOpen) {
@@ -453,16 +443,13 @@ export function AudioAnalysisModal({
     void refreshProfileNames();
   }, []);
 
-  // "화자 편집" button - opens the same card-grid voice profile manager as Settings' 수정 button
   // (see VoiceProfileManagerModal). Refreshes registeredProfileNames on close since a delete in
   // there should immediately stop coloring that name green in the speaker picker dropdowns below.
   const [isVoiceProfileManagerOpen, setIsVoiceProfileManagerOpen] = useState(false);
 
   // The label(s) STT produced before any per-segment verification (whole-recording diarization no
   // longer runs, see pyannoteDiarize.mjs's AUTO_DIARIZE_ON_TRANSCRIBE - every segment starts on one
-  // shared placeholder label). Snapshotted once, the first time a result appears: "화자 분리"
   // targets whatever segments are STILL sitting on one of these labels, and naturally stops
-  // touching a segment the moment it's reassigned (manually or by a previous 화자 분리 pass) to its
   // own real-name label - no extra bookkeeping needed to keep that idempotent.
   const pendingLabelsRef = useRef<Set<string> | null>(null);
   useEffect(() => {
@@ -480,7 +467,45 @@ export function AudioAnalysisModal({
   const [isClassifyingRemaining, setIsClassifyingRemaining] = useState(false);
   const [classifyError, setClassifyError] = useState("");
 
-  // Renaming a whole label (화자별 파형/화자 목록 input) can end up with the same display name as
+  // Manual "link" toggle on each transcript row (see the audio-analysis-transcript-link-toggle
+  // button below) - Whisper routinely splits one person's continuous sentence into several short
+  // segments, and a clip that short is unreliable for both enrollment and matching (no length floor
+  // exists in the embedding pipeline itself - see pyannoteDiarize.mjs's Inference call). Rather than
+  // guess which neighboring segments belong together from timing alone, the user links them
+  // explicitly: index i in this set means segment i is linked to segment i+1, and a run of several
+  // linked indices forms one group (see segmentGroupIndices). Cleared whenever a new transcript
+  // replaces the current one (handleAnalyze/handleStartRecordingAnalyze/clearAnalysisResult/
+  // handleTranscriptFileChange) since indices from the old transcript are meaningless afterward.
+  const [linkedToNext, setLinkedToNext] = useState<Set<number>>(new Set());
+
+  function toggleLinkToNext(index: number) {
+    setLinkedToNext((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  }
+
+  // Every segment index reachable from `index` by following linkedToNext links backward/forward -
+  // the unit applySegmentSpeakerName actually names/enrolls once any segment in a linked run is
+  // given a name (see its call sites below). A segment with no links of its own is its own
+  // single-element group, so callers never need to special-case "not linked".
+  function segmentGroupIndices(index: number): number[] {
+    let start = index;
+    while (start > 0 && linkedToNext.has(start - 1)) {
+      start -= 1;
+    }
+    let end = index;
+    while (linkedToNext.has(end)) {
+      end += 1;
+    }
+    return Array.from({ length: end - start + 1 }, (_, offset) => start + offset);
+  }
+
   // some OTHER label - typically because a per-segment edit already minted a brand-new label with
   // that name for one utterance before this label got renamed to match it. Rather than leaving two
   // entries under the same name, fold the other label(s) into this one: every segment on them
@@ -519,23 +544,37 @@ export function AudioAnalysisModal({
     commitSpeakerLabelName(label, editedSpeakerMap[label] ?? "");
   }
 
-  // Extracts just this one segment's audio (see sliceAudioBufferToWav) and registers a voice
-  // profile from it under `name` - the user has already confirmed who's speaking on this exact
-  // line, so this is the only place a profile gets created/reinforced.
-  async function enrollSegmentClip(index: number, name: string) {
-    const segment = result?.transcriptSegments[index];
+  // Extracts audio spanning every segment in `indices` (see sliceAudioBufferToWav - for a single
+  // untouched segment this is just its own span, but a manually-linked run collapses to ONE clip
+  // from the run's first startSec to its last endSec) and registers a voice profile from it under
+  // `name` - the user has already confirmed who's speaking, so this is the only place a profile
+  // gets created/reinforced. Always one embedding call per group, never one per segment, so a
+  // linked run of short segments becomes a single longer, more reliable sample instead of several
+  // unreliable short ones.
+  async function enrollSegmentClip(indices: number[], name: string) {
+    const segments = result?.transcriptSegments;
     const sourceBuffer = sourceAudioBufferRef.current;
-    if (!segment || !sourceBuffer) {
+    if (!segments || indices.length === 0 || !sourceBuffer) {
       return;
     }
 
-    setPendingSegmentIndices((prev) => new Set(prev).add(index));
+    const startSec = Math.min(...indices.map((index) => segments[index].startSec));
+    const endSec = Math.max(...indices.map((index) => segments[index].endSec));
+
+    setPendingSegmentIndices((prev) => {
+      const next = new Set(prev);
+      for (const index of indices) {
+        next.add(index);
+      }
+      return next;
+    });
     setSegmentEnrollError("");
 
     try {
-      const blob = sliceAudioBufferToWav(sourceBuffer, segment.startSec, segment.endSec);
-      const results = await classifyAudioClipsRequest([{ id: String(index), blob }], attendeeNames);
-      const embedding = results[String(index)]?.embedding;
+      const blob = sliceAudioBufferToWav(sourceBuffer, startSec, endSec);
+      const clipId = String(indices[0]);
+      const results = await classifyAudioClipsRequest([{ id: clipId, blob }], attendeeNames);
+      const embedding = results[clipId]?.embedding;
 
       if (embedding) {
         await registerVoiceProfileRequest(name, embedding);
@@ -548,13 +587,14 @@ export function AudioAnalysisModal({
     } finally {
       setPendingSegmentIndices((prev) => {
         const next = new Set(prev);
-        next.delete(index);
+        for (const index of indices) {
+          next.delete(index);
+        }
         return next;
       });
     }
   }
 
-  // "화자 분리": classifies every segment still on a pending label (see pendingLabelsRef) by
   // extracting each one's own clip and matching it independently against the profile registry -
   // no clustering, so unlike the label-level rematch this replaced, many segments legitimately
   // matching the same person is expected and never treated as a conflict.
@@ -575,9 +615,7 @@ export function AudioAnalysisModal({
     setIsClassifyingRemaining(true);
     setClassifyError("");
 
-    // Yield to the browser so "화자 분리 중..." actually paints before the synchronous clip-slicing
     // work below (sliceAudioBufferToWav per target) blocks the main thread - without this, clicking
-    // 화자 분리 on a long meeting with many pending segments left the button looking unresponsive for
     // that entire slicing pass (nothing painted between the click and the eventual network request),
     // which is what led users to click it repeatedly, unsure whether the first click had registered.
     await new Promise((resolve) => requestAnimationFrame(resolve));
@@ -602,13 +640,11 @@ export function AudioAnalysisModal({
     }
   }
 
-  // 발언 대본 word right-click -> "수정하기" 메뉴 -> 수정 사전 등록 (see EditableTranscriptText above).
   const [wordContextMenu, setWordContextMenu] = useState<{ x: number; y: number; word: string } | null>(null);
   const [correctionDraft, setCorrectionDraft] = useState<{ from: string; to: string } | null>(null);
   const [isSavingCorrection, setIsSavingCorrection] = useState(false);
   const [correctionError, setCorrectionError] = useState("");
 
-  // 발언 대본 불러오기 - loads an already-made transcript instead of running STT (see parseTranscriptText).
   const transcriptFileInputRef = useRef<HTMLInputElement | null>(null);
   const [transcriptLoadError, setTranscriptLoadError] = useState("");
 
@@ -622,7 +658,6 @@ export function AudioAnalysisModal({
     setProcessedAudioUrl(nextUrl);
   }
 
-  // Recording mode: start capturing as soon as the modal mounts (before "분석 시작" is ever
   // clicked) so the live waveform is visible immediately, matching the file-mode popup already
   // showing the original waveform as soon as it opens.
   useEffect(() => {
@@ -773,17 +808,13 @@ export function AudioAnalysisModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [analysis.finalAudioBlob]);
 
-  // Reopening "분석 시작"/"화자 분리" on a file that already has a saved transcript loads it
   // straight into the transcript panel via the same loadExternalTranscript path the manual
-  // "불러오기" button uses - the user doesn't have to click "불러오기" and repick the transcript
   // file they just saved. File mode only; a fresh recording never has anything to preload. Runs
-  // once on mount - if the user runs a fresh "분석 시작" afterward, startFileAnalysis's own
   // reset() overwrites this intentionally.
   //
   // loadExternalTranscript itself seeds speakerMap with an identity mapping (label -> label) -
   // correct for its original caller (a picked transcript .txt file, which has no separate display
   // names), but wrong here: it would show raw labels like "SPEAKER_01" instead of the names
-  // already saved on this meeting (or "미등록 화자 N"). Overwriting editedSpeakerMap with the saved
   // speakerMap right after fixes that - the "additive" effect below only fills in labels missing
   // from editedSpeakerMap, so this always wins over the identity default.
   useEffect(() => {
@@ -827,7 +858,6 @@ export function AudioAnalysisModal({
   // Approximation only: the source audio is not truly source-separated, so a lane simply
   // highlights the shared full-mix envelope wherever that speaker's turns fall in time. Falls back
   // to sourceEnvelope when there's no processed envelope yet - notably a transcript loaded via
-  // "불러오기" never runs a chunk through the analysis pipeline, so processedEnvelope stays null.
   const activeMaskEnvelope = processedEnvelope ?? sourceEnvelope;
   const speakerMasks = useMemo(() => {
     const masks: Record<string, boolean[]> = {};
@@ -1057,10 +1087,8 @@ export function AudioAnalysisModal({
     setWordContextMenu(null);
   }
 
-  // Registers the correction into the shared 수정 사전 (merges into whatever's already saved there
   // - never overwrites it) and immediately re-applies it to the transcript already on screen, so
   // the fix is visible without waiting for a future re-analysis or the Dictionary modal's own
-  // "적용하기" button.
   async function handleSaveCorrection() {
     if (!correctionDraft || !correctionDraft.from.trim()) {
       return;
@@ -1089,6 +1117,7 @@ export function AudioAnalysisModal({
   function clearAnalysisResult() {
     analysis.reset();
     setEditedSpeakerMap({});
+    setLinkedToNext(new Set());
   }
 
   function triggerTranscriptFilePick() {
@@ -1113,6 +1142,7 @@ export function AudioAnalysisModal({
       }
 
       setEditedSpeakerMap({});
+      setLinkedToNext(new Set());
       restoreOriginalAudioPreview();
       analysis.loadExternalTranscript(segments, activeFile?.name ?? file.name);
     } catch {
@@ -1264,7 +1294,6 @@ export function AudioAnalysisModal({
   }
 
   async function handleAnalyze() {
-    // File mode only - recording mode's "분석 시작" is handleStartRecordingAnalyze below, since it
     // has to run against the still-live capture instead of an already-decoded buffer.
     const sourceAudioBuffer = sourceAudioBufferRef.current;
     if (!sourceAudioBuffer || !activeFile) {
@@ -1273,9 +1302,9 @@ export function AudioAnalysisModal({
 
     resetPlaybackPosition();
     // A fresh run discards whatever transcript was there before (startFileAnalysis's own reset())
-    // - the "화자 분리" pending-set has to start over with it, not keep pointing at labels from the
     // discarded run.
     pendingLabelsRef.current = null;
+    setLinkedToNext(new Set());
     await analysis.startFileAnalysis(sourceAudioBuffer, {
       provider: selectedProvider,
       model: sttModel,
@@ -1298,10 +1327,10 @@ export function AudioAnalysisModal({
     }
 
     // The popup shows the live waveform as soon as it opens, but actual recording (the
-    // MediaRecorder capturing data) only starts here, on the user's explicit "분석 시작" click.
     capture.startRecording();
     setHasStartedRecordingAnalysis(true);
     pendingLabelsRef.current = null;
+    setLinkedToNext(new Set());
     analysis.startRecordingAnalysis(capture, {
       provider: selectedProvider,
       model: sttModel,
@@ -1325,8 +1354,6 @@ export function AudioAnalysisModal({
 
   // ---------- Per-segment speaker editing (free text, not limited to the already-known labels) ----------
 
-  // Candidate names for both the per-segment picker and the 화자별 파형/화자 목록 picker: the
-  // meeting's own roster (발표자/참석자/주관자 - see MeetingFormModal's audioAttendeeNames) plus
   // whatever names are already in use this session, deduped. Always the full list regardless of
   // what's currently typed - see SpeakerPicker.
   const speakerCandidateNames = useMemo(() => {
@@ -1345,7 +1372,6 @@ export function AudioAnalysisModal({
     return Array.from(names).sort((a, b) => a.localeCompare(b, "ko"));
   }, [attendeeNames, speakerLabels, editedSpeakerMap]);
 
-  // Name -> role badge lookup for the dropdown (주관자/간사/발표자 only - a plain attendee gets no
   // badge, see SpeakerRoleBadge's priority-order comment in types/domain.ts).
   const speakerRoleByName = useMemo(() => {
     const map = new Map<string, string>();
@@ -1373,34 +1399,54 @@ export function AudioAnalysisModal({
   // makes per-segment editing actually per-segment, instead of renaming the whole speaker). A
   // brand-new label immediately enrolls a voice profile from this segment's own audio clip (see
   // enrollSegmentClip) - the user just confirmed who's speaking on this exact line. If that new
-  // name later collides with another label (e.g. the 화자별 파형 input renames the original label
   // to the same name), handleSpeakerNameBlur's merge step folds them back into one entry.
   function applySegmentSpeakerName(index: number, speaker: string, rawName: string) {
     const name = rawName.trim();
-    if (!name || name === (editedSpeakerMap[speaker] ?? speaker)) {
+    if (!name) {
+      return;
+    }
+
+    // Naming ANY segment in a manually-linked run (see linkedToNext/segmentGroupIndices above)
+    // names and enrolls the whole run at once - a segment with no links is its own single-element
+    // group, so this covers the plain per-segment case unchanged.
+    const groupIndices = segmentGroupIndices(index);
+
+    if (name === (editedSpeakerMap[speaker] ?? speaker)) {
+      // The label already shows this exact name, so there's nothing to reassign - but still
+      // (re-)enroll. This is reached when the user explicitly re-picks (or retypes) a name that's
+      // already displayed here, most often to recover after deleting that name's profile via the
+      // voice profile manager: this segment's own label never changes in that case, so neither
+      // branch below would otherwise ever run again for it, and the dropdown would stay stuck
+      // showing "no profile" with no way to re-register short of renaming to something else and
+      // back. enrollSegmentClip just appends a sample either way, so doing this on an
+      // already-healthy profile is harmless, just one more sample.
+      void enrollSegmentClip(groupIndices, name);
       return;
     }
 
     const otherLabel = speakerLabels.find((label) => label !== speaker && (editedSpeakerMap[label] ?? label) === name);
 
     if (otherLabel) {
-      analysis.updateSegmentSpeaker(index, otherLabel);
+      for (const groupIndex of groupIndices) {
+        analysis.updateSegmentSpeaker(groupIndex, otherLabel);
+      }
       // Always (re-)enroll, not just when this name is brand new to the session - a label already
-      // carrying this name used to mean "already registered", but 화자 편집 (VoiceProfileManagerModal)
       // can now delete that profile out from under an unchanged label mid-session. Without this,
       // re-tagging a segment with a name whose profile was just deleted silently did nothing (the
       // dropdown never turned green again) - enrollSegmentClip just appends a sample either way,
       // so re-registering an already-healthy profile is harmless, just one more sample.
-      void enrollSegmentClip(index, name);
+      void enrollSegmentClip(groupIndices, name);
       return;
     }
 
     // The new label IS the typed name (labels are just string keys) - a later segment typed with
     // this exact same new name naturally matches it via the otherLabel branch above instead of
     // minting yet another duplicate.
-    analysis.updateSegmentSpeaker(index, name, name);
+    for (const groupIndex of groupIndices) {
+      analysis.updateSegmentSpeaker(groupIndex, name, name);
+    }
     setEditedSpeakerMap((prev) => ({ ...prev, [name]: name }));
-    void enrollSegmentClip(index, name);
+    void enrollSegmentClip(groupIndices, name);
   }
 
   function commitSegmentSpeakerName(index: number, speaker: string) {
@@ -1495,7 +1541,12 @@ export function AudioAnalysisModal({
             {result && (
               <ul className="audio-analysis-transcript-list">
                 {result.transcriptSegments.map((segment, index) => (
-                  <li className="audio-analysis-transcript-row" key={`${segment.speaker}-${index}`}>
+                  <li
+                    className={`audio-analysis-transcript-row ${linkedToNext.has(index) ? "linked-next" : ""} ${
+                      index > 0 && linkedToNext.has(index - 1) ? "linked-prev" : ""
+                    }`}
+                    key={`${segment.speaker}-${index}`}
+                  >
                     <div className="audio-analysis-transcript-meta">
                       <span className="audio-analysis-transcript-time">
                         {formatMmSs(segment.startSec)}-{formatMmSs(segment.endSec)}
@@ -1512,6 +1563,21 @@ export function AudioAnalysisModal({
                       />
                     </div>
                     <EditableTranscriptText onWordContextMenu={handleWordContextMenu} text={segment.text} />
+                    {index < result.transcriptSegments.length - 1 && (
+                      <button
+                        className={`audio-analysis-transcript-link-toggle ${linkedToNext.has(index) ? "active" : ""}`}
+                        onClick={() => toggleLinkToNext(index)}
+                        title={
+                          linkedToNext.has(index)
+                            ? "다음 구간과의 연결을 해제합니다"
+                            : "다음 구간과 연결해서 이어지는 한 문장으로 취급합니다 (같은 화자로 함께 태깅/등록됨)"
+                        }
+                        type="button"
+                      >
+                        <Link2 size={12} />
+                        {linkedToNext.has(index) ? "다음 구간과 연결됨" : "다음 구간과 연결"}
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -1732,7 +1798,9 @@ export function AudioAnalysisModal({
                 {result.transcriptSegments.map((segment, index) => (
                   <li
                     aria-current={index === activeTranscriptIndex ? "true" : undefined}
-                    className={`audio-analysis-transcript-row ${index === activeTranscriptIndex ? "active" : ""}`}
+                    className={`audio-analysis-transcript-row ${index === activeTranscriptIndex ? "active" : ""} ${
+                      linkedToNext.has(index) ? "linked-next" : ""
+                    } ${index > 0 && linkedToNext.has(index - 1) ? "linked-prev" : ""}`}
                     key={`${segment.speaker}-${index}`}
                     onClick={() => handleTranscriptRowClick(segment.startSec)}
                     ref={index === activeTranscriptIndex ? activeTranscriptRowRef : undefined}
@@ -1755,6 +1823,24 @@ export function AudioAnalysisModal({
                       />
                     </div>
                     <EditableTranscriptText onWordContextMenu={handleWordContextMenu} text={segment.text} />
+                    {index < result.transcriptSegments.length - 1 && (
+                      <button
+                        className={`audio-analysis-transcript-link-toggle ${linkedToNext.has(index) ? "active" : ""}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleLinkToNext(index);
+                        }}
+                        title={
+                          linkedToNext.has(index)
+                            ? "다음 구간과의 연결을 해제합니다"
+                            : "다음 구간과 연결해서 이어지는 한 문장으로 취급합니다 (같은 화자로 함께 태깅/등록됨)"
+                        }
+                        type="button"
+                      >
+                        <Link2 size={12} />
+                        {linkedToNext.has(index) ? "다음 구간과 연결됨" : "다음 구간과 연결"}
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -1889,7 +1975,6 @@ export function AudioAnalysisModal({
                     <span className="audio-waveform-choice-label">전처리</span>
                     <WaveformCanvas
                       currentTime={playbackVisualTime}
-                      // Same playbackDurationSec as the 원본 canvas above, for the same reason - the
                       // playhead (and highlightRange) has to use one shared denominator across both
                       // waveforms or they drift out of sync with each other.
                       durationSec={playbackDurationSec}

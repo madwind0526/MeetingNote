@@ -5,7 +5,6 @@ import path from "node:path";
 
 // Presentation-material -> Markdown conversion (B4). Independent of the existing
 // server/parsers/import*.mjs files, which parse *this app's own exported* meeting-note documents
-// (looking for "제목:"/"Agenda"/etc. labels) - this instead extracts general prose/slide content
 // from arbitrary third-party PDF/DOCX/PPTX files attached as Agenda/A-I List materials, so B5 can
 // later feed it to an LLM alongside the matching STT transcript.
 

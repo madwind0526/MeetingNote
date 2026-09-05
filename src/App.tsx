@@ -47,7 +47,7 @@ import {
   matchesFilterTerms,
   parseFilterTerms
 } from "./types/domain";
-import { clearSession, fetchMembers, loadSession } from "./lib/auth";
+import { clearSession, fetchMembers, loadSession, onSessionExpired } from "./lib/auth";
 import { listBoardPosts, saveBoardPosts } from "./lib/board";
 import { applyDictionaryToAllMeetings, fetchDictionary, saveDictionary } from "./lib/dictionary";
 import type { DictionaryState } from "./lib/dictionary";
@@ -96,6 +96,16 @@ function meetingSearchText(meeting: Meeting) {
 
 export function App() {
   const [session, setSession] = useState<PublicMember | null>(() => loadSession());
+
+  // `session` above is only ever set once at startup from localStorage - it never gets revalidated
+  // against the server on its own. If the server-side session dies (expired, or a dev-server
+  // restart wiped its in-memory session store) while a stale token is still cached, every
+  // subsequent authenticated call just keeps failing with the same "login required" error and the
+  // user is stuck looking at the main app with no way out short of manually logging out. Any
+  // parseJsonResponse across src/lib fires notifySessionExpired() on a 401 (see auth.ts); clearing
+  // `session` here falls back to the `if (!session) return <LoginView .../>` branch below.
+  useEffect(() => onSessionExpired(() => setSession(null)), []);
+
   const [members, setMembers] = useState<PublicMember[]>([]);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [boardPosts, setBoardPosts] = useState<BoardPost[]>([]);
@@ -140,7 +150,6 @@ export function App() {
     try {
       setLlmStatus(await fetchLlmStatus(ollamaBaseUrl, deep));
     } catch {
-      // Settings screen just shows "확인 중..." if this fails - not worth surfacing as an error.
     }
   }, []);
 
@@ -148,11 +157,9 @@ export function App() {
     try {
       setSttStatus(await fetchSttStatus(deep));
     } catch {
-      // Same as above - Settings just keeps showing "확인 중...".
     }
   }, []);
 
-  // "설치 여부 확인" - claude --version / whisper -h / WhisperX's torch+whisperx import are real
   // subprocess spawns, taking a few real seconds, unlike the cheap check that runs automatically
   // when Settings opens. Without isCheckingStatus the button gave no feedback while that ran (the
   // status badges only update once the response lands, with no indication one is in flight), which
@@ -255,7 +262,6 @@ export function App() {
           setMembers(list);
         }
       } catch {
-        // Comment/author name resolution just falls back to "알 수 없음" if this fails.
       }
     })();
 
@@ -339,7 +345,6 @@ export function App() {
   // Based on the full, unfiltered meeting set (not visibleMeetings) so the Connection range filter
   // and Mesh view's own node degrees never disagree with each other and so opening/clearing the
   // filter can never create a feedback loop that shrinks its own upper bound.
-  // Settings' 회의 길이별 STT 청크 크기 fields are blank-allowed strings (see AppSettings) - parsed
   // here once so both MeetingFormModal instances pass the same already-resolved overrides down to
   // useChunkedAudioAnalysis's pickChunkSizeBounds instead of each re-parsing the raw strings.
   const chunkMinutesOverrides = useMemo(

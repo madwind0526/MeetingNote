@@ -21,8 +21,6 @@ const FORMAT_OPTIONS: { format: ExportFormat; label: string; icon: typeof FileJs
 ];
 
 // Single-meeting counterpart to ExportModal (which backs up/restores the whole DB). This exports
-// exactly one meeting node, picked from a dropdown - used by the sidebar's 내보내기 button and by
-// 회의 상세 > 내보내기 (with that meeting preselected).
 export function SingleExportModal({ meetings, initialMeetingId, defaultFormat, onClose, onExported }: SingleExportModalProps) {
   const [meetingId, setMeetingId] = useState(initialMeetingId ?? meetings[0]?.id ?? "");
   const [format, setFormat] = useState<ExportFormat>(defaultFormat);

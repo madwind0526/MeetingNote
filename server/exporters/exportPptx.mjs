@@ -1,7 +1,6 @@
 import pptxgen from "pptxgenjs";
 import { parseMinutesMarkdown, parseInlineRuns } from "./parseMinutesMarkdown.mjs";
 
-// Portrait canvas (taller than wide) - a 회의록 reads top-to-bottom like a document, not
 // left-to-right like a widescreen deck, so portrait fits the content better than pptxgenjs's
 // landscape defaults. 7.5x10in mirrors a portrait A4/Letter page's proportions.
 const SLIDE_WIDTH_IN = 7.5;
@@ -20,7 +19,6 @@ const TABLE_OPTIONS = { x: CONTENT_X, y: 1.3, w: CONTENT_WIDTH, fontSize: 11, au
 // as "from this app" instead of pptxgenjs's plain black-on-white default.
 const ACCENT_COLOR = "1F6F68";
 // Taller than a landscape title bar (h: 0.9 vs the old 0.6) since the narrower portrait width
-// wraps a long section title (e.g. "1. 데이터 파이프라인 안정화 (발표자: 홍지호)") onto 2 lines
 // more often than the old wide canvas did.
 const SLIDE_TITLE_OPTIONS = { x: CONTENT_X, y: 0.35, w: CONTENT_WIDTH, h: 0.9, fontSize: 20, bold: true, color: ACCENT_COLOR };
 
@@ -32,9 +30,7 @@ function headerRow(labels) {
   return labels.map((text) => ({ text, options: { bold: true, color: ACCENT_COLOR, fill: { color: HEADER_FILL } } }));
 }
 
-// Converts non-table 회의록 blocks (headings/paragraphs/lists) into one flat pptxgenjs rich-text
 // run array so several blocks can be packed onto a single addText call - headings get a bigger
-// bold run, list items get a literal "• " prefix (pptxgenjs's own bullet option isn't reliable
 // when mixed with plain paragraph runs in the same call).
 function richRunsForBlocks(blocks) {
   const runs = [];
@@ -73,8 +69,6 @@ function blockCharCount(block) {
 }
 
 // The minutes prompt doesn't mandate a heading level for each Agenda item's write-up, so the LLM
-// sometimes uses a real "### 1. Title (발표자: X)" heading and sometimes a bold pseudo-heading
-// paragraph like "**1. Title (발표자: X)** 이어지는 문장..." - this recognizes the second shape so
 // each numbered agenda item still gets split into its own slide either way (see splitIntoSections
 // below). Returns the extracted title and whatever prose immediately follows the bold marker on
 // the same line (rendered as that section's first paragraph), or null if the paragraph doesn't
@@ -84,17 +78,13 @@ function extractLeadingNumberedTitle(text) {
   return match ? { title: match[1].trim(), rest: match[2].trim() } : null;
 }
 
-// True for the "일시/주관자/참석자" recap paragraph the LLM sometimes writes right under the top
 // title - already fully covered by the title slide (addTitleSlide), so treated as noise here
-// regardless of whether it sits under its own "회의 기본정보" heading or bare after the H1.
 function looksLikeBasicInfoRecap(text) {
   return text.includes("일시") && text.includes("주관자");
 }
 
 // Groups parsed markdown blocks into slide-sized sections, splitting at every heading and every
 // bold-numbered pseudo-heading (see extractLeadingNumberedTitle) - this is what turns "one wall of
-// text" into "one slide per Agenda topic". The very first H1 (the LLM's own "# ... 회의록" title,
-// per MINUTES_SYSTEM_PROMPT) and the 일시/주관자/참석자 recap are dropped as redundant with the
 // title slide; the A/I List recap section is dropped too since a real table slide already covers
 // it (see addActionItemSlide) - kept only when it isn't a recap of already-covered data.
 function splitIntoSections(blocks) {
@@ -107,8 +97,6 @@ function splitIntoSections(blocks) {
   };
 
   // While true, every block is dropped (not just the triggering heading) until the next block
-  // that actually starts a new section - otherwise a dropped heading's own body (e.g. "회의
-  // 기본정보"'s bullet list, or "A/I List"'s "사전에 계획된 A/I 없음." line) would fall through
   // and land in a stray untitled section instead of being suppressed along with its heading.
   let skipping = false;
 
@@ -166,7 +154,6 @@ function addTitleSlide(pptx, meeting) {
   const slide = pptx.addSlide();
 
   slide.addShape("rect", { x: 0, y: 0, w: SLIDE_WIDTH_IN, h: 0.12, fill: { color: ACCENT_COLOR }, line: { type: "none" } });
-  // "제목: " prefix matches the label format importPptx.mjs's title-detection looks for - same
   // convention exportPdf.mjs/exportMd.mjs already use. Kept large/bold so it still reads as a title.
   slide.addText(`제목: ${meeting.title || "-"}`, { x: CONTENT_X, y: 1.0, w: CONTENT_WIDTH, h: 1.6, fontSize: 26, bold: true, valign: "top" });
   slide.addText(
@@ -230,7 +217,6 @@ function addTableSlide(pptx, title, block) {
   slide.addTable(rows, TABLE_OPTIONS);
 }
 
-// A section whose body is empty (e.g. "## 회의 안건 논의 결과 요약" immediately followed by the
 // first numbered agenda item, which splitIntoSections already broke out into its own section) -
 // renders as a plain section-divider slide instead of being silently dropped, the same way a real
 // meeting-minutes deck uses a divider before its per-topic slides.
@@ -280,10 +266,8 @@ function addSectionContentSlides(pptx, title, body) {
   flush();
 }
 
-// Renders the LLM-generated 회의록 markdown as one slide per section instead of packing arbitrary
 // chunks of text together - see splitIntoSections for how a "section" is determined (every real
 // heading, plus every bold-numbered Agenda item pseudo-heading) and parseMinutesMarkdown.mjs for
-// the underlying block parser. A section holding a GFM table (the mandatory "할일" table, always
 // exactly one per MINUTES_SYSTEM_PROMPT) gets a real pptxgenjs table slide; an empty section
 // becomes a lightweight divider slide; everything else becomes one or more flowing-text slides.
 function addMinutesSlides(pptx, minutes) {

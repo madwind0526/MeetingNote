@@ -22,7 +22,6 @@ function ffmpegBinPath() {
 const DEFAULT_VAD_ONSET = 0.3;
 const DEFAULT_VAD_OFFSET = 0.2;
 
-// Settings' VAD onset/offset (see SettingsView's "WhisperX 음성 감지" section) - how confident
 // silero's voice-activity detector must be before marking speech as starting/continuing. Only
 // WhisperX exposes these (the plain Whisper CLI has no separate VAD step to tune).
 async function resolveVadThresholds() {
@@ -72,7 +71,6 @@ function buildBootstrapCode(body) {
 // deep=false (the default) only checks whether the venv's python.exe exists - no subprocess spawn.
 // deep=true additionally imports torch/torchcodec/whisperx inside that venv to confirm it actually
 // works, which is slow (real package imports, not just a file check) - only runs for the user's
-// explicit "지금 확인" action instead of automatically on every Settings open.
 export async function checkLocalWhisperXAvailable(deep = false) {
   const pythonPath = whisperXPythonPath();
 
@@ -129,7 +127,6 @@ export async function transcribeLocalWhisperX(audioBuffer, fileName, model = "ba
   // pyannoteDiarize.mjs) - a misclustered turn used to poison a voice profile with two blended
   // speakers. Segments come back with no `speaker` field, so diarize.mjs's no-embedding fallback
   // gives every segment the same single label; the user names segments individually in
-  // AudioAnalysisModal, and "화자 분리" classifies the rest one clip at a time (see
   // /api/voice-profiles/classify-clips).
   const env = await readEnvFile();
   const hfToken = env.HUGGINGFACE_TOKEN;

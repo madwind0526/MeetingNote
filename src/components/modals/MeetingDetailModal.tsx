@@ -19,7 +19,6 @@ function resolveMemberName(members: PublicMember[], authorId: string) {
   return members.find((member) => member.id === authorId)?.name ?? "알 수 없음";
 }
 
-// Renders the "발표 자료" cell as a plain label, or - when a real file was attached via the
 // form - a clickable icon that opens it (OS default app in Electron, browser tab otherwise), plus
 // a second icon to open its .md conversion (in-app MdViewerModal, not an external app - B4), then
 // the file name.
@@ -171,10 +170,12 @@ export function MeetingDetailModal({
             <Download size={16} />
             내보내기
           </button>
-          <button className="primary-action" onClick={() => onEdit(meeting)} type="button">
-            <Pencil size={16} />
-            수정
-          </button>
+          {canDeleteMeeting(meeting, currentMember) && (
+            <button className="primary-action" onClick={() => onEdit(meeting)} type="button">
+              <Pencil size={16} />
+              수정
+            </button>
+          )}
         </div>
       }
     >

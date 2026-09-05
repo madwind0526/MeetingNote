@@ -1,5 +1,6 @@
 import type { AppSettings } from "../types/domain";
 import { defaultSettings } from "../types/domain";
+import { jsonAuthHeaders } from "./auth";
 
 const SETTINGS_STORAGE_KEY = "meetingnote-settings";
 
@@ -48,9 +49,12 @@ function normalizeSettings(parsed: Partial<AppSettings> | null): AppSettings {
 function persistSettingsFile(settings: AppSettings) {
   const fileSave =
     window.meetingNote?.saveSettings?.(settings) ??
+    // Electron IPC (above) never touches HTTP, but this browser-tab fallback does, and
+    // /api/settings PUT now requires a logged-in member (see vite.config.mts) - same
+    // jsonAuthHeaders() every other authenticated fetch in this app uses.
     fetch("/api/settings", {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: jsonAuthHeaders(),
       body: JSON.stringify(settings)
     }).then((response) => response.ok);
 

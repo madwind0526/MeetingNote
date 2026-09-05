@@ -118,7 +118,6 @@ function peakAmplitude(samples) {
   return peak;
 }
 
-// Same math as src/lib/audio.ts's processMonoPcm - kept identical on purpose so "정규화"/"DeNoise"
 // behave the same regardless of whether they end up running client-side or here.
 function applyNormalize(samples) {
   const peak = peakAmplitude(samples);
@@ -145,7 +144,6 @@ function applyNoiseGate(samples) {
   return result;
 }
 
-// Runs the full server-side preprocessing chain in the fixed order Demucs -> 정규화 -> DeNoise:
 // vocal isolation must see the original mixed-down recording to separate cleanly, and normalizing
 // before the noise gate means the gate's fixed 2%-of-peak threshold is judged against a
 // consistent, already-leveled signal instead of whatever gain the raw/Demucs-separated track

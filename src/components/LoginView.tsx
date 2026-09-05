@@ -45,12 +45,12 @@ export function LoginView({ theme, logoVersion, onLoginSuccess }: LoginViewProps
     try {
       const result = await login(loginId.trim(), password);
 
-      if (!result.ok || !result.member) {
+      if (!result.ok || !result.member || !result.sessionToken) {
         setError(result.error || "로그인에 실패했습니다.");
         return;
       }
 
-      saveSession(result.member);
+      saveSession(result.member, result.sessionToken);
       onLoginSuccess(result.member);
     } finally {
       setIsSubmitting(false);
@@ -66,15 +66,15 @@ export function LoginView({ theme, logoVersion, onLoginSuccess }: LoginViewProps
     setError("");
 
     try {
-      const member = await skipLogin();
+      const result = await skipLogin();
 
-      if (!member) {
-        setError("건너뛸 수 있는 계정이 없습니다.");
+      if (!result.ok || !result.member || !result.sessionToken) {
+        setError(result.error || "건너뛸 수 있는 계정이 없습니다.");
         return;
       }
 
-      saveSession(member);
-      onLoginSuccess(member);
+      saveSession(result.member, result.sessionToken);
+      onLoginSuccess(result.member);
     } catch (skipError) {
       setError(skipError instanceof Error ? skipError.message : "건너뛰기에 실패했습니다.");
     } finally {
@@ -103,9 +103,7 @@ export function LoginView({ theme, logoVersion, onLoginSuccess }: LoginViewProps
     setRequestError("");
 
     try {
-      // role is always "일반" and disabled: true regardless of anything the form could send - a
       // self-service request can never grant itself admin or immediate access. An admin has to
-      // activate the account from 계정 관리 (see MemberManagementModal's 활성화/비활성화 toggle).
       await createMemberRequest({
         name: requestName.trim(),
         loginId: requestLoginId.trim(),

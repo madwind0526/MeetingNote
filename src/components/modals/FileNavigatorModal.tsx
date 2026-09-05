@@ -33,7 +33,6 @@ interface FileNavigatorModalProps extends PendingFileNavigatorRequest {
   onDone: () => void;
 }
 
-// Backs Settings > 탐색기 방식 > 내장 파일 탐색기: a plain fs.readdir/fs.stat-based folder browser for
 // environments where Electron's native dialog module (and the OS Explorer shell it wraps) is
 // blocked by security policy. Mounted once by FileNavigatorHost and driven entirely through
 // lib/filePicker.ts's request/resolve pair, so it can be triggered from non-component code

@@ -1,8 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { ModalShell } from "./ModalShell";
 import { deleteVoiceProfileRequest, fetchVoiceProfilesRequest } from "../../lib/api";
 import type { VoiceProfileSummary } from "../../lib/api";
+
+// Below this, a profile is flagged as needing re-registration - matches server/voiceProfiles.mjs's
+// RELAXED_SIMILARITY_THRESHOLD baseline (0.75 -> 75) so the same number means the same thing on
+// both sides: a profile this inconsistent is already getting the stricter end of the per-profile
+// threshold range (see effectiveThresholds), not just cosmetically flagged here.
+const LOW_RELIABILITY_SCORE = 75;
+// 85 matches SIMILARITY_THRESHOLD's baseline (see reliabilityScore/RELIABILITY_ANCHOR in
+// server/voiceProfiles.mjs) - a profile at or above this is at least as consistent as the default
+// bar every profile used to share.
+const GOOD_RELIABILITY_SCORE = 85;
+
+function reliabilityScoreClass(score: number | null): string {
+  if (score === null) {
+    return "unverified";
+  }
+  if (score < LOW_RELIABILITY_SCORE) {
+    return "bad";
+  }
+  if (score < GOOD_RELIABILITY_SCORE) {
+    return "warn";
+  }
+  return "good";
+}
 
 interface VoiceProfileManagerModalProps {
   onClose: () => void;
@@ -11,12 +34,9 @@ interface VoiceProfileManagerModalProps {
   // This modal has no idea such a cache exists, so it just reports "something changed".
   onProfilesChanged?: () => void;
   // Settings opens this as the only modal on screen (default z-index is fine). AudioAnalysisModal
-  // opens it nested inside its own already-open "회의 음성 분석" modal, so it needs to stack above
-  // that one - same overlayZIndex value that modal's own 수정 사전 등록 popup uses.
   overlayZIndex?: number;
 }
 
-// Shared between Settings("음성 프로필 관리" 수정 버튼) and AudioAnalysisModal("화자 편집" 버튼) -
 // same card-grid view/delete UI either way (see server/voiceProfiles.mjs's deleteVoiceProfile:
 // registerVoiceProfile only ever appends a sample, so this is the only way to walk back a
 // wrongly-tagged one).
@@ -25,6 +45,11 @@ export function VoiceProfileManagerModal({ onClose, onProfilesChanged, overlayZI
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingName, setDeletingName] = useState("");
+
+  // fetchVoiceProfilesRequest returns whatever order the JSON file happens to store them in
+  // (registration order, not alphabetical) - sorted here the same way SpeakerPicker's dropdown
+  // already sorts its own name list, so the two stay consistent.
+  const sortedProfiles = useMemo(() => [...profiles].sort((a, b) => a.name.localeCompare(b.name, "ko")), [profiles]);
 
   const refresh = async () => {
     try {
@@ -84,11 +109,11 @@ export function VoiceProfileManagerModal({ onClose, onProfilesChanged, overlayZI
         </span>
         {isLoading ? (
           <span className="field-hint">불러오는 중...</span>
-        ) : profiles.length === 0 ? (
+        ) : sortedProfiles.length === 0 ? (
           <p className="settings-section-desc">등록된 음성 프로필이 없습니다.</p>
         ) : (
           <div className="card-grid voice-profile-card-grid">
-            {profiles.map((profile) => (
+            {sortedProfiles.map((profile) => (
               <div className="voice-profile-card" key={profile.name}>
                 <button
                   className="voice-profile-card-delete"
@@ -101,6 +126,13 @@ export function VoiceProfileManagerModal({ onClose, onProfilesChanged, overlayZI
                 </button>
                 <strong className="voice-profile-card-name">{profile.name}</strong>
                 <span className="voice-profile-card-count">샘플 {profile.sampleCount}개</span>
+                <span className={`voice-profile-card-score ${reliabilityScoreClass(profile.reliabilityScore)}`}>
+                  {profile.reliabilityScore === null
+                    ? "샘플 부족 - 최소 2개 필요"
+                    : profile.reliabilityScore < LOW_RELIABILITY_SCORE
+                      ? `신뢰도 ${profile.reliabilityScore}점 - 재등록 권장`
+                      : `신뢰도 ${profile.reliabilityScore}점`}
+                </span>
               </div>
             ))}
           </div>

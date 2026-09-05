@@ -32,16 +32,11 @@ function emptyDraft() {
   };
 }
 
-// Third-party notes sometimes space out label characters for visual alignment (e.g. "제 목",
-// "주 관", "장 소") - stripping all whitespace (including fullwidth U+3000) before comparing lets
-// "제 목" still match "제목".
 function normalizeLabel(label) {
   return label.replace(/[\s　]+/g, "");
 }
 
 // Best-effort only: this reliably round-trips text produced by our own PDF export
-// (exportPdf.mjs), which writes one "제목:/날짜:/시작:/종료:/주관자:/참석자:" header block per
-// meeting followed by "Agenda", "A/I List" and "회의록" sections. Arbitrary third-party PDFs are
 // not guaranteed to parse - PDF has no structured field data, only laid-out text - so if none of
 // the expected labels are found this falls back to a plain title/minutes split.
 export function parseMeetingText(rawText) {
@@ -111,7 +106,6 @@ export function parseMeetingText(rawText) {
       } else if (label === "종료") {
         draft.endTime = value;
       } else if (label === "일시") {
-        // Fallback combined form some 3rd-party exports use: "일시: 2024-01-01 10:00-11:00".
         const combined = /^(\S+)\s+(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/.exec(value);
         if (combined) {
           draft.date = combined[1];

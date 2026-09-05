@@ -3,7 +3,6 @@ import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-// "분석 시작" used to run full DiarizationPipeline clustering (below) on the whole recording -
 // replaced by per-segment clip embeddings (see runEmbedClips/buildEmbedWorkerScript) so a
 // diarization mistake that blends two different speakers into one cluster can no longer poison a
 // voice profile (confirmed happening in live testing: two speakers in a synthetic clip matched

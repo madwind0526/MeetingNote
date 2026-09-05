@@ -1,9 +1,16 @@
 import type { LlmProviderId, Meeting } from "../types/domain";
+import { jsonAuthHeaders, notifySessionExpired } from "./auth";
 
 async function parseJsonResponse<T>(response: Response): Promise<T> {
   const payload = (await response.json().catch(() => null)) as (T & { error?: string }) | null;
 
   if (!response.ok) {
+    // See auth.ts's notifySessionExpired - a 401 here means the server-side session is gone even
+    // though a stale token is still cached, so kick the app back to the login screen instead of
+    // leaving every subsequent action failing the same way.
+    if (response.status === 401) {
+      notifySessionExpired();
+    }
     throw new Error(payload?.error || `요청이 실패했습니다 (${response.status}).`);
   }
 
@@ -18,7 +25,6 @@ export interface LlmStatus {
 
 // deep=false (the default) only checks whether Claude CLI/Whisper/WhisperX are installed on disk -
 // deep=true additionally spawns them to confirm they actually run, which is slow enough that it
-// should only happen for the user's explicit "지금 확인" action, not automatically.
 export async function fetchLlmStatus(ollamaBaseUrl?: string, deep = false): Promise<LlmStatus> {
   const params = new URLSearchParams();
   if (ollamaBaseUrl) {
@@ -81,7 +87,7 @@ export async function saveApiKey(kind: "anthropic" | "openai" | "huggingface", a
     kind === "openai" ? { openaiApiKey: apiKey } : kind === "huggingface" ? { huggingFaceToken: apiKey } : { anthropicApiKey: apiKey };
   const response = await fetch("/api/env", {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify(body)
   });
 
@@ -91,7 +97,7 @@ export async function saveApiKey(kind: "anthropic" | "openai" | "huggingface", a
 export async function clearApiKey(kind: "anthropic" | "openai" | "huggingface"): Promise<void> {
   const response = await fetch("/api/env", {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ provider: kind })
   });
 
@@ -101,7 +107,7 @@ export async function clearApiKey(kind: "anthropic" | "openai" | "huggingface"):
 export async function saveNaverClovaConfig(invokeUrl: string, secretKey: string): Promise<void> {
   const response = await fetch("/api/env", {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ naverClovaInvokeUrl: invokeUrl, naverClovaSecretKey: secretKey })
   });
 
@@ -111,7 +117,7 @@ export async function saveNaverClovaConfig(invokeUrl: string, secretKey: string)
 export async function clearNaverClovaConfig(): Promise<void> {
   const response = await fetch("/api/env", {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ provider: "naver-clova" })
   });
 

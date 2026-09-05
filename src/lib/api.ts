@@ -7,6 +7,7 @@ import type {
   Meeting,
   MeetingDraft
 } from "../types/domain";
+import { authHeaders, jsonAuthHeaders, notifySessionExpired } from "./auth";
 import {
   isBuiltinFilePickerAvailable,
   pickFolderWithNavigator,
@@ -33,6 +34,12 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
   const payload = (await response.json().catch(() => null)) as (T & { error?: string }) | null;
 
   if (!response.ok) {
+    // See auth.ts's notifySessionExpired - a 401 here means the server-side session is gone even
+    // though a stale token is still cached, so kick the app back to the login screen instead of
+    // leaving every subsequent action failing the same way.
+    if (response.status === 401) {
+      notifySessionExpired();
+    }
     throw new Error(payload?.error || `요청이 실패했습니다 (${response.status}).`);
   }
 
@@ -42,7 +49,7 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 export async function saveLogoImage(photoDataUrl: string): Promise<void> {
   const response = await fetch("/api/logo", {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ photoDataUrl })
   });
   await parseJsonResponse<{ ok: boolean }>(response);
@@ -71,7 +78,7 @@ export function subscribeToMeetingsChanges(onChanged: () => void): () => void {
 export async function createMeetingRequest(draft: MeetingDraft, authorId: string, presetId?: string): Promise<Meeting> {
   const response = await fetch("/api/meetings", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ ...draft, authorId, ...(presetId ? { id: presetId } : {}) })
   });
   const payload = await parseJsonResponse<{ meeting: Meeting }>(response);
@@ -82,7 +89,7 @@ export async function createMeetingRequest(draft: MeetingDraft, authorId: string
 export async function addMeetingCommentRequest(meetingId: string, authorId: string, content: string): Promise<Meeting> {
   const response = await fetch(`/api/meetings/${meetingId}/comments`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ authorId, content })
   });
   const payload = await parseJsonResponse<{ meeting: Meeting }>(response);
@@ -91,7 +98,7 @@ export async function addMeetingCommentRequest(meetingId: string, authorId: stri
 }
 
 export async function deleteMeetingCommentRequest(meetingId: string, commentId: string): Promise<Meeting> {
-  const response = await fetch(`/api/meetings/${meetingId}/comments/${commentId}`, { method: "DELETE" });
+  const response = await fetch(`/api/meetings/${meetingId}/comments/${commentId}`, { method: "DELETE", headers: authHeaders() });
   const payload = await parseJsonResponse<{ meeting: Meeting }>(response);
 
   return payload.meeting;
@@ -100,7 +107,7 @@ export async function deleteMeetingCommentRequest(meetingId: string, commentId: 
 export async function updateMeetingRequest(id: string, draft: MeetingDraft): Promise<Meeting> {
   const response = await fetch(`/api/meetings/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify(draft)
   });
   const payload = await parseJsonResponse<{ meeting: Meeting }>(response);
@@ -109,7 +116,7 @@ export async function updateMeetingRequest(id: string, draft: MeetingDraft): Pro
 }
 
 export async function deleteMeetingRequest(id: string): Promise<void> {
-  const response = await fetch(`/api/meetings/${id}`, { method: "DELETE" });
+  const response = await fetch(`/api/meetings/${id}`, { method: "DELETE", headers: authHeaders() });
   await parseJsonResponse<{ ok: boolean }>(response);
 }
 
@@ -119,7 +126,7 @@ export async function bulkUpsertMeetingsRequest(
 ): Promise<ImportSummary> {
   const response = await fetch("/api/meetings/bulk", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ meetings, duplicateMode })
   });
 
@@ -127,7 +134,7 @@ export async function bulkUpsertMeetingsRequest(
 }
 
 export async function resetMeetingsRequest(): Promise<Meeting[]> {
-  const response = await fetch("/api/meetings/reset", { method: "POST" });
+  const response = await fetch("/api/meetings/reset", { method: "POST", headers: authHeaders() });
   const payload = await parseJsonResponse<{ meetings: Meeting[] }>(response);
 
   return payload.meetings;
@@ -168,7 +175,8 @@ export function readFileAsDataUrl(file: File, maxBytes = 5 * 1024 * 1024): Promi
   });
 }
 
-const MAX_ATTACHMENT_FILE_BYTES = 50 * 1024 * 1024;
+const MAX_MATERIAL_ATTACHMENT_FILE_BYTES = 50 * 1024 * 1024;
+const MAX_AUDIO_ATTACHMENT_FILE_BYTES = 200 * 1024 * 1024;
 
 export interface UploadedAttachment {
   path: string;
@@ -184,10 +192,11 @@ export interface UploadedAttachment {
 // path alongside the original file name. Existing uploads stay at their saved path if the meeting
 // date or title changes later.
 export async function uploadAttachment(meetingFolderLabel: string, kind: "materials" | "audio", file: File): Promise<UploadedAttachment> {
-  const contentBase64 = await readFileAsBase64(file, MAX_ATTACHMENT_FILE_BYTES, "첨부");
+  const maxBytes = kind === "audio" ? MAX_AUDIO_ATTACHMENT_FILE_BYTES : MAX_MATERIAL_ATTACHMENT_FILE_BYTES;
+  const contentBase64 = await readFileAsBase64(file, maxBytes, "첨부");
   const response = await fetch("/api/attachments", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ meetingTitle: meetingFolderLabel, kind, fileName: file.name, contentBase64 })
   });
 
@@ -396,7 +405,6 @@ export interface TranscribeRequest {
   // returns real per-segment speaker labels (currently none do by default) - see
   // server/audio/diarize.mjs; otherwise every segment is treated as a single speaker.
   attendeeNames: string[];
-  // Agenda order + 발표 시간(분) - used only as a soft tie-breaker hint for embedding-based voice
   // matching (see server/audio/diarize.mjs's computeAgendaWindows/hintedPresenterForLabel). A plan
   // made before the meeting, not real timestamps, so it never overrides a clear acoustic mismatch.
   agenda?: { no: number; durationMinutes: number; presenter: string }[];
@@ -424,7 +432,6 @@ export type TranscribeResult = AudioAnalysis & {
   // Transient, present only when the local WhisperX/Whisper-CLI diarization path produced
   // per-speaker voice embeddings (HF token configured) - keyed by the same label used in
   // speakerMap. Never persisted with the meeting; AudioAnalysisModal uses it once, right when the
-  // user renames a "미등록" speaker, to register a new voice profile (see registerVoiceProfileRequest).
   speakerEmbeddings?: Record<string, number[]>;
 };
 
@@ -514,7 +521,7 @@ export async function transcribeAudioRequest(request: TranscribeRequest): Promis
 export async function registerVoiceProfileRequest(name: string, embedding: number[]): Promise<void> {
   const response = await fetch("/api/voice-profiles/register", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ name, embedding })
   });
   await parseJsonResponse<{ ok: boolean }>(response);
@@ -530,6 +537,10 @@ export async function fetchVoiceProfileNamesRequest(): Promise<string[]> {
 export interface VoiceProfileSummary {
   name: string;
   sampleCount: number;
+  // 0-100, average pairwise cosine similarity among this profile's own stored samples (see
+  // server/voiceProfiles.mjs's reliabilityScore) - null when there are fewer than 2 samples to
+  // compare, since a lone sample has no internal consistency to measure yet.
+  reliabilityScore: number | null;
 }
 
 export async function fetchVoiceProfilesRequest(): Promise<VoiceProfileSummary[]> {
@@ -544,7 +555,7 @@ export async function fetchVoiceProfilesRequest(): Promise<VoiceProfileSummary[]
 export async function deleteVoiceProfileRequest(name: string): Promise<void> {
   const response = await fetch("/api/voice-profiles", {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ name })
   });
 
@@ -559,7 +570,6 @@ export interface ClipClassification {
 // One or more already-cropped short clips (see src/lib/audio.ts's sliceAudioBufferToWav) - each
 // gets its own pyannote/embedding vector (no clustering) and an independent match against the
 // voice-profile registry. Used both to register a single manually-named segment (the embedding
-// is what gets registered) and, in bulk, by "화자 분리" to classify every still-unlabeled segment.
 export async function classifyAudioClipsRequest(
   clips: { id: string; blob: Blob }[],
   attendeeNames: string[]
@@ -569,7 +579,7 @@ export async function classifyAudioClipsRequest(
   );
   const response = await fetch("/api/voice-profiles/classify-clips", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonAuthHeaders(),
     body: JSON.stringify({ clips: clipsBase64, attendeeNames })
   });
   const payload = await parseJsonResponse<{ results: Record<string, ClipClassification> }>(response);

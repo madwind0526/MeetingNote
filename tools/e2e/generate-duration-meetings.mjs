@@ -1,11 +1,8 @@
 // Full-flow test at increasing audio length: materials -> MD -> audio -> CHUNKED STT (same ~15s
 // per-chunk approach as useChunkedAudioAnalysis.ts, not one giant STT call - a single call on a
-// 47-minute file would also blow past TRANSCRIBE_TIMEOUT_MS) -> B5 (발표 내용 자동 정리, windowed)
-// -> B6 (회의록 작성). Runs on the 4 duration-bench WAVs built by build-duration-audio.mjs, which
 // are the same ~4-minute script repeated 1/2/6/12 times - the point is testing the pipeline holds
 // up as length grows, not generating hours of unique dialogue.
 //
-// Cross-chunk 미등록 화자 identity reconciliation (reconcileUnregisteredSpeakers, client-side
 // TypeScript) is intentionally NOT replicated here - out of scope for what this run is checking
 // (token limits, B5 windowing, total wall-clock, save/attachment correctness), so speaker labels
 // may drift across chunks. Noted in the run summary.
@@ -17,8 +14,6 @@ import pptxgen from "pptxgenjs";
 
 const projectRoot = process.cwd();
 const BASE_URL = "http://127.0.0.1:5185";
-// Mirrors useChunkedAudioAnalysis.ts's pickChunkSizeBounds tiering (>=30분 -> 5분 청크, >=10분 ->
-// 2분 청크, else 1분 청크) so this test exercises the same chunk sizes production would actually
 // pick for each meeting length, rather than one fixed size.
 function pickChunkSec(totalDurationSec) {
   if (totalDurationSec >= 1800) return 300;

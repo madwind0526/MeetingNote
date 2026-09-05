@@ -49,7 +49,6 @@ interface MeetingFormModalProps {
   sttProvider: SttProviderId;
   silenceThreshold: number;
   chunkMinutesOverrides?: ChunkMinutesOverrides;
-  // Threaded down to AudioAnalysisModal's word-correction popup so a newly registered 수정 사전
   // entry updates this same shared cache instead of writing to the server behind its back (see
   // App.tsx's `dictionary` state, loaded once per session and otherwise never refetched).
   dictionary: DictionaryState;
@@ -118,7 +117,6 @@ function clampToNearestValidDate(value: string): string {
   return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-// Native <input type="time"> renders 12-hour with 오전/오후 on Windows regardless of the `lang`
 // attribute (tried and confirmed not to force 24-hour formatting), and a <select>-based picker
 // (tried next) felt clunky to click through - a plain typed "HH:MM" text field sidesteps both:
 // no native picker at all, just digits. Strips non-digits and re-inserts the colon after the 2nd
@@ -187,7 +185,6 @@ export function MeetingFormModal({
   const [saveError, setSaveError] = useState("");
   const [isImportingFile, setIsImportingFile] = useState(false);
   const [importFileError, setImportFileError] = useState("");
-  // ---------- 오디오 분석 팝업 진입 방식 (파일 업로드 vs 실시간 녹음) ----------
   // Tracks how the currently-open AudioAnalysisModal was entered, independent of whether
   // pendingAudioFile happens to be set - a recording session sets pendingAudioFile too once it
   // finishes (see onRecordingFinalized below), but that shouldn't flip an already-open recording
@@ -417,7 +414,6 @@ export function MeetingFormModal({
     audioFileInputRef.current?.click();
   };
 
-  // "분석 시작" needs an in-memory File to decode - a freshly picked file already is one, but
   // re-opening analysis on an already-saved meeting's audio (edit mode, nothing picked this
   // session) has to re-fetch the stored attachment first (B5/B6).
   const handleOpenAudioAnalysis = async () => {
@@ -446,15 +442,12 @@ export function MeetingFormModal({
     }
   };
 
-  // "PC 소리 녹음" now just opens AudioAnalysisModal in recording mode - the popup itself owns
   // starting system-audio capture (on mount), showing the live waveform, and running chunked
-  // analysis once the user clicks its own "분석 시작" button (see AudioAnalysisModal).
   const handleOpenRecordingAnalysis = () => {
     setAudioSourceMode("recording");
     setShowAudioAnalysis(true);
   };
 
-  // Mirrors what a picked/fetched file's pendingAudioFile already gives the "완료" flow below -
   // called once AudioAnalysisModal finishes stitching the recorded segments into one file, so
   // handleAudioComplete can upload it as the retained attachment exactly like a picked file.
   const handleRecordingFinalized = (file: File) => {
@@ -494,11 +487,8 @@ export function MeetingFormModal({
     setDraft((current) => ({ ...current, audio: nextAnalysis }));
   };
 
-  // Every named person on this meeting's roster - 주관자, 간사, and every attendee regardless of
   // isKeyAttendee (that flag used to gate who showed up here, which was the bug: a plain
   // participant with isKeyAttendee unchecked just silently never appeared in the speaker picker).
-  // One entry per unique name, tagged with the most senior role that applies (주관자 > 간사 >
-  // 발표자 > plain attendee/no badge) - see SpeakerRoleBadge's priority-order comment in
   // types/domain.ts. AudioAnalysisModal's speaker picker uses this both for the dropdown's full
   // candidate list and for the role badge next to each name.
   const audioAttendeeRoles = (): SpeakerRoleEntry[] => {
@@ -527,7 +517,6 @@ export function MeetingFormModal({
 
   // ---------- Presentation summaries (bulk) ----------
 
-  // "발표 정리" button: runs B5 (PresentationSummaryModal's "자동 정리") for every Agenda item in
   // one action instead of opening each item's popup one at a time. Sequential (not parallel) to
   // avoid piling concurrent requests onto a local Ollama/Whisper-adjacent box; each item's result
   // is applied as soon as it finishes so progress is visible instead of an all-or-nothing wait.

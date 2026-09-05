@@ -1,8 +1,5 @@
 // Browser-only audio pipeline: decode an uploaded file via Web Audio API, produce waveform
 // envelope data for canvas rendering, and re-encode as a WAV Blob for upload to the server STT
-// endpoint. No Node APIs are used here. Actual preprocessing (Demucs/정규화/DeNoise) happens
-// server-side in the fixed order Demucs -> 정규화 -> DeNoise - see server/audio/audioPreprocess.mjs
-// - so Demucs always sees this untouched original mixdown, never audio 정규화/DeNoise already
 // altered client-side first.
 
 // 16000 Hz because that's the rate every local STT/diarization model here actually runs at

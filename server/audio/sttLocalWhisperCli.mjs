@@ -64,7 +64,6 @@ function parseSegmentLine(line) {
 // subprocess spawn, since `whisper -h` loads the whole whisper package (including torch) just to
 // print help text, which is slow enough that running it automatically on every Settings open was
 // a real contributor to a sluggish-feeling UI. deep=true runs the full spawn-based check, for the
-// user's explicit "지금 확인" action.
 export async function checkLocalWhisperAvailable(deep = false) {
   if (!deep) {
     const installed = existsSync(DEFAULT_WHISPER_EXE) || Boolean(process.env.MEETINGNOTE_WHISPER_CLI);
@@ -169,7 +168,6 @@ export async function transcribeLocalWhisperCli(audioBuffer, fileName, model = "
     // pyannoteDiarize.mjs) - a misclustered turn used to poison a voice profile with two blended
     // speakers. Segments come back with no `speaker` field, so diarize.mjs's no-embedding fallback
     // gives every segment the same single label; the user names segments individually in
-    // AudioAnalysisModal, and "화자 분리" classifies the rest one clip at a time (see
     // /api/voice-profiles/classify-clips). Best-effort: falls back silently to the plain transcript
     // above if it fails, since transcription itself already succeeded. return_embeddings gives per-
     // speaker voice embeddings for B3's persistent voice-profile matching (see diarize.mjs).

@@ -1,4 +1,3 @@
-// Keeps "미등록 화자 N" labels consistent across chunks of the SAME chunked analysis session (see
 // useChunkedAudioAnalysis). Each chunk is diarized independently by the server, so an unregistered
 // speaker's number resets to 1 every chunk on its own - this module links a new chunk's
 // unregistered speakers back to ones already seen earlier in this session via cosine similarity on

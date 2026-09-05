@@ -18,21 +18,18 @@ const BUCKET_COUNT = 900;
 // STT cost is dominated by a roughly fixed model-load overhead, not audio length - WhisperX took
 // ~22-25s per call across every model size on a 35s clip, barely moving with model size). But a
 // short meeting doesn't need a giant chunk to see that win, and every chunk delays when its
-// transcript appears (worse for live-recording UX, and it caps how fine-grained "분석 중" progress
 // can look) - so pick the smallest chunk size whose overhead-amortization win is already realized
 // for the meeting's length, rather than always taking the biggest.
-const SHORT_MEETING_THRESHOLD_SEC = 600; // 10분
-const MEDIUM_MEETING_THRESHOLD_SEC = 1800; // 30분
-const SHORT_CHUNK_TARGET_MS = 60000; // 10분 미만 회의 -> 1분 청크
-const MEDIUM_CHUNK_TARGET_MS = 120000; // 10~30분 회의 -> 2분 청크
-const LONG_CHUNK_TARGET_MS = 300000; // 30분 이상 회의 -> 5분 청크
+const SHORT_MEETING_THRESHOLD_SEC = 600;
+const MEDIUM_MEETING_THRESHOLD_SEC = 1800;
+const SHORT_CHUNK_TARGET_MS = 60000;
+const MEDIUM_CHUNK_TARGET_MS = 120000;
+const LONG_CHUNK_TARGET_MS = 300000;
 const QUIET_CHECK_INTERVAL_MS = 300;
 const QUIET_AMPLITUDE_THRESHOLD = 0.02;
 // Below this, a chunk is treated as having no speech at all and is never sent to STT (see
 // processChunk). STT models (Whisper in particular) are prone to hallucinating plausible-sounding
-// but entirely fabricated text on near-silent audio (e.g. stock phrases like "다음 영상에서 만나요"),
 // so skipping the call outright avoids that instead of trying to filter it out of the response
-// afterwards. 0.004 tuned from real recordings, exposed as Settings' 무음 임계값 (silenceThreshold)
 // for further tuning - findQuietCutSample's own 0.02 default is for picking the quietest point to
 // CUT at (relative comparison against other windows in the same clip), not for judging whether a
 // chunk has speech at all, so the two don't need to match.
@@ -44,7 +41,6 @@ interface ChunkSizeBounds {
   maxMs: number;
 }
 
-// Settings' 회의 길이별 STT 청크 크기 fields are free-form strings that can be left blank (the input
 // shows the built-in default as a placeholder rather than holding it as a live value) - this turns
 // one of those strings into a positive minute count, or undefined if blank/not a usable number, so
 // pickChunkSizeBounds can fall back to its own default for that tier.
@@ -59,7 +55,6 @@ export interface ChunkMinutesOverrides {
   longMinutes?: number;
 }
 
-// Bounds each ±25% around target, the same ratio the old fixed 60s/45s/75s scheme used - MIN/MAX
 // bound findQuietCutSample's word-boundary-safe search window, not a hard chunk-length limit.
 function pickChunkSizeBounds(totalDurationSec: number, overrides?: ChunkMinutesOverrides): ChunkSizeBounds {
   const shortMs = (overrides?.shortMinutes ?? SHORT_CHUNK_TARGET_MS / 60000) * 60000;
@@ -70,7 +65,6 @@ function pickChunkSizeBounds(totalDurationSec: number, overrides?: ChunkMinutesO
 }
 
 // Recording mode has no known total duration up front (unlike file mode, which reads it straight
-// off the decoded buffer) - Agenda's per-item 예상 소요 시간 is the only length estimate available
 // before the meeting actually happens, so its sum stands in for "total duration". No agenda rows
 // (or none with a duration) falls back to the shortest tier, matching the old always-60s behavior.
 function estimateAgendaDurationSec(agenda?: { durationMinutes: number }[]): number {
@@ -117,10 +111,8 @@ function isAnalyserQuiet(analyser: AnalyserNode, buffer: Uint8Array<ArrayBuffer>
 }
 
 // Shared engine behind AudioAnalysisModal's chunked/progressive analysis for both the file-upload
-// and live-recording entry points. Splits audio into windows sized by pickChunkSizeBounds (1/2/5분
 // depending on meeting length), runs each through the existing per-file STT+diarization job
 // pipeline (transcribeAudioRequest, unchanged), and merges results in as each chunk finishes
-// instead of waiting for the whole clip. Cross-chunk "미등록 화자" identity is kept consistent via
 // reconcileUnregisteredSpeakers (registered/named speakers already stay consistent on their own via
 // the server's persistent voice-profile registry).
 export function useChunkedAudioAnalysis() {
@@ -132,8 +124,6 @@ export function useChunkedAudioAnalysis() {
   const [envelope, setEnvelope] = useState<Float32Array | null>(null);
   const [finalAudioBlob, setFinalAudioBlob] = useState<Blob | null>(null);
   // Recording mode only - how many segments have been queued for STT vs. actually finished, so the
-  // UI can show real progress ("3/5 처리됨") instead of a single indefinite "처리 중..." during the
-  // (sometimes long) drain after "녹음 중지", when it's otherwise impossible to tell whether
   // processing is still moving or stuck.
   const [queuedChunkCount, setQueuedChunkCount] = useState(0);
   const [processedChunkCount, setProcessedChunkCount] = useState(0);
@@ -367,7 +357,6 @@ export function useChunkedAudioAnalysis() {
   );
 
   // Starts the rotation timer against an ALREADY-recording SystemAudioCapture (the modal owns
-  // starting capture itself, on mount, so a live waveform shows before "분석 시작" is ever clicked -
   // this only starts turning captured segments into transcript/speaker data).
   const startRecordingAnalysis = useCallback(
     (capture: SystemAudioCapture, options: ChunkedAnalysisOptions) => {
@@ -439,7 +428,6 @@ export function useChunkedAudioAnalysis() {
     setIsAnalyzing(false);
   }, []);
 
-  // Re-applies a freshly-registered 수정 사전 correction to whatever transcript text is already
   // accumulated (both the finished, speaker-tagged `result` and any still-in-progress `liveSegments`
   // for the chunk currently being transcribed) - mirrors what the single-shot flow used to do
   // directly via setResult, now routed through the hook since it owns both pieces of state.
@@ -499,7 +487,6 @@ export function useChunkedAudioAnalysis() {
 
   // Merges one or more labels into `intoLabel`: every segment currently on a `fromLabel` moves to
   // `intoLabel`, and the `fromLabel` entries are dropped from speakerMap - used when a rename
-  // (via the 화자별 파형/화자 목록 name input) would otherwise leave two different labels
   // displaying the same name, e.g. because a per-segment edit already minted a new label with that
   // name for one utterance before this label got renamed to match it.
   const mergeSpeakerLabels = useCallback((fromLabels: string[], intoLabel: string) => {

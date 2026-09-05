@@ -1,6 +1,5 @@
 // Full-flow E2E test, stage 3: uploads the synthesized audio, runs it through the real STT +
 // diarization pipeline (local-whisper-cli, HF-token embeddings path, agenda-hint matching), builds
-// one text file per resolved speaker, then runs the app's real B5 (발표별 정리) + B6 (회의록 작성)
 // LLM pipeline via claude-cli, and saves everything back onto the meeting record - all through the
 // same HTTP endpoints the React UI itself calls.
 import { readFile, writeFile } from "node:fs/promises";

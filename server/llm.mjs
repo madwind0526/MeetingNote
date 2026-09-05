@@ -70,7 +70,6 @@ function runCommand(command, args, { timeoutMs, cwd, stdin } = {}) {
 
 // LLMs occasionally wrap an entire markdown response in a ```markdown ... ``` (or plain
 // ``` ... ```) code fence, especially when asked to "output markdown" - observed from claude-cli
-// on 2 of 11 real 회의록 generations in one batch run. Left untouched, remark-gfm (the in-app
 // renderer) and parseMinutesMarkdown.mjs (the exporters) both see one giant fenced code block
 // spanning the whole document, so headings/tables/bold all render as literal text instead of
 // being parsed. Only strips the wrapper when it encloses the *entire* trimmed response - a
@@ -83,7 +82,6 @@ function stripWrappingCodeFence(text) {
 
 // deep=false (the default) only scans PATH for a file named `claude` - no subprocess spawn.
 // deep=true actually runs `claude --version` to confirm it works, for the user's explicit
-// "지금 확인" action instead of running automatically on every Settings open.
 export async function checkClaudeCliAvailable(deep = false) {
   if (!deep) {
     return { available: isCommandInstalled("claude"), version: null };
@@ -97,10 +95,8 @@ export async function checkClaudeCliAvailable(deep = false) {
   }
 }
 
-// Settings' "System Message" (아래 LLM 선택) - a user-authored persona/style instruction (tone,
 // what to emphasize) prepended before this app's own structured system prompt (output format,
 // language, refusal rules), which still has to win when the two conflict - a user free-typing
-// "간결하게 정리하세요" shouldn't be able to accidentally break the required output format.
 async function resolveSystemPrompt(basePrompt) {
   const settings = await readAppSettings();
   const custom = typeof settings?.systemMessage === "string" ? settings.systemMessage.trim() : "";
@@ -154,7 +150,6 @@ export async function askAnthropicApi(systemPrompt, userPrompt) {
     body: JSON.stringify({
       model: ANTHROPIC_MODEL,
       // 1024 was enough for a short query answer but silently truncates a full structured meeting
-      // record (multi-agenda summary + 할일 table + tags) for anything beyond a short meeting -
       // 8192 gives real headroom for an hour-long, multi-agenda meeting's minutes.
       max_tokens: 8192,
       system: resolvedSystemPrompt,
@@ -211,7 +206,14 @@ export async function askOllama(systemPrompt, userPrompt, baseUrl, model) {
         // 2048-4096 tokens for many models) - a full hour-long meeting's transcript can exceed that
         // on its own, and Ollama silently drops the earliest input rather than erroring, so this
         // has to be set explicitly rather than left to the model default.
-        options: { num_ctx: 8192 }
+        options: { num_ctx: 8192 },
+        // Ollama's own default (5m) unloads the model from memory shortly after the last request,
+        // so a user coming back to a meeting after even a short break pays the full model-load cost
+        // again on their very next call - measured live: ~27s for a cold first presentation-summary
+        // call vs. ~11-13s once warm, so cold start alone was over half the wall-clock time. 30m
+        // keeps the model resident across a realistic editing session (analyze -> tag speakers ->
+        // generate summaries -> write minutes) without holding it forever.
+        keep_alive: "30m"
       })
     });
   } catch (error) {
@@ -291,9 +293,7 @@ export function buildMinutesPrompt(meeting) {
 
   // B6: an Agenda item that already went through B5's per-presentation summary
   // (presentationSummary) has already had its relevant transcript window found and tagged with
-  // (질문)/(답변)/(의견)/(할일) - feed that in as authoritative per-agenda content instead of
   // making the LLM re-derive it from the full transcript below. Agenda items without a summary
-  // fall back to [발언 대본] as before (unchanged behavior when B5 hasn't been used yet).
   const summarizedAgendaItems = agenda.filter((item) => typeof item.presentationSummary === "string" && item.presentationSummary.trim());
   if (summarizedAgendaItems.length) {
     const summaryLines = summarizedAgendaItems.flatMap((item) => [`[Agenda ${item.no}: ${item.title || "-"}]`, item.presentationSummary.trim(), ""]);
@@ -338,8 +338,6 @@ export function buildMinutesPrompt(meeting) {
 }
 
 // B5 has no real per-agenda timestamp data (a meeting has exactly one continuous recording), so
-// this estimates each agenda item's rough position from the agenda's own planned order + 발표
-// 시간(분), then snaps both edges to the nearest natural pause in the transcript (the biggest gap
 // between consecutive segments within a search radius) instead of cutting at an arbitrary second -
 // same idea as src/lib/audio.ts's findQuietCutSample, but over transcript segment gaps (already
 // known from STT) instead of re-analyzing raw audio. This is inherently approximate (actual
@@ -433,8 +431,6 @@ function capTranscriptLines(lines, maxChars) {
 // transcript in chronological order and windows it down to the agenda item's estimated stretch
 // (see windowTranscriptForAgendaItem) instead of sending the whole meeting's transcript for every
 // single agenda item - chronological order also preserves the question/answer adjacency B5's
-// (질문)/(답변) tagging depends on.
-// `badgeLabels` is a plain {name: label} map (e.g. {"김도현": "주관자", "박준혁": "발표1"}) built by
 // the caller from B1's computeAttendeeBadges (a TS function in src/types/domain.ts that this plain
 // .mjs file can't import directly), so the LLM tags its output with the same labels used elsewhere.
 export function buildPresentationSummaryPrompt(meeting, agendaItem, materialMarkdown, badgeLabels) {

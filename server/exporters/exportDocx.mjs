@@ -83,7 +83,6 @@ function buildMinutesTable(block) {
   return new Table({ rows: [headerRow, ...bodyRows] });
 }
 
-// Renders the LLM-generated 회의록 markdown as real DOCX elements (headings/tables/lists) instead
 // of dumping raw markdown text line-by-line - see parseMinutesMarkdown.mjs.
 function buildMinutesParagraphs(minutes) {
   const trimmed = (minutes || "").trim();
@@ -121,7 +120,6 @@ function buildMinutesParagraphs(minutes) {
 function buildMeetingChildren(meeting) {
   const children = [];
 
-  // "제목: " prefix (not just a plain heading) matches the label format importDocx.mjs's
   // title-detection looks for - same convention exportPdf.mjs/exportMd.mjs already use.
   children.push(new Paragraph({ text: `제목: ${meeting.title || "-"}`, heading: HeadingLevel.HEADING_1 }));
   children.push(new Paragraph(`날짜: ${meeting.date || "-"}`));

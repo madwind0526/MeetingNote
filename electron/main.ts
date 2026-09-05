@@ -81,7 +81,6 @@ ipcMain.handle("dialog:openFile", async (event, options: { title?: string; filte
   return result.canceled ? null : result.filePaths[0];
 });
 
-// Lets the user pick a real folder for AppSettings.attachmentsFolder (Settings > 저장 폴더). A
 // plain `<input type="file">` in the renderer can't do this - only Electron's native dialog
 // exposes a real, absolute folder path. The dialog itself can only ever return an absolute path,
 // so it's immediately converted to a path relative to the project root (see
@@ -106,7 +105,6 @@ ipcMain.handle("dialog:openDirectory", async (event) => {
   }
 });
 
-// Shortcuts shown in the built-in file navigator (Settings > 탐색기 방식 > 내장 파일 탐색기). This exists
 // because some corporate security policies block Electron's native `dialog` module (and the OS
 // Explorer shell it wraps) entirely, so `dialog:openFile`/`dialog:saveFile`/`dialog:openDirectory`
 // above silently fail there - this gives those users an alternative that only ever touches the
@@ -167,7 +165,6 @@ ipcMain.handle("fs:registerWritePath", async (_event, filePath: string) => {
   return true;
 });
 
-// Used by the built-in navigator's "folder" mode (Settings > 저장 폴더) so it enforces the exact
 // same project-relative-only constraint as `dialog:openDirectory` above.
 ipcMain.handle("fs:toProjectRelativePath", async (_event, absolutePath: string) => {
   try {
@@ -247,7 +244,6 @@ const createWindow = () => {
   void win.loadFile(path.join(__dirname, "../dist/index.html"));
 };
 
-// Backs "PC 소리 녹음" in MeetingFormModal's 회의 음성 파일 section - the renderer's plain
 // `navigator.mediaDevices.getDisplayMedia({ audio: true, video: true })` call routes through here
 // instead of Chromium's normal screen/window picker dialog. `audio: "loopback"` is what actually
 // gets the PC's speaker output (everything currently playing through it) as a MediaStream track;

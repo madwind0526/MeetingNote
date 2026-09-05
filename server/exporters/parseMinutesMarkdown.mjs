@@ -1,8 +1,5 @@
-// Small, purpose-built Markdown parser for this app's own LLM-generated 회의록 text (see
 // MINUTES_SYSTEM_PROMPT in server/llm.mjs) - not a general Markdown engine. Recognizes exactly
 // what that prompt actually produces: headings (#/##/### ...), GFM pipe tables, bullet lists
-// (-/*), and plain paragraphs. Shared by all three exporters (DOCX/PDF/PPTX) so "회의록의 표는
-// 실제 표로" only has to be solved once instead of three times differently.
 export function parseMinutesMarkdown(markdown) {
   const lines = (markdown || "").replace(/\r\n/g, "\n").split("\n");
   const blocks = [];

@@ -54,7 +54,6 @@ export async function writeDictionary(draft) {
 
 // Script-aware boundary check, NOT a plain \p{L}/\p{N} check: a first cut at this blocked any
 // adjacent letter (Latin or Hangul) on either side, which correctly stopped "CD" from matching
-// inside "CDN" but then also stopped "AI" from matching in "AI를" or "CPU" in "CPU가" - Korean
 // grammar attaches particles directly to a preceding word with no space, so an English acronym
 // immediately followed by a Hangul particle is completely normal and has to still match. The rule
 // that actually captures "this is a different term" vs "this is the same acronym plus a Korean
@@ -75,11 +74,6 @@ function scriptCategory(char) {
   return null;
 }
 
-// Same-script continuation alone isn't enough for a Hangul entry followed by more Hangul: "에이아이는"
-// (에이아이 + topic particle) and "에이아이디어" (에이아이 as a literal prefix of an unrelated word,
-// "아이디어") are both "Hangul entry directly followed by Hangul", but only the first should match -
-// a particle attaches to a complete word, it doesn't start a new one. Longest-first so "으로는"
-// isn't shadowed by "로" matching first.
 const KOREAN_PARTICLES = [
   "이라고는", "이라고", "라고는", "라고", "이라서", "라서", "이라는", "라는", "이란", "란",
   "에게서", "한테서", "부터는", "까지는", "에서는", "으로는", "로는",
@@ -108,7 +102,6 @@ function isWholeMatch(text, from, index) {
 
 // Longest-from-first, and every entry matches against the ORIGINAL text only - never against a
 // result some earlier entry already rewrote. Applying entries one at a time over an accumulating
-// string let an earlier replacement's own output get re-matched by a later entry: "에이아이" ->
 // "AI (Artificial Intelligence)" would then have its "AI" caught by a separate, shorter "AI" ->
 // "Artificial Intelligence" entry, producing "Artificial Intelligence (Artificial Intelligence)".
 // Collecting every entry's matches against the same original text and merging them into one pass
@@ -157,7 +150,6 @@ export function applyDictionaryToSegments(segments, abbreviations, corrections) 
   return segments.map((segment) => ({ ...segment, text: applyEntriesToText(segment.text, entries) }));
 }
 
-// Retroactive "적용하기" action - re-runs the current dictionary over every meeting that already
 // has a transcript, not just newly-analyzed ones (see applyDictionaryToSegments, which is what the
 // STT pipeline itself calls right after transcription for the automatic, forward-going case).
 export async function applyDictionaryToAllMeetings() {

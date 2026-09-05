@@ -18,7 +18,7 @@ import {
   resetToSeed,
   meetingsEvents
 } from "./server/db.mjs";
-import { readMembers, createMember, updateMember, disableMember, verifyLogin, toPublicMember } from "./server/members.mjs";
+import { readMembers, createMember, updateMember, disableMember, toPublicMember } from "./server/members.mjs";
 import { readBoardPosts, writeBoardPosts } from "./server/board.mjs";
 import { readDictionary, writeDictionary, applyDictionaryToSegments, applyDictionaryToAllMeetings } from "./server/dictionary.mjs";
 import { parseJsonMeetings } from "./server/parsers/importJson.mjs";
@@ -51,10 +51,17 @@ import { transcribeNaverClova } from "./server/audio/sttNaverClova.mjs";
 import { checkLocalWhisperAvailable, transcribeLocalWhisperCli } from "./server/audio/sttLocalWhisperCli.mjs";
 import { checkLocalWhisperXAvailable, transcribeLocalWhisperX } from "./server/audio/sttLocalWhisperX.mjs";
 import { diarizeSegments, assignSpeakersWithProfiles } from "./server/audio/diarize.mjs";
-import { registerVoiceProfile, scoreSpeakerProfileMatch, readVoiceProfiles, deleteVoiceProfile } from "./server/voiceProfiles.mjs";
+import { registerVoiceProfile, scoreSpeakerProfileMatch, readVoiceProfiles, deleteVoiceProfile, reliabilityScore } from "./server/voiceProfiles.mjs";
 import { runEmbedClips } from "./server/audio/pyannoteDiarize.mjs";
 import { resolveComputeDevice } from "./server/settingsFile.mjs";
 import { preprocessAudio } from "./server/audio/audioPreprocess.mjs";
+import {
+  canManageAuthoredRecord,
+  createLoginSession,
+  createSkipLoginSession,
+  getAuthenticatedMember,
+  isAdminMember
+} from "./server/sessions.mjs";
 
 interface LlmMeeting {
   title?: string;
@@ -87,10 +94,19 @@ interface PresentationMeeting {
   audio?: { transcriptSegments?: { speaker: string; startSec: number; endSec: number; text: string }[]; speakerMap?: Record<string, string> } | null;
 }
 
+interface AuthoredRecord {
+  id?: string;
+  authorId?: string;
+}
+
+interface MeetingCommentRecord extends AuthoredRecord {}
+
+interface MeetingRecord extends AuthoredRecord {
+  comments?: MeetingCommentRecord[];
+}
+
 // Duplicated on purpose from computeAttendeeBadges in src/types/domain.ts (see the comment above -
 // this file can't import that module). Keep these in sync if the badge rule ever changes: every
-// attendee gets exactly one label, presenters count as "발표N" among presenters only, everyone
-// else as "참석N" among non-presenters only.
 function computeAttendeeBadgesForPrompt(attendees: PresentationMeeting["attendees"]): Record<string, string> {
   const badges: Record<string, string> = {};
   let presenterIndex = 0;
@@ -199,11 +215,7 @@ function buildLlmQueryUserPrompt(question: string, meetings: LlmMeeting[]): stri
   return buildQueryPrompt(question, rows);
 }
 
-// {name: label} for B5's presentation-summary prompt - organizer gets the literal "주관자" label,
-// everyone else gets B1's computed 발표N/참석N badge (same rule the UI badges use). Attendee
 // badges are assigned first and the organizer label last, on purpose: the organizer is often also
-// listed as a regular attendee (isPresenter: false), and "주관자" must win that name over
-// whatever 참석N badge the attendee loop would otherwise assign it.
 function buildBadgeLabelsForMeeting(meeting: PresentationMeeting): Record<string, string> {
   const labels: Record<string, string> = {};
 
@@ -296,6 +308,32 @@ function requireTrusted(request: IncomingMessage, response: ServerResponse) {
   return true;
 }
 
+async function requireAuthenticated(request: IncomingMessage, response: ServerResponse) {
+  const member = await getAuthenticatedMember(request);
+
+  if (!member) {
+    sendJson(response, 401, { error: "로그인이 필요합니다." });
+    return null;
+  }
+
+  return member;
+}
+
+async function requireAdmin(request: IncomingMessage, response: ServerResponse) {
+  const member = await requireAuthenticated(request, response);
+
+  if (!member) {
+    return null;
+  }
+
+  if (!isAdminMember(member)) {
+    sendJson(response, 403, { error: "관리자 권한이 필요합니다." });
+    return null;
+  }
+
+  return member;
+}
+
 function fileNavigatorShortcuts() {
   const home = homedir();
 
@@ -386,7 +424,6 @@ const IMPORT_PARSERS: Record<ImportFormat, (buffer: Buffer) => Promise<unknown[]
   docx: (buffer) => parseDocxMeeting(buffer),
   pptx: (buffer) => parsePptxMeeting(buffer),
   md: (buffer) => parseMdMeeting(buffer),
-  // .txt reuses the Markdown parser - its plain title/minutes fallback (no heading, no "제목:"
   // label found) is exactly what a plain-text meeting note needs, and any Markdown decoration it
   // strips just never appears in real .txt files.
   txt: (buffer) => parseMdMeeting(buffer)
@@ -460,7 +497,6 @@ function sanitizeExportFileNameSegment(value: string): string {
   );
 }
 
-// Exporting exactly one meeting (회의 상세's "내보내기") names the file after that meeting - date
 // + title, matching the attachment-folder naming convention - instead of the generic
 // "meetingnote-export.ext" every export used to produce regardless of which meeting(s) it held.
 // A bulk export (0 or 2+ meetings) instead prefixes the generic name with *today's* date (the
@@ -577,8 +613,13 @@ export default defineConfig(() => {
               const commentId = meetingId && segments[1] === "comments" ? (segments[2] ?? null) : null;
 
               if (request.method === "POST" && meetingId && segments[1] === "comments" && segments.length === 2) {
+                const member = await requireAuthenticated(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const body = JSON.parse(await readRequestBody(request, MAX_SMALL_BODY_BYTES)) as { authorId?: string; content?: string };
-                const updated = await addMeetingComment(meetingId, body);
+                const updated = await addMeetingComment(meetingId, { ...body, authorId: member.id });
 
                 if (!updated) {
                   sendJson(response, 404, { error: "Meeting not found." });
@@ -590,6 +631,22 @@ export default defineConfig(() => {
               }
 
               if (request.method === "DELETE" && meetingId && commentId && segments.length === 3) {
+                const member = await requireAuthenticated(request, response);
+                if (!member) {
+                  return;
+                }
+
+                const meeting = (await readMeetings()).find((item: MeetingRecord) => item.id === meetingId);
+                const comment = meeting?.comments?.find((item: MeetingCommentRecord) => item.id === commentId);
+                if (!meeting || !comment) {
+                  sendJson(response, 404, { error: "Meeting not found." });
+                  return;
+                }
+                if (!canManageAuthoredRecord(comment, member)) {
+                  sendJson(response, 403, { error: "댓글을 삭제할 권한이 없습니다." });
+                  return;
+                }
+
                 const updated = await deleteMeetingComment(meetingId, commentId);
 
                 if (!updated) {
@@ -607,6 +664,11 @@ export default defineConfig(() => {
               }
 
               if (request.method === "POST" && segments[0] === "bulk") {
+                const member = await requireAdmin(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const body = JSON.parse(await readRequestBody(request, MAX_IMPORT_BODY_BYTES)) as { meetings?: unknown[]; duplicateMode?: string };
                 const result = await bulkUpsertMeetings(Array.isArray(body.meetings) ? body.meetings : [], body.duplicateMode);
                 sendJson(response, 200, result);
@@ -614,19 +676,44 @@ export default defineConfig(() => {
               }
 
               if (request.method === "POST" && segments[0] === "reset") {
+                const member = await requireAdmin(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const meetings = await resetToSeed();
                 sendJson(response, 200, { meetings });
                 return;
               }
 
               if (request.method === "POST" && !meetingId) {
+                const member = await requireAuthenticated(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const body = JSON.parse(await readRequestBody(request, MAX_SMALL_BODY_BYTES)) as Record<string, unknown>;
-                const meeting = await createMeeting(body);
+                const meeting = await createMeeting({ ...body, authorId: member.id });
                 sendJson(response, 201, { meeting });
                 return;
               }
 
               if (request.method === "PUT" && meetingId && segments.length === 1) {
+                const member = await requireAuthenticated(request, response);
+                if (!member) {
+                  return;
+                }
+
+                const existing = (await readMeetings()).find((item: MeetingRecord) => item.id === meetingId);
+                if (!existing) {
+                  sendJson(response, 404, { error: "Meeting not found." });
+                  return;
+                }
+                if (!canManageAuthoredRecord(existing, member)) {
+                  sendJson(response, 403, { error: "회의록을 수정할 권한이 없습니다." });
+                  return;
+                }
+
                 const body = JSON.parse(await readRequestBody(request, MAX_SMALL_BODY_BYTES)) as Record<string, unknown>;
                 const updated = await updateMeeting(meetingId, body);
 
@@ -640,6 +727,21 @@ export default defineConfig(() => {
               }
 
               if (request.method === "DELETE" && meetingId && segments.length === 1) {
+                const member = await requireAuthenticated(request, response);
+                if (!member) {
+                  return;
+                }
+
+                const existing = (await readMeetings()).find((item: MeetingRecord) => item.id === meetingId);
+                if (!existing) {
+                  sendJson(response, 404, { ok: false });
+                  return;
+                }
+                if (!canManageAuthoredRecord(existing, member)) {
+                  sendJson(response, 403, { error: "회의록을 삭제할 권한이 없습니다." });
+                  return;
+                }
+
                 const deleted = await deleteMeeting(meetingId);
                 sendJson(response, deleted ? 200 : 404, { ok: deleted });
                 return;
@@ -653,13 +755,17 @@ export default defineConfig(() => {
 
           server.middlewares.use("/api/auth/login", async (request, response) => {
             try {
+              if (!requireTrusted(request, response)) {
+                return;
+              }
+
               if (request.method !== "POST") {
                 sendJson(response, 405, { error: "Method not allowed." });
                 return;
               }
 
               const body = JSON.parse(await readRequestBody(request)) as { loginId?: string; password?: string };
-              const result = await verifyLogin(String(body.loginId ?? ""), String(body.password ?? ""));
+              const result = await createLoginSession(String(body.loginId ?? ""), String(body.password ?? ""));
 
               sendJson(response, 200, result);
             } catch (error) {
@@ -667,8 +773,24 @@ export default defineConfig(() => {
             }
           });
 
-          // Account management - client-side admin-only gating, same trust model as every other
-          // route in this app (a local desktop tool with no server-side authorization layer).
+          server.middlewares.use("/api/auth/skip", async (request, response) => {
+            try {
+              if (!requireTrusted(request, response)) {
+                return;
+              }
+
+              if (request.method !== "POST") {
+                sendJson(response, 405, { error: "Method not allowed." });
+                return;
+              }
+
+              sendJson(response, 200, await createSkipLoginSession());
+            } catch (error) {
+              sendCaughtError(response, error, "로그인 건너뛰기에 실패했습니다.");
+            }
+          });
+
+          // Account management uses server-side session checks for every privileged mutation.
           server.middlewares.use("/api/members", async (request, response) => {
             try {
               if (!requireTrusted(request, response)) {
@@ -679,19 +801,31 @@ export default defineConfig(() => {
               const memberId = url.pathname.split("/").filter(Boolean)[0] || null;
 
               if (request.method === "GET") {
+                const member = await requireAuthenticated(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const members = await readMembers();
                 sendJson(response, 200, { members: members.map(toPublicMember) });
                 return;
               }
 
               if (request.method === "POST" && !memberId) {
+                const member = await getAuthenticatedMember(request);
                 const body = JSON.parse(await readRequestBody(request)) as Record<string, unknown>;
-                const members = await createMember(body);
+                const draft = isAdminMember(member) ? body : { ...body, role: "일반", disabled: true };
+                const members = await createMember(draft);
                 sendJson(response, 201, { members });
                 return;
               }
 
               if (request.method === "PUT" && memberId) {
+                const member = await requireAdmin(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const body = JSON.parse(await readRequestBody(request)) as Record<string, unknown>;
                 const members = await updateMember(memberId, body);
                 sendJson(response, 200, { members });
@@ -699,6 +833,11 @@ export default defineConfig(() => {
               }
 
               if (request.method === "DELETE" && memberId) {
+                const member = await requireAdmin(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const members = await disableMember(memberId);
                 sendJson(response, 200, { members });
                 return;
@@ -711,8 +850,11 @@ export default defineConfig(() => {
           });
 
           // Board - whole-array read/replace, ported directly from Club's boardStore.ts contract
-          // (GET/PUT a raw BoardPost[], no per-post sub-routes). Delete/pin permission is enforced
-          // client-side only, same trust model as every other route in this app.
+          // (GET/PUT a raw BoardPost[], no per-post sub-routes). PUT requires a logged-in member,
+          // and writeBoardPosts/assertBoardWriteAllowed (server/board.mjs) diffs the incoming array
+          // against what's already stored to enforce authorship/admin-only rules (can't post as
+          // someone else, can't touch another member's post, pinning/notice-category changes are
+          // admin-only, ...) - not just trusted client-side.
           server.middlewares.use("/api/board", async (request, response) => {
             try {
               if (!requireTrusted(request, response)) {
@@ -725,8 +867,13 @@ export default defineConfig(() => {
               }
 
               if (request.method === "PUT") {
+                const member = await requireAuthenticated(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const body = JSON.parse((await readRequestBody(request, MAX_IMPORT_BODY_BYTES)) || "[]") as unknown[];
-                const posts = await writeBoardPosts(body);
+                const posts = await writeBoardPosts(body, member);
                 sendJson(response, 200, posts);
                 return;
               }
@@ -756,6 +903,11 @@ export default defineConfig(() => {
               }
 
               if (request.method === "PUT" && segments.length === 0) {
+                const member = await requireAuthenticated(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const body = JSON.parse((await readRequestBody(request, MAX_IMPORT_BODY_BYTES)) || "{}") as Record<string, unknown>;
                 const dictionary = await writeDictionary(body);
                 sendJson(response, 200, dictionary);
@@ -763,6 +915,11 @@ export default defineConfig(() => {
               }
 
               if (request.method === "POST" && segments[0] === "apply") {
+                const member = await requireAdmin(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const updatedCount = await applyDictionaryToAllMeetings();
                 sendJson(response, 200, { updatedCount });
                 return;
@@ -775,7 +932,6 @@ export default defineConfig(() => {
           });
 
           // Registers/reinforces a voice profile - called right after the user renames a
-          // "미등록" speaker to a real name in AudioAnalysisModal (see UNREGISTERED_SPEAKER_PREFIX
           // in server/audio/diarize.mjs), using that speaker's embedding from the just-completed
           // analysis. Confirmed matches during diarization itself register automatically server-
           // side (see assignSpeakersWithProfiles) - this route only covers the manual-rename case.
@@ -783,6 +939,11 @@ export default defineConfig(() => {
             try {
               if (!requireTrusted(request, response) || request.method !== "POST") {
                 sendJson(response, 405, { error: "Method not allowed." });
+                return;
+              }
+
+              const member = await requireAuthenticated(request, response);
+              if (!member) {
                 return;
               }
 
@@ -802,7 +963,6 @@ export default defineConfig(() => {
             }
           });
 
-          // Per-segment speaker classification (replaces the old cluster-embedding "다시 화자 분리"
           // rematch route - removed, since whole-recording diarization no longer runs and there's
           // no cluster embedding left to re-match). Takes one or more already-cropped short audio
           // clips (see AudioAnalysisModal.tsx's sliceAudioBufferToWav), computes a fresh
@@ -815,6 +975,11 @@ export default defineConfig(() => {
             try {
               if (!requireTrusted(request, response) || request.method !== "POST") {
                 sendJson(response, 405, { error: "Method not allowed." });
+                return;
+              }
+
+              const member = await requireAuthenticated(request, response);
+              if (!member) {
                 return;
               }
 
@@ -887,19 +1052,25 @@ export default defineConfig(() => {
           server.middlewares.use("/api/voice-profiles", async (request, response) => {
             try {
               if (request.method === "GET") {
-                const profiles = (await readVoiceProfiles()) as { name: string; embeddings: unknown[] }[];
+                const profiles = (await readVoiceProfiles()) as { name: string; embeddings: number[][] }[];
                 sendJson(response, 200, {
                   names: profiles.map((profile) => profile.name),
-                  profiles: profiles.map((profile) => ({ name: profile.name, sampleCount: profile.embeddings.length }))
+                  profiles: profiles.map((profile) => ({
+                    name: profile.name,
+                    sampleCount: profile.embeddings.length,
+                    // null when fewer than 2 samples exist (see reliabilityScore's comment) - the
+                    // client shows "not enough samples" instead of a fabricated number in that case.
+                    reliabilityScore: reliabilityScore(profile.embeddings)
+                  }))
                 });
                 return;
               }
 
-              // Settings' 음성 프로필 관리 section uses this to remove a contaminated profile (see
               // deleteVoiceProfile's comment) - registerVoiceProfile only ever appends, so this is
               // the only way to walk back a wrongly-tagged sample.
               if (request.method === "DELETE") {
-                if (!requireTrusted(request, response)) {
+                const member = await requireAdmin(request, response);
+                if (!member) {
                   return;
                 }
                 const body = JSON.parse(await readRequestBody(request, MAX_IMPORT_BODY_BYTES)) as { name?: string };
@@ -1063,6 +1234,11 @@ export default defineConfig(() => {
                 return;
               }
 
+              const member = await requireAuthenticated(request, response);
+              if (!member) {
+                return;
+              }
+
               // MAX_ATTACHMENT_BYTES caps the DECODED file size (checked again in saveAttachment) -
               // the request body itself is base64 text plus a little JSON overhead, and base64
               // inflates the decoded size by 4/3, so the raw-body cap has to be scaled up to match
@@ -1093,6 +1269,11 @@ export default defineConfig(() => {
                 return;
               }
 
+              const member = await requireAdmin(request, response);
+              if (!member) {
+                return;
+              }
+
               const body = JSON.parse(await readRequestBody(request, MAX_SMALL_BODY_BYTES * 8)) as { photoDataUrl?: string };
 
               await saveLogoImage(body.photoDataUrl);
@@ -1118,6 +1299,11 @@ export default defineConfig(() => {
               }
 
               if (request.method === "PUT") {
+                const member = await requireAdmin(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const body = JSON.parse(await readRequestBody(request)) as {
                   anthropicApiKey?: string;
                   openaiApiKey?: string;
@@ -1154,6 +1340,11 @@ export default defineConfig(() => {
               }
 
               if (request.method === "DELETE") {
+                const member = await requireAdmin(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const body = JSON.parse((await readRequestBody(request)) || "{}") as { provider?: string };
                 const keysByProvider: Record<string, string[]> = {
                   openai: ["OPENAI_API_KEY"],
@@ -1431,9 +1622,7 @@ export default defineConfig(() => {
                     embeddings?: Record<string, number[]>;
                   };
 
-                  // Fixed pipeline order Demucs -> 정규화 -> DeNoise, all server-side, so vocal
                   // isolation always sees the untouched original recording (best separation
-                  // quality) and 정규화/DeNoise then run on whatever that step produced - see
                   // server/audio/audioPreprocess.mjs. The client no longer pre-processes audio
                   // before upload (see AudioAnalysisModal.tsx's handleAnalyze).
                   let audioBuffer = Buffer.from(body.audioBase64 ?? "", "base64");
@@ -1485,7 +1674,6 @@ export default defineConfig(() => {
                     ? await assignSpeakersWithProfiles(raw.segments, attendeeNames, raw.embeddings, agenda)
                     : diarizeSegments(raw.segments, attendeeNames);
 
-                  // Dictionary (약어/수정) substitution happens right after STT produces text, not
                   // during the audio decode/transcribe step itself - see server/dictionary.mjs.
                   const dictionary = await readDictionary();
                   const dictionaryAppliedSegments = applyDictionaryToSegments(transcriptSegments, dictionary.abbreviations, dictionary.corrections);
@@ -1501,7 +1689,6 @@ export default defineConfig(() => {
                     analyzedAt: new Date().toISOString(),
                     // Transient - not part of the persisted Meeting.audio shape (see domain.ts).
                     // AudioAnalysisModal uses this to register a voice profile the moment the user
-                    // renames a "미등록" speaker to a real name, then strips it before saving.
                     ...(hasEmbeddings ? { speakerEmbeddings: raw.embeddings } : {}),
                     ...(processedAudioBuffer
                       ? {
@@ -1652,6 +1839,15 @@ export default defineConfig(() => {
               }
 
               if (request.method === "PUT") {
+                // Any logged-in member can reach this, not just admins - SettingsView only gates
+                // its account-management section behind isAdmin (see its isAdmin prop), every
+                // other field here (chunk sizes, attachments folder, ...) is editable by anyone
+                // already signed in, so requireAdmin would break that existing capability.
+                const member = await requireAuthenticated(request, response);
+                if (!member) {
+                  return;
+                }
+
                 const body = await readRequestBody(request);
                 await mkdir(path.dirname(settingsFilePath), { recursive: true });
                 await writeFile(settingsFilePath, body, "utf8");
@@ -1660,6 +1856,11 @@ export default defineConfig(() => {
               }
 
               if (request.method === "DELETE") {
+                const member = await requireAuthenticated(request, response);
+                if (!member) {
+                  return;
+                }
+
                 await rm(settingsFilePath, { force: true });
                 sendJson(response, 200, { ok: true });
                 return;

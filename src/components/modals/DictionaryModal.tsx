@@ -44,13 +44,9 @@ export function DictionaryModal({ kind, entries, onApply, onClose, onSave }: Dic
   const [error, setError] = useState("");
   const [resultMessage, setResultMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // Both "추가하기" and "불러오기" reuse the same hidden file input; this tracks which one
   // triggered the currently-open file picker so handleImportFileChange knows whether to merge the
   // parsed rows into the existing draft or replace it outright.
   const importModeRef = useRef<"append" | "replace">("replace");
-  // Queue of "추가하기" rows whose from matches an entry already in draft. Resolved one at a time
-  // (or all at once via "남은 항목 모두 이 방식으로 처리") before those rows are merged in, so an
-  // import can never silently overwrite or duplicate an existing entry. "불러오기" (replace) skips
   // this entirely since it wholesale-replaces the list - there is nothing to conflict with there.
   const [importConflicts, setImportConflicts] = useState<ImportConflict[]>([]);
   const [applyToRemaining, setApplyToRemaining] = useState(false);

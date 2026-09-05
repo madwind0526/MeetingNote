@@ -10,7 +10,6 @@ interface MdViewerModalProps {
   onClose: () => void;
 }
 
-// Read-only in-app viewer for a stored .md attachment (첨부 자료를 변환한 Markdown, 회의록 등) -
 // opened instead of openAttachment(), which would hand it off to the OS's default text editor or a
 // browser tab.
 export function MdViewerModal({ title, path, onClose }: MdViewerModalProps) {

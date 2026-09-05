@@ -33,9 +33,6 @@ function emptyDraft() {
   };
 }
 
-// Third-party notes sometimes space out label characters for visual alignment (e.g. "제 목",
-// "주 관", "장 소") - stripping all whitespace (including fullwidth U+3000) before comparing lets
-// "제 목" still match "제목".
 function normalizeLabel(label) {
   return label.replace(/[\s　]+/g, "");
 }
@@ -52,10 +49,7 @@ function stripMdSyntax(line) {
 }
 
 // Best-effort only: reliably round-trips Markdown produced by our own export (exportMd.mjs),
-// which writes a "# {title}" heading followed by a "- 날짜:/시작:/종료:/주관자:/참석자:" list and
-// "## Agenda" / "## A/I List" / "## 회의록" sections. Arbitrary third-party Markdown notes are not
 // guaranteed to have those labels, so this falls back to a plain title/minutes split when neither
-// an H1 heading nor a "제목:" label is found.
 function parseSingleMeeting(rawText) {
   const rawLines = rawText.replace(/\r\n/g, "\n").split("\n");
   const firstContentIndex = rawLines.findIndex((line) => line.trim());

@@ -9,7 +9,6 @@ const BAR_COLOR = "#2f9e8f";
 const BAR_WIDTH = 2;
 const BAR_GAP = 2;
 
-// Real-time waveform for "PC 소리 녹음" (MeetingFormModal) - draws straight to canvas every
 // animation frame instead of going through React state, since sampling the analyser at ~60fps
 // would otherwise re-render the whole (fairly large) meeting form that many times per second.
 export function LiveWaveform({ analyser, height }: LiveWaveformProps) {

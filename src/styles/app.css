@@ -1757,6 +1757,49 @@ p {
   color: #bac6c0;
 }
 
+/* Internal-consistency score badge (see server/voiceProfiles.mjs's reliabilityScore) - "good" is
+   at least as consistent as the shared baseline threshold, "warn"/"bad" progressively less so, and
+   "unverified" means fewer than 2 samples exist to compare at all yet. */
+.voice-profile-card-score {
+  width: fit-content;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.voice-profile-card-score.good {
+  background: rgba(74, 222, 128, 0.16);
+  color: #1f8a4c;
+}
+.dark .voice-profile-card-score.good {
+  color: #4ade80;
+}
+
+.voice-profile-card-score.warn {
+  background: rgba(251, 191, 36, 0.18);
+  color: #92620a;
+}
+.dark .voice-profile-card-score.warn {
+  color: #fbbf24;
+}
+
+.voice-profile-card-score.bad {
+  background: rgba(248, 113, 113, 0.16);
+  color: #ba3030;
+}
+.dark .voice-profile-card-score.bad {
+  color: #f87171;
+}
+
+.voice-profile-card-score.unverified {
+  background: rgba(139, 150, 143, 0.16);
+  color: #60706a;
+}
+.dark .voice-profile-card-score.unverified {
+  color: #bac6c0;
+}
+
 .llm-provider-item.active {
   border-color: #1f6f68;
   border-width: 1.5px;
@@ -3212,6 +3255,49 @@ p {
 
 .audio-analysis-transcript-row:last-child {
   border-bottom: 0;
+}
+
+/* Manually-linked run of segments (see AudioAnalysisModal's linkedToNext) - suppresses the
+   separator between two linked rows so they read as one continuous block. */
+.audio-analysis-transcript-row.linked-next {
+  border-bottom: 0;
+  padding-bottom: 2px;
+}
+
+.audio-analysis-transcript-row.linked-prev {
+  padding-top: 2px;
+}
+
+.audio-analysis-transcript-link-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  margin-top: 2px;
+  padding: 2px 8px;
+  border: 1px dashed rgba(32, 33, 36, 0.2);
+  border-radius: 999px;
+  background: transparent;
+  color: #8b968f;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.dark .audio-analysis-transcript-link-toggle {
+  border-color: rgba(243, 241, 234, 0.2);
+}
+
+.audio-analysis-transcript-link-toggle.active {
+  border-style: solid;
+  border-color: rgba(47, 158, 143, 0.5);
+  background: rgba(47, 158, 143, 0.13);
+  color: #1f6f68;
+}
+
+.dark .audio-analysis-transcript-link-toggle.active {
+  border-color: rgba(142, 216, 200, 0.45);
+  background: rgba(142, 216, 200, 0.16);
+  color: #8ed8c8;
 }
 
 .audio-analysis-transcript-meta {

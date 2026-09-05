@@ -1,5 +1,4 @@
 // Fixes up the 11 E2E test meetings so their saved speakerMap uses real names instead of
-// "미등록 화자 N" placeholders. These meetings were created by POSTing straight to the API
 // (bypassing AudioAnalysisModal's speaker-rename step, which is the UI's only chance to fix an
 // unmatched label before saving), so the raw diarization result was persisted as-is. The real
 // identity of every turn is fully known here though - meeting #1 has a persisted ground-truth

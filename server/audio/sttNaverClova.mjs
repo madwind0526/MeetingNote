@@ -65,7 +65,6 @@ export async function transcribeNaverClova(audioBuffer, fileName, attendeeNames 
       endSec: Number(segment.end ?? 0) / 1000,
       text: (segment.text ?? "").trim(),
       // Raw label (e.g. "1", "2") - diarizeSegments (server/audio/diarize.mjs) formats the
-      // display fallback name itself ("화자 1") when no attendee is mapped to this index.
       ...(speakerLabel ? { speaker: String(speakerLabel) } : {})
     };
   });

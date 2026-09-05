@@ -1,6 +1,5 @@
 // Resumes the E2E flow from stage 3's step [5/6] onward - the meeting record already has
 // audio/transcriptSegments/speakerMap saved (stage 3's STT step succeeded before the LLM step hit
-// the old 60s claude-cli timeout), so this just re-runs the B5 (발표별 정리) + B6 (회의록 작성)
 // LLM calls against the already-updated meeting.
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";

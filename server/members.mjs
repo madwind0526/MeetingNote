@@ -83,8 +83,6 @@ export async function createMember(draft) {
     passwordHash: hashPassword(String(draft?.password ?? "") || loginId),
     role: draft?.role === "admin" ? "admin" : "일반",
     createdAt: new Date().toISOString(),
-    // Self-service account requests (LoginView's "계정 신청") pass disabled: true so the account
-    // sits pending until an admin activates it from 계정 관리; admin-created accounts (which never
     // set this) stay immediately active, matching prior behavior.
     disabled: draft?.disabled === true
   };

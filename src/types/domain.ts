@@ -9,8 +9,6 @@ export interface Attendee {
 }
 
 // A person's most senior role in this meeting, for the audio speaker picker's role badge (see
-// AudioAnalysisModal's SpeakerPicker) - priority order matches this list: 주관자 beats 간사 beats
-// 발표자, and a plain 참석자 gets no badge at all (see MeetingFormModal's audioAttendeeRoles).
 export type SpeakerRoleBadge = "주관자" | "간사" | "발표자";
 
 export interface SpeakerRoleEntry {
@@ -47,7 +45,6 @@ export function emptyActionItem(no: number): ActionItem {
   return { no, title: "", material: "", materialPath: undefined, materialMdPath: undefined, presenter: "" };
 }
 
-// `presentationSummary` is B5's per-presentation structured output (질문/답변/의견/할일 lines tagged
 // with B1's badge labels) - generated from this item's material + the meeting's full transcript,
 // see PresentationSummaryModal.tsx and server/llm.mjs's buildPresentationSummaryPrompt.
 export interface AgendaItem {
@@ -98,7 +95,6 @@ export interface AudioAnalysis {
   analyzedAt: string;
   // B7 audio retention policy: the original recording is kept alongside the meeting's materials
   // (unlike a hypothetical per-speaker sliced copy, which this app never actually creates -
-  // "화자별 파형" in AudioAnalysisModal is just a client-side highlight of one shared waveform, not
   // separate files) - set once uploaded via MeetingFormModal's handleAudioComplete.
   audioPath?: string;
   transcriptPath?: string;
@@ -206,8 +202,6 @@ export function computeMeetingStatus(meeting: Pick<Meeting, "date" | "startTime"
   return meeting.minutes.trim() ? "completed" : "needs_minutes";
 }
 
-// LLM-generated minutes end with a "## 태그" section (see vite.config.mts's MINUTES_SYSTEM_PROMPT)
-// listing 5-10 `#태그` tokens on one line. Mesh view uses this to connect meetings that share a tag.
 // Meetings whose minutes predate this feature (or are still empty) simply yield no tags.
 export function extractMeetingTags(meeting: Pick<Meeting, "minutes">): string[] {
   const minutes = meeting.minutes || "";
@@ -229,7 +223,6 @@ export function extractMeetingTags(meeting: Pick<Meeting, "minutes">): string[] 
 }
 
 // Same cap as Mesh view's Top TAG limit (src/components/views/MeshView.tsx's meshTopTagLimit) -
-// keeping this in sync means the "연결" count this function returns for a meeting always matches
 // what Mesh view's own node degree/tooltip shows for that same meeting, so the connection-count
 // filter and the Mesh view graph never disagree about "how connected" a meeting is.
 const CONNECTION_TOP_TAG_LIMIT = 10;
@@ -371,8 +364,6 @@ export const emptyFilters: MeetingFilters = {
   dateTo: ""
 };
 
-// Shared shape for both the abbreviation dictionary (from=약어, to=확장글) and the correction
-// dictionary (from=수정전, to=수정후) - same UI, same mechanics, only the column labels differ.
 export interface DictionaryEntry {
   id: string;
   from: string;
@@ -401,6 +392,7 @@ export type PublicMember = Omit<Member, "passwordHash">;
 export interface LoginResult {
   ok: boolean;
   member?: PublicMember;
+  sessionToken?: string;
   error?: string;
 }
 
@@ -458,7 +450,6 @@ export interface SttProviderOption {
 }
 
 // Mirrors llmProviders below - free/local options first, paid API last, so Settings can render
-// both provider lists with the same "무료" vs "유료" grouping convention.
 export const sttProviders: SttProviderOption[] = [
   {
     id: "mock",
@@ -535,12 +526,10 @@ export interface AppSettings {
   // Per-meeting-length STT chunk size override (minutes), as free-form strings so the Settings
   // inputs can sit empty with a placeholder showing the built-in default instead of always holding
   // a live number - see useChunkedAudioAnalysis.ts's pickChunkSizeBounds, which parses these and
-  // falls back to 1/2/5 minutes on empty/invalid input. Tiers: <10분, 10~30분, >=30분.
   chunkMinutesShort: string;
   chunkMinutesMedium: string;
   chunkMinutesLong: string;
   // Custom persona/style instruction prepended before this app's own system prompt for every LLM
-  // call (query/회의록 작성/발표 내용 정리) - see server/llm.mjs's resolveSystemPrompt. Empty string
   // means "no custom message" (just this app's own system prompt, unchanged).
   systemMessage: string;
 }
@@ -574,10 +563,6 @@ export function presenterAttendees(attendees: Attendee[]): Attendee[] {
   return attendees.filter((attendee) => attendee.isPresenter);
 }
 
-// Every attendee gets exactly one label - presenters count as "발표N" (table order among
-// presenters), everyone else as "참석N" (table order among non-presenters). This is also the
-// label vocabulary B5's structured minutes format keys quotes off of (질문/답변/의견/할일 lines are
-// tagged "주관자-이름"/"발표1-이름"/"참석1-이름"), so a presenter never additionally counts as an
 // attendee - one badge per person.
 export function computeAttendeeBadges(attendees: Attendee[]): Record<string, string> {
   const badges: Record<string, string> = {};

@@ -4,9 +4,7 @@
 // a large drop at a bigger chunk size would indicate silent truncation of Whisper's output.
 //
 // Part A: base-5min.wav (237s) at 15s (reference, closest to Whisper's native 30s window,
-//          most chunks = least likely to lose anything at a boundary) vs 120s (2분).
 // Part B: a 3x-concatenated copy of base-5min.wav (~711s / ~11.9min, same content repeated
-//          3x back-to-back) at 120s/240s/360s (2/4/6분) per the user's follow-up request.
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -151,7 +149,6 @@ async function buildTripleAudio() {
 async function main() {
   const results = [];
 
-  // Part A: base-5min.wav, 15s (reference) vs 120s (2분)
   const baseBuffer = await readFile(BASE_AUDIO_PATH);
   const basePcm = readPcmFromWav(baseBuffer);
   const baseAudioSec = basePcm.length / (SAMPLE_RATE * BYTES_PER_SAMPLE);
@@ -163,7 +160,6 @@ async function main() {
     await writeFile(RESULT_PATH, JSON.stringify(results, null, 2), "utf8");
   }
 
-  // Part B: 3x concatenated base audio, 120s/240s/360s (2/4/6분)
   console.log("\nPart B용 3배 오디오 생성 중...");
   const triplePcm = await buildTripleAudio();
   const tripleAudioSec = triplePcm.length / (SAMPLE_RATE * BYTES_PER_SAMPLE);
